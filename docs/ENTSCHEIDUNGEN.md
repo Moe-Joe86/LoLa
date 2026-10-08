@@ -336,6 +336,11 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
   `~/lola-laufzeit/stimmen/`, nie im Repo und nie im Netz. `.gitignore` schließt `*.spk` und `*.rvq` aus.
   Die Bibliothek legt Stimmdaten zusätzlich selbst ab, wenn sie eine Aufnahme bekommt
   (`~/.cache/faster-qwen3-tts/qwentts_refs/`, ebenfalls lokal).
+- **Nur ein Ort für Stimmdaten:** speech-to-speech startet mit
+  `--qwen3_tts_ref_cache_dir ~/lola-laufzeit/stimmen/`; für die Bibliothek direkt gilt die
+  Umgebungsvariable `FQWEN3TTS_QWENTTS_REF_CACHE_DIR`. Im Code gelesen: Mit `.spk`/`.rvq` als
+  Eingabe schreibt die Bibliothek gar keine Stimmdaten, der Ordner greift nur, falls doch einmal
+  eine Aufnahme übergeben wird. Geprüft wird der Schalter beim ersten Start in A4.
 
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
