@@ -13,7 +13,6 @@ import subprocess
 import time
 
 import numpy as np
-
 from tts_messen import SAETZE, grafikspeicher_mib
 
 
@@ -51,7 +50,8 @@ def main() -> None:
 
     def sprich(text: str) -> tuple[float, float, float]:
         beginn, erster, laenge, rate = time.perf_counter(), None, 0, 24000
-        for stueck, rate in tts.stream(text=text, lang="german", speaker="aiden", codec_chunk_sec=0.96):
+        for stueck, stueck_rate in tts.stream(text=text, lang="german", speaker="aiden", codec_chunk_sec=0.96):
+            rate = stueck_rate
             erster = erster or time.perf_counter() - beginn
             laenge += np.asarray(stueck).size
         return erster, time.perf_counter() - beginn, laenge / rate
