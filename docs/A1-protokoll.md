@@ -17,6 +17,7 @@ Aufnahmen und Stimmproben sind privat und liegen nur dort.
 - `tts_messen.py`: Sprachausgabe je Variante, Grafikspeicher des Prozesses, Zeit bis zum ersten Ton, WAV.
 - `tts_sockel.py`: Aufschlüsselung des Grafikspeichers, CPU-Betrieb.
 - `a2_nachpruefung.py`: die sechs Nachprüfungen aus A2.
+- `kette_messen.py`: Gesamtkette mit gespeicherten Aufnahmen, Zeiten je Abschnitt, Grafikspeicher je Prozess.
 
 ## Sprachausgabe: Aufschlüsselung des Grafikspeichers (0.6B CustomVoice Q8_0, Ladeprotokoll)
 ```text
@@ -83,3 +84,31 @@ Wie geht es dir?<|im_end|>
 
 
 Ein früherer Lauf (16:39:35) wich bei den Antworten ab, siehe `ENTSCHEIDUNGEN.md`.
+
+## Spracherkennung auf der CPU (künstliche Stimme, 20 Sätze, 50 s Ton, Median aus 3 Läufen)
+Kein Mikrofon am PC: Aufnahmen von Qwen3-TTS 0.6B („aiden“) erzeugt. Fehlerzahlen gelten nur dafür.
+```text
+parakeet  nvidia/parakeet-tdt-0.6b-v3  4 Threads: 0.288 s im Mittel, 0.519 s höchstens, 6/113 Wortfehler
+parakeet  nvidia/parakeet-tdt-0.6b-v3  6 Threads: 0.262 s im Mittel, 0.439 s höchstens, 6/113 Wortfehler
+parakeet  nvidia/parakeet-tdt-0.6b-v3  8 Threads: 0.271 s im Mittel, 0.429 s höchstens, 6/113 Wortfehler
+whisper   large-v3-turbo               4 Threads: 5.141 s im Mittel, 6.727 s höchstens, 5/113 Wortfehler
+whisper   large-v3-turbo               6 Threads: 4.451 s im Mittel, 5.957 s höchstens, 4/113 Wortfehler
+whisper   large-v3-turbo               8 Threads: 4.625 s im Mittel, 6.216 s höchstens, 5/113 Wortfehler
+whisper   medium                       4 Threads: 3.292 s im Mittel, 4.505 s höchstens, 6/113 Wortfehler
+whisper   medium                       6 Threads: 2.840 s im Mittel, 3.932 s höchstens, 6/113 Wortfehler
+whisper   medium                       8 Threads: 3.301 s im Mittel, 9.290 s höchstens, 6/113 Wortfehler
+whisper   small                        4 Threads: 1.235 s im Mittel, 3.572 s höchstens, 8/113 Wortfehler
+whisper   small                        6 Threads: 1.079 s im Mittel, 3.292 s höchstens, 8/113 Wortfehler
+whisper   small                        8 Threads: 1.142 s im Mittel, 3.268 s höchstens, 8/113 Wortfehler
+```
+Parakeet, Sätze mit Fehler: „Yeah.“ (Ja.), „S uh“ (Stopp!), „Guten Morgen, Ricci!“, „12“ statt „zwölf“, „18“ statt „achtzehn“.
+
+## Gesamtkette (Parakeet 6 Threads, Qwen3-8B, Qwen3-TTS 0.6B CustomVoice Q8_0), 60 Runden
+llama-server: `offloaded 37/37 layers to GPU`, `n_slots = 1, n_ctx_slot = 8192`.
+```text
+Bündel 1 Satz: Erkennung 0.267 (max 0.508), erstes Token 0.030 (0.040), erster Satz 0.075 (0.212),
+               erster Ton 0.129 (0.166), gesamt 0.502 (0.789) s
+Bündel 3 Sätze (Standard): erster Satz/Bündel 0.165 (0.591), erster Ton 0.071 (0.161), gesamt 0.533 (1.054) s
+Grafikspeicher: vorher gesamt 639 MiB; llama-server 6022 MiB, Kette 2472 MiB, gesamt 9147 MiB
+```
+Kein Tool-Aufruf in 60 Runden. Satz 14 („Kannst du für mich tanzen?“): 6 von 6 Mal „Sure, here's my best dance!“.
