@@ -272,6 +272,18 @@ auf Branch `test/a1`.
   und dessen Tonausgabe. Der Verlauf war kurz und der Anfang der Anfrage lag im Zwischenspeicher.
   Die Zeit am Roboter misst A5.
 
+## 2026-10-08 – A1 abgeschlossen: vorläufige Sprachausgabe und Bündelung
+- **Sprachausgabe vorläufig:** Qwen3-TTS 0.6B CustomVoice Q8_0 (GGML), feste Stimme vorerst „aiden“
+  (mit ihr wurde die Gesamtkette gemessen). Patrick hat den Klang noch nicht beurteilt. Die endgültige
+  Stimme wählt die eigene Aufgabe „Sprachausgabe-Vergleich“ hinter A5 (`FAHRPLAN.md`).
+- **Bündelung: 1 Satz statt 3.** speech-to-speech spricht, sobald der erste Satz des Sprachmodells
+  fertig ist. Einstellung beim Start: `--responses_api_stream_batch_sentences 1` (Feld
+  `stream_batch_sentences`, Standard 3). Im Handler gemessen; der Schalter auf der Kommandozeile ist
+  aus dem Namensschema der anderen Schalter abgeleitet und wird in A4 beim ersten echten Start geprüft.
+- Weitere Einstellungen der Sprachausgabe: `--qwen3_tts_ggml_quantization Q8_0`,
+  `--qwen3_tts_speaker aiden`, Sprache Deutsch. Sie kommen in `.env.example`, sobald ein Startskript
+  sie liest (A4); in A1 entsteht kein Code.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
@@ -283,5 +295,5 @@ Werden in Phase 0 eingetragen (A1 und A4):
 | llama.cpp | Commit `d81235049384534c167caea52b85a694f6103d14` (0.6.0), CUDA 12.0, gcc 12 | 2026-10-08 |
 | Sprachmodell | Qwen3-8B Q4_K_M, `Qwen/Qwen3-8B-GGUF` Stand `7c41481`, SHA-256 `d98cdcbd…5745785` (nur für A1, Wahl in A5) | 2026-10-08 |
 | Spracherkennung | Parakeet TDT 0.6B v3 (`nvidia/parakeet-tdt-0.6b-v3`) über nano-parakeet 0.2.1, CPU, 6 Threads | 2026-10-08 |
-| Sprachausgabe | Variante offen; faster-qwen3-tts 0.5.4, qwentts-cpp-python 0.5.0, GGUF aus `Serveurperso/Qwen3-TTS-GGUF` | 2026-10-08 |
+| Sprachausgabe | vorläufig Qwen3-TTS 0.6B CustomVoice Q8_0, Stimme „aiden“; faster-qwen3-tts 0.5.4, qwentts-cpp-python 0.5.0, GGUF aus `Serveurperso/Qwen3-TTS-GGUF` | 2026-10-08 |
 | PyTorch | 2.14.1+cu130 | 2026-10-08 |

@@ -2,6 +2,12 @@
 
 Neueste Einträge oben.
 
+## 2026-10-08 – A1 abgeschlossen
+- Vorläufige Sprachausgabe: Qwen3-TTS 0.6B CustomVoice Q8_0, Stimme „aiden“. Klangurteil vertagt.
+- Neue Aufgabe A5b „Sprachausgabe-Vergleich“ im Fahrplan (Referenzstimmen, F5-TTS, Fish Speech).
+- Bündelung der Sprachausgabe: 1 Satz statt 3, als Einstellung in `ENTSCHEIDUNGEN.md`.
+- `CLAUDE.md`: nächster Auftrag ist A3.
+
 ## 2026-10-08 – A1: Spracherkennung gewählt, Gesamtkette gemessen
 - Spracherkennung: Parakeet TDT 0.6B v3 auf der CPU mit 6 Threads (0,26 s je Satz, Whisper 1,1 bis 5,1 s).
 - Gesamtkette mit gespeicherten Aufnahmen: 0,50 s vom Satzende bis zum Antwortbeginn, 9,1 GB Grafikspeicher.

@@ -19,7 +19,6 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Issue bei Pollen (Repo `pollen-robotics/reachy_mini`, erst nach A4): Motortemperatur (Register 146),
   Hardware-Fehlerstatus und Eingangsspannung über `/api/state` freigeben. Der Daemon liest Register 70
   und 144 schon in `read_hardware_errors`. Dringend, falls der Raw-Endpunkt in A4 scheitert.
-- Sprachausgabe F5-TTS statt Qwen3-TTS prüfen (frühestens ab Phase 8).
 - Qwen3-TTS: Der Zwischenspeicher von 896 MB Grafikspeicher (`max_seq_len 4096`) ist in qwentts.cpp
   fest eingebaut. Hebel für A5: beim Projekt nachfragen oder einen Schalter vorschlagen (kein Fork).
 - Anbindung an Hermes Agent für schwierige Aufträge.

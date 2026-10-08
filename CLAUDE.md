@@ -3,7 +3,7 @@
 Diese Datei ist verbindlich. Lies sie zu Beginn jeder Sitzung ganz.
 Sie bleibt unter 150 Zeilen. Details stehen in `docs/`, nicht hier.
 
-**Aktuelle Phase:** 0 – Fundament und Messung. Nächster Auftrag: A1 (siehe `docs/FAHRPLAN.md`).
+**Aktuelle Phase:** 0 – Fundament und Messung. Nächster Auftrag: A3 (siehe `docs/FAHRPLAN.md`).
 
 ## Projekt
 Ein Reachy Mini Wireless soll als lebendig wirkendes Familienmitglied im Haushalt leben.
