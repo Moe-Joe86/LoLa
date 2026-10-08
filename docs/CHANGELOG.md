@@ -9,6 +9,7 @@ Neueste Einträge oben.
 - Regel in `ENTSCHEIDUNGEN.md`: Referenzstimme einer realen Person nur mit Zustimmung, nur lokal.
   `.gitignore` schließt Stimmdaten (`*.spk`, `*.rvq`) aus.
 - Messskript ergänzt auf Branch `test/a1`, nicht gemergt.
+- A5b „Sprachausgabe-Vergleich“ (F5-TTS, Fish Speech) aus dem Fahrplan gestrichen: mit der Wahl erledigt.
 
 ## 2026-10-08 – Nach A3: Entscheidungen eingearbeitet
 - Der Zustandsbericht steht als eigener Eintrag vor dem letzten Nutzersatz: `CLAUDE.md`,

@@ -323,6 +323,8 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
   9,3 bis 9,4 GB statt 9,1 GB.
 - **Auffälligkeit:** Einmal in 27 Sätzen war die Ausgabe 13 s lang statt rund 4 s. Der Inhalt ist nicht
   geprüft, in 12 Wiederholungen desselben Satzes kam es nicht wieder vor. In A4 darauf achten.
+- **Kein Sprachausgabe-Vergleich mehr:** Die Aufgabe A5b (F5-TTS, Fish Speech) entfällt, sie ist mit
+  dieser Wahl erledigt und aus dem Fahrplan gestrichen. F5-TTS und Fish Speech wurden nicht gemessen.
 - **Option für A5:** 1.7B Base Q8_0 mit derselben Stimme (rund 4 GB mit der Aufnahme gemessen), falls
   dann Speicher übrig ist. Die Stimmdaten gelten je Modell und müssten dafür neu berechnet werden
   (gelesen: der Schlüssel der Bibliothek enthält das Modell).
