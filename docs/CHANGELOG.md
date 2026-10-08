@@ -2,6 +2,13 @@
 
 Neueste Einträge oben.
 
+## 2026-10-08 – A1, Zwischenstand: Sprachausgabe und Nachprüfungen aus A2
+- Hardware des PCs und Versionen (llama.cpp-Commit, Modell, Pakete) in `ENTSCHEIDUNGEN.md`.
+- Sprachausgabe Qwen3-TTS gemessen: keine Variante unter 2 GB Grafikspeicher, auf der CPU zu langsam.
+  Für A1 gilt 3 GB, A5 bewertet neu. Wahl der Variante offen (Klangurteil).
+- Die sechs Nachprüfungen aus A2 gegen das echte llama.cpp beantwortet, alle bestanden. Zwei Nebenbefunde für A3.
+- Offen in A1: Spracherkennung messen, Gesamtkette mit Mikrofon.
+
 ## 2026-10-08 – A1, Zwischenstand: Sprachmodell zum Start
 - Qwen3-8B Q4_K_M als Startmodell für A1, Qwen3.5-9B und Gemma 4 12B als Kandidaten für A5.
 - Qwen3.5 ist hybrid (Gated DeltaNet); Folge für den Zwischenspeicher in `ENTSCHEIDUNGEN.md` (gelesen, nicht gemessen).

@@ -144,6 +144,70 @@ Qwen3.5 und der Zwischenspeicher (gelesen, nicht gemessen):
 Auch ohne Abschalten landet das Nachdenken nicht im Antworttext, sondern in eigenen Ereignissen.
 Es kostet aber Zeit bis zum ersten Wort. Eine Frage, ein Lauf je Zeile.
 
+## 2026-10-08 – A1: Hardware des PCs
+Linux (Pop!_OS 24.04), Intel i9-9900K (8 Kerne, 16 Threads, AVX2, kein AVX-512), 32 GB DDR4-3600,
+NVIDIA RTX 3080 Ti mit 12 GB, Treiber 580.119.02, CUDA-Werkzeuge 12.0. Der Desktop belegt im Leerlauf
+rund 0,6 GB Grafikspeicher. Das Sprachmodell läuft vollständig im Grafikspeicher (`-ngl 999`).
+Die Laufzeit (llama.cpp, speech-to-speech, Modelle) liegt außerhalb des Repos in `~/lola-laufzeit/`.
+
+## 2026-10-08 – A1, Zwischenstand: Sprachausgabe Qwen3-TTS (GGML)
+Gemessen mit faster-qwen3-tts 0.5.4 und qwentts-cpp-python 0.5.0, Sprache Deutsch, je 5 Sätze.
+Grafikspeicher ist der Wert des Prozesses (`nvidia-smi --query-compute-apps`); Gesamtbelegung vor dem
+Start 639 MiB.
+
+| Variante | Grafikspeicher im Betrieb | erster Ton | Rechenzeit je Sekunde Sprache |
+| --- | --- | --- | --- |
+| 0.6B CustomVoice Q8_0 | 2.512 MiB | 0,07 s | 0,10 s |
+| 1.7B CustomVoice Q4_K_M | 2.694 MiB | 0,07 s | 0,11 s |
+| 1.7B CustomVoice Q8_0 | 3.536 MiB | 0,08 s | 0,12 s |
+| 0.6B Base Q8_0 mit Referenzstimme | 2.968 bis 3.010 MiB | 0,08 s | 0,11 s |
+| 1.7B Base Q4_K_M mit Referenzstimme | 3.150 bis 3.194 MiB | 0,08 s | 0,11 s |
+| 1.7B Base Q8_0 mit Referenzstimme | 4.004 bis 4.046 MiB | 0,09 s | 0,13 s |
+| 0.6B CustomVoice Q8_0 auf der CPU, 8 Threads | 0 | 0,88 s | 1,45 s |
+
+- Das GGML-Backend lädt 0.6B, als CustomVoice und als Base.
+- Keine Variante hält die geplante Grenze von 2 GB. Vom Speicher der kleinsten Variante sind rund
+  1,16 GB Gewichte und 896 MB ein fest reservierter Zwischenspeicher (`max_seq_len 4096`), den die
+  Python-Anbindung nicht einstellbar macht. Puffer des Tonwandlers und Flash Attention ändern nichts.
+- `parity_mode` wirkt im GGML-Backend nicht; CUDA-Graphen gibt es nur im Torch-Backend.
+- Auf der CPU ist die Sprachausgabe zu langsam (Ziel: erster Ton unter 0,3 s, Rechenzeit unter 0,5 s).
+- Entscheidung: Für A1 gilt eine Grenze von 3 GB, A5 bewertet neu. Die Wahl der Variante hängt an
+  Patricks Urteil zum Klang und ist offen.
+- Verständlichkeit: Alle 61 Testdateien von faster-whisper large-v3-turbo zurückgelesen, fast alles
+  wortgleich. Ausrutscher in je einem Lauf bei 1.7B Q4_K_M: Stimme „ryan“ brach nach dem ersten Satz ab,
+  „serena“ sprach „Timmer“, „sohee“ „Nullen“ statt „Nudeln“.
+
+## 2026-10-08 – A1: Antworten auf die sechs Nachprüfungen aus A2
+Gemessen mit dem Proxy aus `test/vermittler` gegen llama.cpp `d812350` mit Qwen3-8B Q4_K_M, Anfrage vom
+echten Handler aus speech-to-speech `8024ccf` (680 Eingabe-Token mit vier Tools). Zwei Läufe.
+Protokoll auf Branch `test/a1` (`docs/A1-protokoll.md`).
+
+1. **`/v1/responses` mit Tools und Streaming: ja.** Der echte Handler verarbeitet Text und Tool-Aufruf,
+   direkt und über den Proxy. Der Ereignisstrom enthält mehr Typen als die Attrappe:
+   `response.in_progress`, `response.function_call_arguments.delta`, `response.content_part.added/done`
+   und, wenn das Nachdenken an ist, `response.reasoning_text.delta`. Bei einem Tool-Aufruf kam kein Text davor.
+2. **Bericht als letzter Eintrag: wird angenommen** (HTTP 200). Die Vorlage von Qwen3 setzt die
+   Systemnachricht als eigenen Block hinter den Nutzersatz. Gilt nur für diese Vorlage, bei einem
+   anderen Modell neu prüfen.
+3. **Bericht an der Nutzer-Nachricht: wird angenommen.** In 10 Antworten hielt das Modell den Bericht
+   nie für Gesagtes der Person. Bei der Variante „letzter Eintrag“ schrieb es den Zustand einmal der
+   Person zu („Du bist müde? Dann ruh dich aus.“). Kleine Stichprobe, die Wahl trifft A3.
+4. **Zwischenspeicher: ja.** In der zweiten Runde kamen ohne Bericht 676 von 700 Eingabe-Token aus dem
+   Zwischenspeicher, mit Bericht als Eintrag 674 von 725, mit Bericht an der Nutzer-Nachricht 670 von 725.
+   Neu gerechnet wird nur ab der Stelle des alten Berichts. Erster Text nach 0,03 bis 0,04 s.
+5. **Fehlendes Tool: llama.cpp kommt klar** (HTTP 200, kein Fehler), obwohl `move_head` im Verlauf
+   aufgerufen wurde und nicht mehr angeboten wird.
+6. **Abbruch: ja.** Nach dem Schließen der Verbindung arbeitete llama.cpp höchstens 0,05 s weiter
+   (Messauflösung), direkt und über den Proxy. Gegenprobe ohne Abbruch: 23,3 s für 3.000 Token.
+   Die nächste Anfrage über denselben Proxy lief normal.
+
+Nebenbefunde für A3, je wenige Läufe:
+- Ohne Bericht rief das Modell bei „Kannst du für mich tanzen?“ immer das Tool `dance` auf. Mit Bericht
+  („müde und eher zurückhaltend“) antwortete es in 3 von 4 Fällen stattdessen englisch mit
+  „Sure, here's my best dance.“, ohne Tool. Der Satz stammt aus dem englischen Rahmentext von
+  speech-to-speech. Ob der Bericht die Tool-Aufrufe stört oder das Modell wegen „müde“ nicht tanzt, ist offen.
+- Auf „Wie spät ist es?“ erfand das Modell eine Uhrzeit. Ein Uhrzeit-Tool fehlte im Test.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
@@ -151,8 +215,9 @@ Werden in Phase 0 eingetragen (A1 und A4):
 | --- | --- | --- |
 | Reachy-Daemon / SDK | offen | |
 | Conversation App | offen | |
-| speech-to-speech | Commit `8024ccf` (in A2 geprüft, A1 bestätigt oder ersetzt) | 2026-10-08 |
-| llama.cpp | offen | |
-| Sprachmodell | offen | |
-| Spracherkennung | offen | |
-| Sprachausgabe | offen | |
+| speech-to-speech | Commit `8024ccf` (in A2 geprüft, in A1 installiert) | 2026-10-08 |
+| llama.cpp | Commit `d81235049384534c167caea52b85a694f6103d14` (0.6.0), CUDA 12.0, gcc 12 | 2026-10-08 |
+| Sprachmodell | Qwen3-8B Q4_K_M, `Qwen/Qwen3-8B-GGUF` Stand `7c41481`, SHA-256 `d98cdcbd…5745785` (nur für A1, Wahl in A5) | 2026-10-08 |
+| Spracherkennung | offen (Messung in A1 steht aus); installiert: faster-whisper 1.2.1, ctranslate2 4.8.2, nano-parakeet 0.2.1 | |
+| Sprachausgabe | Variante offen; faster-qwen3-tts 0.5.4, qwentts-cpp-python 0.5.0, GGUF aus `Serveurperso/Qwen3-TTS-GGUF` | 2026-10-08 |
+| PyTorch | 2.14.1+cu130 | 2026-10-08 |

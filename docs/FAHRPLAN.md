@@ -13,8 +13,8 @@ Arbeitsaufträge, je einer pro Sitzung. A0 bis A3 brauchen den Roboter nicht.
 | # | Auftrag | Roboter nötig | Ergebnis |
 | --- | --- | --- | --- |
 | A0 | Repo-Gerüst: CLAUDE.md, `docs/`, README, `.gitignore` | nein | erledigt am 8. Oktober 2026 |
-| A1 | Lokale Sprachkette auf dem PC: speech-to-speech und llama.cpp, deutsche Spracherkennung (Parakeet gegen faster-whisper), Qwen3-TTS mit deutscher Stimme. Test mit dem Mikrofon des PCs. | nein | Gespräch am PC läuft, Versionen in `ENTSCHEIDUNGEN.md`, Nachprüfungen aus A2 erledigt |
-| A2 | Machbarkeitstest Vermittler: Reicht ein Proxy zwischen speech-to-speech und llama.cpp Anfragen samt Tools unverändert durch? Lassen sich Tools pro Anfrage entfernen? | nein | geht mit Einschränkung (8. Oktober 2026), Nachprüfung in A1; siehe `ENTSCHEIDUNGEN.md` |
+| A1 | Lokale Sprachkette auf dem PC: speech-to-speech und llama.cpp, deutsche Spracherkennung (Parakeet gegen faster-whisper), Qwen3-TTS mit deutscher Stimme. Test mit dem Mikrofon des PCs. | nein | in Arbeit (8. Oktober 2026): llama.cpp, Sprachausgabe und Nachprüfungen aus A2 gemessen; offen sind Spracherkennung und Gesamtkette mit Mikrofon. Ziel: Gespräch am PC läuft, Versionen in `ENTSCHEIDUNGEN.md` |
+| A2 | Machbarkeitstest Vermittler: Reicht ein Proxy zwischen speech-to-speech und llama.cpp Anfragen samt Tools unverändert durch? Lassen sich Tools pro Anfrage entfernen? | nein | geht (8. Oktober 2026), in A1 gegen das echte llama.cpp nachgeprüft; siehe `ENTSCHEIDUNGEN.md` |
 | A3 | Machbarkeitstest Steuerbarkeit: Folgt das Modell einem festen Zustandsbericht (etwa „müde und zurückhaltend“) bei 20 Testsätzen? | nein | Ergebnis in `ENTSCHEIDUNGEN.md` |
 | A4 | Reachy mit der lokalen Sprachkette verbinden, Versionen von Daemon, SDK und App festhalten. Dazu Körperdaten prüfen: Fehlerzeilen im Daemon-Log (`/api/logs/ws/daemon`), IMU-Temperatur, und ob ein Lese-Paket für Register 146 (Motortemperatur) über `/api/move/ws/raw/write` bei laufender App sauber antwortet | ja | Reachy spricht über das lokale Backend, Ergebnis Körperdaten in `ENTSCHEIDUNGEN.md` |
 | A5 | Latenz bis Antwortbeginn, Deutsch-Qualität und Grafikspeicher messen | ja | Entscheidung: weiter oder Backend wechseln |
@@ -76,7 +76,13 @@ alle Machbarkeitstests bestanden.
 
 - [ ] Reichen 12 GB VRAM (RTX 3080 Ti) für Spracherkennung, Sprachmodell, Sprachausgabe und
       den parallelen Deutungs-Aufruf? Grobe Schätzung: knapp. Misst A5.
-- [ ] Wie gut ist die deutsche Spracherkennung und -ausgabe? Klärt A1.
+- [ ] Wie gut ist die deutsche Spracherkennung und -ausgabe? Klärt A1. Sprachausgabe gemessen,
+      Klangurteil und Spracherkennung stehen aus.
+- [ ] Stört der Zustandsbericht die Tool-Aufrufe? In A1 rief das Modell mit Bericht „müde“ das
+      Tanz-Tool meist nicht mehr auf und antwortete englisch. Klärt A3.
+- [ ] Hybride Modelle (Qwen3.5): Nutzt llama.cpp den Zwischenspeicher, wenn sich der Bericht am Ende
+      ändert? Misst A5, bevor Qwen3.5 gewählt wird.
+- [ ] Sprachausgabe braucht 2,5 GB statt der geplanten 2 GB. Für A1 gilt 3 GB, A5 bewertet neu.
 - [ ] Kann ein zweiter Prozess Mikrofon und Kamera parallel zur App lesen? Klärt A7.
 - [ ] Sprachausgabe später: F5-TTS statt Qwen3-TTS prüfen, frühestens ab Phase 8.
 - [ ] Körpersprache aus der Stimmung: siehe Phase 8.
