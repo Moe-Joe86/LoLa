@@ -310,6 +310,31 @@ Patricks Entscheidungen zum Ergebnis von A3:
 - **Dokumente.** Die Grenze von 300 Zeilen gilt nur für Code. Messtabellen stehen ab jetzt in
   `MESSUNGEN.md`; hier bleiben Ergebnis, Begründung und Verweis.
 
+## 2026-10-08 – Sprachausgabe für den Betrieb: Qwen3-TTS 0.6B Base Q8_0 mit Referenzstimme „frau“
+Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
+
+- **Klangurteil (Patrick):** Am besten klingen Base Q8_0 in 0.6B und 1.7B mit der Referenzstimme „frau“.
+- **Wahl:** 0.6B Base Q8_0 (GGML) mit „frau“, als vorab berechnete Stimmdaten (`.spk` und `.rvq`).
+  So entstehen sie nicht bei jedem Start neu, und die Aufnahme selbst wird im Betrieb nicht gebraucht.
+- **Grafikspeicher (gemessen):** 2.624 bis 2.722 MiB für den Prozess, 5 normal lange Sätze, 3 frische
+  Prozesse; nach dem Laden 2.348 MiB. Erster Ton nach 0,07 s. Die Grenze von 3 GB hält.
+  Tabelle in `MESSUNGEN.md`. Mit der Aufnahme statt der Stimmdaten waren es 2.968 bis 3.010 MiB.
+- **Nicht gemessen:** die Gesamtkette mit dieser Stimme. Gerechnet aus den Einzelwerten wären es rund
+  9,3 bis 9,4 GB statt 9,1 GB.
+- **Auffälligkeit:** Einmal in 27 Sätzen war die Ausgabe 13 s lang statt rund 4 s. Der Inhalt ist nicht
+  geprüft, in 12 Wiederholungen desselben Satzes kam es nicht wieder vor. In A4 darauf achten.
+- **Option für A5:** 1.7B Base Q8_0 mit derselben Stimme (rund 4 GB mit der Aufnahme gemessen), falls
+  dann Speicher übrig ist. Die Stimmdaten gelten je Modell und müssten dafür neu berechnet werden
+  (gelesen: der Schlüssel der Bibliothek enthält das Modell).
+- **Einstellungen:** `--qwen3_tts_ref_spk`, `--qwen3_tts_ref_rvq` und `--qwen3_tts_ref_text` (der
+  Wortlaut der Aufnahme). Im Code von speech-to-speech gelesen; gemessen wurde über die Bibliothek
+  direkt, der Start über speech-to-speech wird in A4 geprüft.
+- **Schutz der Stimme:** Eine Referenzstimme einer realen Person wird nur mit deren Zustimmung
+  verwendet und bleibt lokal. Stimmprobe, Wortlaut und Stimmdaten liegen nur in
+  `~/lola-laufzeit/stimmen/`, nie im Repo und nie im Netz. `.gitignore` schließt `*.spk` und `*.rvq` aus.
+  Die Bibliothek legt Stimmdaten zusätzlich selbst ab, wenn sie eine Aufnahme bekommt
+  (`~/.cache/faster-qwen3-tts/qwentts_refs/`, ebenfalls lokal).
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
@@ -321,5 +346,5 @@ Werden in Phase 0 eingetragen (A1 und A4):
 | llama.cpp | Commit `d81235049384534c167caea52b85a694f6103d14` (0.6.0), CUDA 12.0, gcc 12 | 2026-10-08 |
 | Sprachmodell | Qwen3-8B Q4_K_M, `Qwen/Qwen3-8B-GGUF` Stand `7c41481`, SHA-256 `d98cdcbd…5745785` (nur für A1, Wahl in A5) | 2026-10-08 |
 | Spracherkennung | Parakeet TDT 0.6B v3 (`nvidia/parakeet-tdt-0.6b-v3`) über nano-parakeet 0.2.1, CPU, 6 Threads | 2026-10-08 |
-| Sprachausgabe | vorläufig Qwen3-TTS 0.6B CustomVoice Q8_0, Stimme „aiden“; faster-qwen3-tts 0.5.4, qwentts-cpp-python 0.5.0, GGUF aus `Serveurperso/Qwen3-TTS-GGUF` | 2026-10-08 |
+| Sprachausgabe | Qwen3-TTS 0.6B Base Q8_0 mit Referenzstimme „frau“ (gespeicherte Stimmdaten); faster-qwen3-tts 0.5.4, qwentts-cpp-python 0.5.0, GGUF aus `Serveurperso/Qwen3-TTS-GGUF` | 2026-10-08 |
 | PyTorch | 2.14.1+cu130 | 2026-10-08 |

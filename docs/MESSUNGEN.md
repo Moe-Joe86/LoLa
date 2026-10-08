@@ -28,6 +28,18 @@ der Wert des Prozesses (`nvidia-smi --query-compute-apps`); Gesamtbelegung vor d
 | 1.7B Base Q8_0 mit Referenzstimme | 4.004 bis 4.046 MiB | 0,09 s | 0,13 s |
 | 0.6B CustomVoice Q8_0 auf der CPU, 8 Threads | 0 | 0,88 s | 1,45 s |
 
+**Mit gespeicherten Stimmdaten** (`.spk`/`.rvq` statt Aufnahme), 0.6B Base Q8_0, Stimme „frau“,
+5 Sätze von 1 bis 6 s, je Lauf ein frischer Prozess:
+
+| Lauf | Gesamtbelegung vor dem Start | Prozess nach dem Laden | Prozess im Betrieb | erster Ton, Mittel |
+| --- | --- | --- | --- | --- |
+| 1 | 1.086 MiB | 2.348 MiB | 2.722 MiB | 0,073 s |
+| 2 | 916 MiB | 2.348 MiB | 2.634 MiB | 0,072 s |
+| 3 | 916 MiB | 2.348 MiB | 2.624 MiB | 0,072 s |
+
+In Lauf 2 war ein Satz 13,0 s lang statt rund 4 s (Inhalt nicht geprüft). 12 Wiederholungen dieses
+Satzes: 3,7 bis 4,6 s.
+
 ## A1 – Spracherkennung auf der CPU (8. Oktober 2026)
 Aufrufe des Handlers aus speech-to-speech, Threads über `OMP_NUM_THREADS`. Eingabe: die 20 Testsätze
 (50 s Ton), von der Sprachausgabe erzeugt, weil am PC kein Mikrofon steckt. Zeit je Satz als Median

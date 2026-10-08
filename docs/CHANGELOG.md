@@ -2,6 +2,14 @@
 
 Neueste Einträge oben.
 
+## 2026-10-08 – Sprachausgabe gewählt
+- Qwen3-TTS 0.6B Base Q8_0 mit Referenzstimme „frau“, als gespeicherte Stimmdaten. Ersetzt „aiden“.
+- Gemessen: 2.624 bis 2.722 MiB Grafikspeicher für den Prozess, Grenze 3 GB hält.
+- 1.7B Base Q8_0 als Option für A5 im Fahrplan.
+- Regel in `ENTSCHEIDUNGEN.md`: Referenzstimme einer realen Person nur mit Zustimmung, nur lokal.
+  `.gitignore` schließt Stimmdaten (`*.spk`, `*.rvq`) aus.
+- Messskript ergänzt auf Branch `test/a1`, nicht gemergt.
+
 ## 2026-10-08 – Nach A3: Entscheidungen eingearbeitet
 - Der Zustandsbericht steht als eigener Eintrag vor dem letzten Nutzersatz: `CLAUDE.md`,
   `ARCHITEKTUR.md`, `ENTSCHEIDUNGEN.md`. Zwischenspeicher wird beim Bau des Vermittlers gemessen.
