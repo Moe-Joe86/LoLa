@@ -284,13 +284,81 @@ auf Branch `test/a1`.
   `--qwen3_tts_speaker aiden`, Sprache Deutsch. Sie kommen in `.env.example`, sobald ein Startskript
   sie liest (A4); in A1 entsteht kein Code.
 
+## 2026-10-08 – A3: Steuerbarkeit geht, wenn der Bericht vor dem Nutzersatz steht
+Gemessen gegen llama.cpp `d812350` mit Qwen3-8B Q4_K_M, Anfrage vom echten Handler aus speech-to-speech
+`8024ccf`, neun echte Tools der Conversation App (`2e43e80`, nur gelesen). Skripte, Protokoll und alle
+Antworten auf Branch `test/a3` (`docs/A3-protokoll.md`, `docs/A3-antworten.md`).
+
+**Warum Englisch (im Code gelesen und gemessen).** Zwei englische Texte stehen in jeder Anfrage:
+das Standardprofil der App („You speak English by default“) und der feste Rahmen von speech-to-speech
+mit dem Mustersatz „Sure, here's my best <emotion>.“ und der Regel, vor Bewegungs-Tools erst zu sprechen.
+Das Modell sagt dann den Mustersatz und ruft kein Tool auf. In 1.800 Antworten kam nur 9-mal Text und
+Tool zugleich: Qwen3-8B spricht oder handelt.
+
+| Anweisungen (ohne Bericht, 40 Antworten) | englisch |
+| --- | --- |
+| Standardprofil der App | 18 |
+| Standardprofil und Sprachhinweis von speech-to-speech (`enable_lang_prompt`) | 1 |
+| ein deutscher Satz („Sprich Deutsch“) | 2 |
+| eigenes deutsches Profil | 0 |
+
+Ein eigenes Profil geht als reine Daten: Ordner mit `profile.md` (Kopf in TOML mit `default_tools`,
+Text in Markdown), gewählt über `REACHY_MINI_EXTERNAL_PROFILES_DIRECTORY` und
+`REACHY_MINI_CUSTOM_PROFILE`. Im Code gelesen, an der laufenden App noch nicht ausprobiert (A4).
+
+**Tool-Aufrufe** (9 Bitten wie „Kannst du für mich tanzen?“, je 3 Läufe, deutsches Profil mit Zustandsregel):
+
+| Bericht | Position | neues Gespräch | mit Verlauf |
+| --- | --- | --- | --- |
+| kein | - | 21 von 27 | 27 von 27 |
+| müde / lebhaft | Systemnachricht am Ende | 12 / 17 | 24 / 24 |
+| müde / lebhaft | an der Nutzer-Nachricht | 9 / 16 | 20 / 24 |
+| müde / lebhaft | **Systemnachricht vor dem letzten Nutzersatz** | **27 / 27** | **27 / 27** |
+
+Beide geplanten Positionen stören die Tool-Aufrufe: Das Modell sagt nur noch, dass es etwas tut.
+Steht der Nutzersatz als Letztes, klappt jeder Aufruf, auch mit dem kurzen deutschen Satz als Anweisung.
+Kein Tool wurde je ohne Anlass aufgerufen (0 von 9 je Zeile).
+
+**Steuerbarkeit** (20 Testsätze, 60 Antworten je Zeile, Bericht „[Zustand] Reachy ist …“):
+
+| Bericht | Position | Ausrufezeichen | nennt sich müde/ruhig | Bericht wiederholt | Person zugeschrieben |
+| --- | --- | --- | --- | --- | --- |
+| kein (auf 60 gerechnet) | - | 26 | 2 | 0 | 0 |
+| lebhaft | am Ende / Nutzer / davor | 40 / 40 / 32 | 1 / 0 / 0 | 0 / 2 / 0 | 0 / 1 / 0 |
+| müde | am Ende / Nutzer / davor | 21 / 16 / 20 | 6 / 13 / 2 | 1 / 4 / 0 | 0 / 1 / 0 |
+
+- Der Ton folgt dem knappen Bericht nur schwach. Mein Urteil beim Lesen (keine Messung): Die meisten
+  Antworten sind mit und ohne Bericht fast gleich; an der Nutzer-Nachricht wirkt er am stärksten, wird
+  dort aber auch am häufigsten nachgesprochen und dreimal wörtlich mit „[Zustand]“ vorgelesen.
+- Deutlich wird der Ton erst, wenn der Bericht sagt, wie zu sprechen ist: „[Zustand] Du, Reachy, bist
+  müde und eher zurückhaltend. Sprich deshalb ruhig und knapp, ohne Ausrufezeichen.“ An der Position
+  davor: 2 Ausrufezeichen in 20 Antworten statt 11 („Okay.“, „Guten Morgen.“), bei „lebhaft“ 11 und
+  viele 😊. Tool-Aufrufe bleiben bei 27 von 27, nichts vorgelesen, nichts der Person zugeschrieben.
+- Die Zustandsregel im Profil und die erklärende Formulierung („Hinweis nur für dich …“) brachten
+  keinen messbaren Vorteil.
+
+**Ergebnis und Empfehlung für den Vermittler:**
+
+| Frage | Antwort |
+| --- | --- |
+| Position | eigener Systemeintrag direkt vor dem letzten Nutzersatz (neu, der Proxy aus A2 kann das noch nicht) |
+| Formulierung | „[Zustand] Du, Reachy, bist …“ plus ein Satz, wie zu sprechen ist |
+| Anweisungen | eigenes deutsches Profil als Daten: immer Deutsch, kurz, Tool sofort ohne Vorrede, keine Beispielsätze |
+
+Nicht gemessen, nur vermutet: Der Zwischenspeicher bleibt bei dieser Position erhalten, weil alles vor
+dem Bericht unverändert ist; neu gerechnet werden Bericht und Nutzersatz. Offen bleiben: Emojis in den
+Antworten (liest die Sprachausgabe sie vor?), erfundene Erinnerungen und Zusagen („Okay, ich mache
+das.“ ohne Kalender), und der Mustersatz im Rahmen: Ersetzt man dessen Zeile, steigen die Aufrufe ohne
+Bericht im neuen Gespräch von 21 auf 27 von 27. Das wäre ein Eingriff des Vermittlers in den Systemtext.
+Alles gilt nur für Qwen3-8B; ein anderes Modell (A5) braucht dieselbe Messung.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
 | Komponente | Version | Datum |
 | --- | --- | --- |
 | Reachy-Daemon / SDK | offen | |
-| Conversation App | offen | |
+| Conversation App | offen; in A3 gelesen: Commit `2e43e80` | |
 | speech-to-speech | Commit `8024ccf` (in A2 geprüft, in A1 installiert) | 2026-10-08 |
 | llama.cpp | Commit `d81235049384534c167caea52b85a694f6103d14` (0.6.0), CUDA 12.0, gcc 12 | 2026-10-08 |
 | Sprachmodell | Qwen3-8B Q4_K_M, `Qwen/Qwen3-8B-GGUF` Stand `7c41481`, SHA-256 `d98cdcbd…5745785` (nur für A1, Wahl in A5) | 2026-10-08 |

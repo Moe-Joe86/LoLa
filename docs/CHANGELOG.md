@@ -2,6 +2,14 @@
 
 Neueste Einträge oben.
 
+## 2026-10-08 – A3: Machbarkeitstest Steuerbarkeit
+- Englische Antworten kommen aus dem Standardprofil der App und dem Rahmen von speech-to-speech.
+  Ein eigenes deutsches Profil (reine Daten) behebt das: 0 von 40 Antworten englisch.
+- Bericht am Ende oder an der Nutzer-Nachricht stört die Tool-Aufrufe. Als Systemeintrag vor dem
+  letzten Nutzersatz klappen 27 von 27.
+- Der Ton folgt dem Bericht deutlich erst mit einem Satz, wie zu sprechen ist.
+- Ergebnistabellen in `ENTSCHEIDUNGEN.md`, Skripte auf Branch `test/a3`, nicht gemergt.
+
 ## 2026-10-08 – A1 abgeschlossen
 - Vorläufige Sprachausgabe: Qwen3-TTS 0.6B CustomVoice Q8_0, Stimme „aiden“. Klangurteil vertagt.
 - Neue Aufgabe A5b „Sprachausgabe-Vergleich“ im Fahrplan (Referenzstimmen, F5-TTS, Fish Speech).
