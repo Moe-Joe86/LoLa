@@ -61,7 +61,7 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
 | Folge | sieht die Antwort und in der nächsten Anfrage die Ergebnisse der Tool-Aufrufe |
 | Eigeninitiative | läuft nicht über den Vermittler, sondern über `conversation.say` der App |
 
-**Ungeprüft:** ob sich Tools pro Anfrage entfernen lassen (Machbarkeitstest in Phase 0).
+**Tools pro Anfrage entfernen:** gegen eine Attrappe geprüft (A2), Nachprüfung in A1.
 
 ## Die drei Ausgänge der Seele
 
