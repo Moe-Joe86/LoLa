@@ -97,6 +97,9 @@ Ab Phase 4 liest `sinne/koerper.py` dieses Log und meldet eine Wahrnehmung; die 
 genau dieser Fehler. Die Motortemperatur liest der Daemon nicht, selbst auslesen hieße ihn zu
 ändern, also verboten. Lesbar ist zusätzlich die IMU-Temperatur über `/api/state`.
 Ein Issue bei Pollen steht im Backlog.
+Nachtrag 8. Oktober 2026: Die Motortemperatur ist doch erreichbar, ohne den Daemon zu ändern. Der offizielle
+Endpunkt `/api/move/ws/raw/write` reicht ein Lese-Paket für Register 146 an den Motor durch. Ob das bei
+laufender App sauber klappt, prüft A4. Details in `ARCHITEKTUR.md`, Körperwahrnehmung.
 
 ## 2026-10-08 – Kern von Phase 1 vorgezogen, obwohl Phase 0 offen ist
 Gebaut ohne Hardware: Projektgrundlage (uv, ruff, pytest), Charakterdatei mit Lader, Grundzustand,
