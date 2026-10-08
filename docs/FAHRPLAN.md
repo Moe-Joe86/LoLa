@@ -13,10 +13,10 @@ Arbeitsaufträge, je einer pro Sitzung. A0 bis A3 brauchen den Roboter nicht.
 | # | Auftrag | Roboter nötig | Ergebnis |
 | --- | --- | --- | --- |
 | A0 | Repo-Gerüst: CLAUDE.md, `docs/`, README, `.gitignore` | nein | erledigt am 8. Oktober 2026 |
-| A1 | Lokale Sprachkette auf dem PC: speech-to-speech und llama.cpp, deutsche Spracherkennung (Parakeet gegen faster-whisper), Qwen3-TTS mit deutscher Stimme. Test mit dem Mikrofon des PCs. | nein | in Arbeit (8. Oktober 2026): llama.cpp, Sprachausgabe und Nachprüfungen aus A2 gemessen; offen sind Spracherkennung und Gesamtkette mit Mikrofon. Ziel: Gespräch am PC läuft, Versionen in `ENTSCHEIDUNGEN.md` |
+| A1 | Lokale Sprachkette auf dem PC: speech-to-speech und llama.cpp, deutsche Spracherkennung (Parakeet gegen faster-whisper), Qwen3-TTS mit deutscher Stimme. Test mit dem Mikrofon des PCs. | nein | gemessen (8. Oktober 2026), ohne Mikrofon mit gespeicherten Aufnahmen: 0,50 s vom Satzende bis zum Antwortbeginn, 9,1 GB Grafikspeicher. Offen ist nur Patricks Klangurteil zur Stimme. Siehe `ENTSCHEIDUNGEN.md` |
 | A2 | Machbarkeitstest Vermittler: Reicht ein Proxy zwischen speech-to-speech und llama.cpp Anfragen samt Tools unverändert durch? Lassen sich Tools pro Anfrage entfernen? | nein | geht (8. Oktober 2026), in A1 gegen das echte llama.cpp nachgeprüft; siehe `ENTSCHEIDUNGEN.md` |
 | A3 | Machbarkeitstest Steuerbarkeit: Folgt das Modell einem festen Zustandsbericht (etwa „müde und zurückhaltend“) bei 20 Testsätzen? | nein | Ergebnis in `ENTSCHEIDUNGEN.md` |
-| A4 | Reachy mit der lokalen Sprachkette verbinden, Versionen von Daemon, SDK und App festhalten. Dazu Körperdaten prüfen: Fehlerzeilen im Daemon-Log (`/api/logs/ws/daemon`), IMU-Temperatur, und ob ein Lese-Paket für Register 146 (Motortemperatur) über `/api/move/ws/raw/write` bei laufender App sauber antwortet | ja | Reachy spricht über das lokale Backend, Ergebnis Körperdaten in `ENTSCHEIDUNGEN.md` |
+| A4 | Reachy mit der lokalen Sprachkette verbinden, Versionen von Daemon, SDK und App festhalten. Dazu Körperdaten prüfen: Fehlerzeilen im Daemon-Log (`/api/logs/ws/daemon`), IMU-Temperatur, und ob ein Lese-Paket für Register 146 (Motortemperatur) über `/api/move/ws/raw/write` bei laufender App sauber antwortet. Dazu die 20 Testsätze aus A1 über das Mikrofon des Reachy: Wortfehler von Parakeet, und ob es bei kurzen Sätzen („Ja.“, „Stopp!“) die Sprache verwechselt | ja | Reachy spricht über das lokale Backend, Ergebnis Körperdaten in `ENTSCHEIDUNGEN.md` |
 | A5 | Latenz bis Antwortbeginn, Deutsch-Qualität und Grafikspeicher messen | ja | Entscheidung: weiter oder Backend wechseln |
 | A6 | Machbarkeitstest `conversation.say`: Wie formuliert das Modell eine eingeschleuste Äußerung, entsteht daraus über mehrere Runden ein sauberes Gespräch? | ja | Ergebnis in `ENTSCHEIDUNGEN.md` |
 | A7 | Machbarkeitstest Sinne: Kann ein Programm auf dem PC Mikrofon und Kamerastrom parallel zur laufenden App lesen, ohne sie zu stören? | ja | Ergebnis in `ENTSCHEIDUNGEN.md` |
@@ -76,10 +76,13 @@ alle Machbarkeitstests bestanden.
 
 - [ ] Reichen 12 GB VRAM (RTX 3080 Ti) für Spracherkennung, Sprachmodell, Sprachausgabe und
       den parallelen Deutungs-Aufruf? Grobe Schätzung: knapp. Misst A5.
-- [ ] Wie gut ist die deutsche Spracherkennung und -ausgabe? Klärt A1. Sprachausgabe gemessen,
-      Klangurteil und Spracherkennung stehen aus.
-- [ ] Stört der Zustandsbericht die Tool-Aufrufe? In A1 rief das Modell mit Bericht „müde“ das
-      Tanz-Tool meist nicht mehr auf und antwortete englisch. Klärt A3.
+- [ ] Wie gut ist die deutsche Spracherkennung und -ausgabe? Zeiten in A1 gemessen. Die Fehlerquote
+      der Erkennung mit echten Stimmen misst A4, das Klangurteil zur Stimme steht aus.
+- [ ] Verwechselt Parakeet bei kurzen Sätzen die Sprache? In A1 mit künstlicher Stimme „Yeah.“ statt
+      „Ja.“. Es lässt sich nicht auf Deutsch festlegen. Klärt A4.
+- [ ] Sind die Tool-Aufrufe von Qwen3-8B verlässlich, und stört der Zustandsbericht sie? In A1 kam
+      bei „Kannst du für mich tanzen?“ mehrfach ein englischer Satz statt des Tanz-Tools, mit und
+      ohne Bericht. Klärt A3.
 - [ ] Hybride Modelle (Qwen3.5): Nutzt llama.cpp den Zwischenspeicher, wenn sich der Bericht am Ende
       ändert? Misst A5, bevor Qwen3.5 gewählt wird.
 - [ ] Sprachausgabe braucht 2,5 GB statt der geplanten 2 GB. Für A1 gilt 3 GB, A5 bewertet neu.

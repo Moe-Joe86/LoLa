@@ -2,6 +2,13 @@
 
 Neueste Einträge oben.
 
+## 2026-10-08 – A1: Spracherkennung gewählt, Gesamtkette gemessen
+- Spracherkennung: Parakeet TDT 0.6B v3 auf der CPU mit 6 Threads (0,26 s je Satz, Whisper 1,1 bis 5,1 s).
+- Gesamtkette mit gespeicherten Aufnahmen: 0,50 s vom Satzende bis zum Antwortbeginn, 9,1 GB Grafikspeicher.
+- Hinweise für A3 (Tool-Aufrufe, Englisch, Zustand der Person zugeschrieben) in `ENTSCHEIDUNGEN.md`.
+- A4 um die 20 Testsätze über das Mikrofon des Reachy erweitert. Backlog: fester Puffer in qwentts.cpp.
+- Offen in A1: nur noch das Klangurteil zur Stimme.
+
 ## 2026-10-08 – A1, Zwischenstand: Sprachausgabe und Nachprüfungen aus A2
 - Hardware des PCs und Versionen (llama.cpp-Commit, Modell, Pakete) in `ENTSCHEIDUNGEN.md`.
 - Sprachausgabe Qwen3-TTS gemessen: keine Variante unter 2 GB Grafikspeicher, auf der CPU zu langsam.

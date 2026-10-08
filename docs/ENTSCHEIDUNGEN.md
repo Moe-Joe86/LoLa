@@ -167,8 +167,10 @@ Start 639 MiB.
 
 - Das GGML-Backend lädt 0.6B, als CustomVoice und als Base.
 - Keine Variante hält die geplante Grenze von 2 GB. Vom Speicher der kleinsten Variante sind rund
-  1,16 GB Gewichte und 896 MB ein fest reservierter Zwischenspeicher (`max_seq_len 4096`), den die
-  Python-Anbindung nicht einstellbar macht. Puffer des Tonwandlers und Flash Attention ändern nichts.
+  1,16 GB Gewichte und 896 MB ein fest reservierter Zwischenspeicher (`max_seq_len 4096`, reicht für
+  über 5 Minuten Sprache am Stück). Er ist in qwentts.cpp fest eingebaut und über Python nicht
+  einstellbar. Möglicher Hebel für A5 oder ein Hinweis an das Projekt, steht im Backlog.
+  Puffer des Tonwandlers und Flash Attention ändern nichts.
 - `parity_mode` wirkt im GGML-Backend nicht; CUDA-Graphen gibt es nur im Torch-Backend.
 - Auf der CPU ist die Sprachausgabe zu langsam (Ziel: erster Ton unter 0,3 s, Rechenzeit unter 0,5 s).
 - Entscheidung: Für A1 gilt eine Grenze von 3 GB, A5 bewertet neu. Die Wahl der Variante hängt an
@@ -201,12 +203,74 @@ Protokoll auf Branch `test/a1` (`docs/A1-protokoll.md`).
    (Messauflösung), direkt und über den Proxy. Gegenprobe ohne Abbruch: 23,3 s für 3.000 Token.
    Die nächste Anfrage über denselben Proxy lief normal.
 
-Nebenbefunde für A3, je wenige Läufe:
-- Ohne Bericht rief das Modell bei „Kannst du für mich tanzen?“ immer das Tool `dance` auf. Mit Bericht
+### Hinweise für A3 (Nebenbefunde, je wenige Läufe)
+- **Tool-Aufruf und Englisch.** Im Gespräch mit Verlauf (vorher ein erledigter Aufruf von `move_head`)
+  rief das Modell bei „Kannst du für mich tanzen?“ ohne Bericht immer das Tool `dance` auf. Mit Bericht
   („müde und eher zurückhaltend“) antwortete es in 3 von 4 Fällen stattdessen englisch mit
   „Sure, here's my best dance.“, ohne Tool. Der Satz stammt aus dem englischen Rahmentext von
-  speech-to-speech. Ob der Bericht die Tool-Aufrufe stört oder das Modell wegen „müde“ nicht tanzt, ist offen.
+  speech-to-speech.
+- **Derselbe Fehler auch ohne Bericht.** In der Gesamtkette (neues Gespräch ohne Verlauf, kein Bericht)
+  kam bei diesem Satz in 6 von 6 Läufen ebenfalls „Sure, here's my best dance!“ ohne Tool. Der Bericht
+  ist also nicht die einzige Ursache; der Tool-Aufruf von Qwen3-8B ist bei diesem Satz von sich aus
+  wacklig. A3 muss Tool-Aufrufe mit und ohne Bericht und mit und ohne Verlauf vergleichen.
+- **Zustand der Person zugeschrieben.** Bei der Variante „letzter Eintrag“ sagte das Modell einmal
+  „Du bist müde? Dann ruh dich aus.“ A3 prüft, ob die Formulierung des Berichts das verhindert.
 - Auf „Wie spät ist es?“ erfand das Modell eine Uhrzeit. Ein Uhrzeit-Tool fehlte im Test.
+
+## 2026-10-08 – A1: Spracherkennung ist Parakeet TDT 0.6B v3 auf der CPU, 6 Threads
+Gemessen auf der CPU mit den Aufrufen des Handlers aus speech-to-speech, Threads über `OMP_NUM_THREADS`.
+Eingabe: die 20 Testsätze (50 s Ton), **von der Sprachausgabe erzeugt**, weil am PC kein Mikrofon
+steckt. Zeit je Satz als Median aus 3 Läufen. Die Zeiten sind belastbar, die Fehlerzahlen nicht:
+Sie gelten für eine künstliche Stimme ohne Raumhall.
+
+| Erkenner | Threads | Zeit je Satz, Mittel | längster Satz | Wortfehler von 113 |
+| --- | --- | --- | --- | --- |
+| Parakeet TDT 0.6B v3 | 4 | 0,29 s | 0,52 s | 6 |
+| Parakeet TDT 0.6B v3 | **6** | **0,26 s** | 0,44 s | 6 |
+| Parakeet TDT 0.6B v3 | 8 | 0,27 s | 0,43 s | 6 |
+| faster-whisper large-v3-turbo int8 | 4 / 6 / 8 | 5,14 / 4,45 / 4,63 s | 6,73 s | 5 / 4 / 5 |
+| faster-whisper medium int8 | 4 / 6 / 8 | 3,29 / 2,84 / 3,30 s | 9,29 s | 6 |
+| faster-whisper small int8 | 4 / 6 / 8 | 1,24 / 1,08 / 1,14 s | 3,57 s | 8 |
+
+- Entscheidung: Parakeet TDT 0.6B v3, CPU, 6 Threads. Es ist 4- bis 17-mal schneller als jede
+  Whisper-Variante und bremst die Kette nicht aus (siehe Gesamtkette). 8 Threads bringen nichts mehr.
+  Die GPU wird für die Erkennung nicht gebraucht.
+- Bei allen Erkennern zählen „12“ statt „zwölf“ und „18“ statt „achtzehn“ als je ein Wortfehler,
+  obwohl der Sinn stimmt. Alle hörten „Ricci/Richie“ statt „Reachy“.
+- Parakeet lässt sich nicht auf Deutsch festlegen. Bei zwei Ein-Wort-Sätzen der künstlichen Stimme
+  schrieb es „Yeah.“ statt „Ja.“ und „S uh“ statt „Stopp!“. Ob das mit echten Stimmen auch passiert,
+  misst A4 über das Mikrofon des Reachy.
+
+## 2026-10-08 – A1: Gesamtkette auf dem PC, Satzende bis Antwortbeginn
+Gemessen ohne Mikrofon: die 20 gespeicherten Testsätze als Eingabe, je 3 Läufe (60 Runden). Parakeet
+(CPU, 6 Threads), der echte Sprachmodell-Handler aus speech-to-speech gegen llama.cpp (Qwen3-8B,
+Kontext 8.192, alle 37 von 37 Schichten auf der GPU laut Protokoll) und Qwen3-TTS 0.6B CustomVoice Q8_0
+liefen gleichzeitig. Anfrage mit kurzer Anweisung und vier Tools. Skript: `tests/a1/kette_messen.py`
+auf Branch `test/a1`.
+
+| Abschnitt | Mittel | höchstens |
+| --- | --- | --- |
+| Erkennung (Aufnahme liegt vor bis Text) | 0,27 s | 0,51 s |
+| Sprachmodell, erstes Token | 0,03 s | 0,04 s |
+| Sprachmodell, erster Satz vollständig | 0,08 s | 0,21 s |
+| Sprachausgabe, erster Ton | 0,13 s | 0,17 s |
+| **Satzende bis Antwortbeginn** | **0,50 s** | **0,79 s** |
+
+| Grafikspeicher | Wert |
+| --- | --- |
+| Gesamtbelegung vor dem Start (nur Desktop) | 639 MiB |
+| llama-server (Prozess) | 6.022 MiB |
+| Sprachkette mit Sprachausgabe (Prozess) | 2.472 MiB |
+| Gesamtbelegung mit allen Teilen | 9.147 MiB von 12.288 MiB |
+
+- Die Erkennung braucht keinen Grafikspeicher. Frei bleiben rund 3,1 GB, davon geht der Deutungs-Aufruf
+  (zweiter Slot oder mehr Kontext) noch ab. Das misst A5.
+- speech-to-speech sammelt im Standard 3 Sätze, bevor es spricht. Damit gemessen: 0,53 s im Mittel,
+  höchstens 1,05 s. Die Antworten waren hier kurz (ein bis zwei Sätze); bei langen Antworten wächst
+  der Abstand. Empfehlung für den Betrieb: 1 Satz (`stream_batch_sentences`).
+- Nicht enthalten: die Wartezeit der Pausenerkennung, bis sie das Satzende meldet, das Netz zum Reachy
+  und dessen Tonausgabe. Der Verlauf war kurz und der Anfang der Anfrage lag im Zwischenspeicher.
+  Die Zeit am Roboter misst A5.
 
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
@@ -218,6 +282,6 @@ Werden in Phase 0 eingetragen (A1 und A4):
 | speech-to-speech | Commit `8024ccf` (in A2 geprüft, in A1 installiert) | 2026-10-08 |
 | llama.cpp | Commit `d81235049384534c167caea52b85a694f6103d14` (0.6.0), CUDA 12.0, gcc 12 | 2026-10-08 |
 | Sprachmodell | Qwen3-8B Q4_K_M, `Qwen/Qwen3-8B-GGUF` Stand `7c41481`, SHA-256 `d98cdcbd…5745785` (nur für A1, Wahl in A5) | 2026-10-08 |
-| Spracherkennung | offen (Messung in A1 steht aus); installiert: faster-whisper 1.2.1, ctranslate2 4.8.2, nano-parakeet 0.2.1 | |
+| Spracherkennung | Parakeet TDT 0.6B v3 (`nvidia/parakeet-tdt-0.6b-v3`) über nano-parakeet 0.2.1, CPU, 6 Threads | 2026-10-08 |
 | Sprachausgabe | Variante offen; faster-qwen3-tts 0.5.4, qwentts-cpp-python 0.5.0, GGUF aus `Serveurperso/Qwen3-TTS-GGUF` | 2026-10-08 |
 | PyTorch | 2.14.1+cu130 | 2026-10-08 |
