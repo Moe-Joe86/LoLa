@@ -97,12 +97,16 @@ Neue Ordner auf oberster Ebene nur nach Eintrag in `docs/ENTSCHEIDUNGEN.md`.
 1. Lies diese Datei, `docs/ARCHITEKTUR.md` und die letzten Einträge in `docs/CHANGELOG.md`.
 2. Patrick nennt genau eine Aufgabe aus dem Fahrplan.
 3. Sag in drei Sätzen: was du tust, welche Dateien sich ändern, wie viele Zeilen ungefähr.
-4. Erst nach seinem Ja arbeitest du, in einem eigenen Branch (`phase2-timer`).
-5. Tests laufen lassen, dann sagt Patrick, wie es sich am Roboter verhält.
-6. Changelog nachtragen, bei Bedarf die Entscheidung festhalten, committen, nach `main` mergen.
-7. Keine Sitzung endet mit halbfertigem Code auf `main`.
-8. Machbarkeitstests laufen in eigenen Branches (`test/vermittler`) und werden nie gemergt.
-   Nur das Ergebnis kommt nach `docs/ENTSCHEIDUNGEN.md`.
+4. Erst nach seinem Ja (im Chat) baust du.
+5. Gearbeitet wird immer auf dem Branch `entwicklung`. Kein eigener Branch pro Aufgabe, nie direkt auf `main`.
+6. Gepusht wird nur, wenn `uv run pytest` und `uv run ruff check .` grün sind. Nie mit roten Tests pushen.
+7. Changelog nachtragen, bei Bedarf die Entscheidung festhalten, committen, auf `entwicklung` pushen.
+   Patrick sagt, wie es sich am Roboter verhält.
+8. Nach `main` kommt nur etwas, wenn Patrick es ausdrücklich sagt („Stand sichern“, Ende einer Phase).
+   Dann mergst du `entwicklung` selbst nach `main`. Nie halbfertiger Code auf `main`.
+9. Patrick muss auf GitHub nichts tun. Du pushst und mergst selbst.
+10. Ausnahme: Machbarkeitstests laufen in eigenen Branches (`test/...`) und werden nie gemergt.
+    Nur das Ergebnis kommt nach `docs/ENTSCHEIDUNGEN.md`.
 
 ## Tests
 - `uv run pytest` und `uv run ruff check .` müssen grün sein.

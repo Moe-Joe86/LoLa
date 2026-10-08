@@ -2,6 +2,11 @@
 
 Neueste Einträge oben.
 
+## 2026-10-08 – Arbeitsweise mit festem Branch `entwicklung`
+- `CLAUDE.md`, Ablauf jeder Sitzung: immer auf `entwicklung`, `main` nur auf Patricks Freigabe,
+  Push nur mit grünen Tests, Claude pusht und mergt selbst.
+- Entscheidung dazu in `ENTSCHEIDUNGEN.md`.
+
 ## 2026-10-08 – A2: Machbarkeitstest Vermittler
 - Ergebnis: geht mit Einschränkung, nur gegen eine Attrappe geprüft. Details in `ENTSCHEIDUNGEN.md`.
 - Test-Code und Protokoll auf Branch `test/vermittler`, nicht gemergt.

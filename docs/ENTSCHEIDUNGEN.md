@@ -77,6 +77,15 @@ Hinweise für Phase 1:
 - Der Testproxy hängt den Bericht auch an die Aufwärm-Anfrage. Aufwärm- und Zusammenfassungs-Anfragen
   brauchen keinen Bericht.
 
+## 2026-10-08 – Arbeitsweise: ein fester Arbeitsbranch, `main` nur für freigegebene Stände
+Gearbeitet wird immer auf `entwicklung`, nicht mehr in einem Branch pro Aufgabe.
+`main` bekommt nur Stände, die Patrick ausdrücklich freigibt („Stand sichern“, Ende einer Phase);
+dann mergt Claude `entwicklung` selbst nach `main`. Sicherheitsnetz sind die Tests: Gepusht wird
+nur mit grünem `pytest` und `ruff`. Patrick macht auf GitHub keine Handarbeit mehr, Claude pusht
+und mergt selbst. Machbarkeitstests bleiben in eigenen `test/...`-Branches und werden nie gemergt.
+Grund: Bei mehreren Branches und PRs pro Aufgabe ging der Überblick verloren (PR #2 zeigte auf
+den falschen Branch), und jeder Schritt brauchte Klicks von Patrick.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
