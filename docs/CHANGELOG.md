@@ -2,6 +2,17 @@
 
 Neueste Einträge oben.
 
+## 2026-10-08 – Nach A3: Entscheidungen eingearbeitet
+- Der Zustandsbericht steht als eigener Eintrag vor dem letzten Nutzersatz: `CLAUDE.md`,
+  `ARCHITEKTUR.md`, `ENTSCHEIDUNGEN.md`. Zwischenspeicher wird beim Bau des Vermittlers gemessen.
+- Der Bericht darf eine Sprechanweisung enthalten, nur aus der festen Stufentabelle (`KONZEPT.md`).
+- Der englische Mustersatz von speech-to-speech bleibt; der Vermittler reicht unverändert durch.
+- Neu: `docs/MESSUNGEN.md` mit den Messtabellen aus A1 und A3. `ENTSCHEIDUNGEN.md` behält
+  Ergebnis, Begründung und Verweis.
+- `CLAUDE.md`, Budgets: Die 300 Zeilen gelten nur für Code, nicht für Dokumente.
+- A4 im Fahrplan: Das deutsche Profil verbietet Emojis, leere Zusagen und erfundene Erinnerungen.
+- Kein Code geändert.
+
 ## 2026-10-08 – A3: Machbarkeitstest Steuerbarkeit
 - Englische Antworten kommen aus dem Standardprofil der App und dem Rahmen von speech-to-speech.
   Ein eigenes deutsches Profil (reine Daten) behebt das: 0 von 40 Antworten englisch.

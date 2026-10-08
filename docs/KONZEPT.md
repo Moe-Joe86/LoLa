@@ -158,6 +158,13 @@ Innerer Zustand (nicht vorlesen, nur danach handeln):
 - Halte dich kurz, höchstens zwei Sätze.
 ```
 
+**Sprechanweisung (entschieden nach A3, 8. Oktober 2026):** Der Bericht darf sagen, wie Reachy
+sprechen soll, etwa „Sprich ruhig und knapp“. Ohne das folgt der Ton dem Zustand nur schwach
+(gemessen mit Qwen3-8B). Regel: Die Sprechanweisung kommt aus derselben festen Stufentabelle in
+`seele/zustandsbericht.py` wie der Zustand. Zu jeder Stufe gehört ein fester Baustein. Keine freien
+Texte, keine Beispielsätze: Beispielsätze spricht das Modell nach. Der Bericht steht als eigener
+Eintrag vor dem letzten Nutzersatz (`ARCHITEKTUR.md`).
+
 Der Bericht ist eine Leitplanke, keine Garantie. Die Seele entscheidet die Handlungstendenz, das
 Modell formuliert sie. Wo etwas wirklich nicht passieren darf, greift eine technische Grenze
 (der Vermittler entfernt zum Beispiel Bewegungs-Tools). Über den Zustand entscheidet das Modell nie.

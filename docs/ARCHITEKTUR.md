@@ -56,7 +56,7 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
 | Wahrnehmung | sieht das erkannte Gesprochene. Alles andere melden die Sinne direkt an die Seele. |
 | schnelle Bewertung | prüft Sprecher, Name und Wortliste, bevor die Anfrage weitergeht (Millisekunden) |
 | Deutung | schickt das Gesagte parallel zur Antwort als eigenen kurzen Aufruf an dasselbe Sprachmodell |
-| Verhalten | setzt den Zustandsbericht ans Ende der Anfrage, damit llama.cpp den unveränderten Anfang aus dem Zwischenspeicher nutzen kann |
+| Verhalten | setzt den Zustandsbericht als eigenen Systemeintrag direkt vor den letzten Nutzersatz. Nur dort klappen alle Tool-Aufrufe (A3, gemessen). Vermutet, noch nicht gemessen: llama.cpp nutzt den unveränderten Anfang weiter aus dem Zwischenspeicher |
 | harte Grenzen | entfernt Bewegungs-Tools aus der Anfrage, solange eine Grenze greift |
 | Folge | sieht die Antwort und in der nächsten Anfrage die Ergebnisse der Tool-Aufrufe |
 | Eigeninitiative | läuft nicht über den Vermittler, sondern über `conversation.say` der App |
@@ -65,7 +65,8 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
 
 ## Die drei Ausgänge der Seele
 
-1. **Kontext:** Der Vermittler legt den Zustandsbericht in jede Anfrage ans Sprachmodell.
+1. **Kontext:** Der Vermittler legt den Zustandsbericht in jede Anfrage ans Sprachmodell,
+   vor den letzten Nutzersatz. Den übrigen Systemtext reicht er unverändert durch.
 2. **Sprechen:** Eigeninitiative läuft über die offizielle Steuerschnittstelle der App
    (`/rpc`, Methode `conversation.say`, im Code geprüft). Die Seele entscheidet, dass sie
    Kontakt aufnimmt, das Sprachmodell formuliert den Satz. Die Äußerung läuft durch die

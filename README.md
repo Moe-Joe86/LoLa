@@ -15,6 +15,7 @@ Ein lebendig wirkender Familien-Companion auf dem Reachy Mini Wireless. Läuft l
 | `docs/KONZEPT.md` | das psychologische Modell |
 | `docs/FAHRPLAN.md` | Phasen und nächste Arbeitsaufträge |
 | `docs/ENTSCHEIDUNGEN.md` | Entscheidungen mit Begründung, festgenagelte Versionen |
+| `docs/MESSUNGEN.md` | Messtabellen aus den Machbarkeitstests |
 | `docs/BACKLOG.md` | Ideen für später |
 | `docs/CHANGELOG.md` | was sich wann geändert hat |
 

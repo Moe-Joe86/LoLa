@@ -28,7 +28,7 @@ Lieber streichen als ergänzen.
 |---|---|---|
 | Seele | `seele/` | einziger Zustandshalter: Bewertung, Zustand, Beziehung, Gedächtnis, Auswahl |
 | Sinne | `sinne/` | Rohdaten → Wahrnehmungen. Schreiben nie Zustand. |
-| Vermittler | `vermittler/` | HTTP-Proxy zwischen speech-to-speech und llama.cpp. Meldet Gesagtes, startet die Deutung, hängt den Zustandsbericht ans Ende, entfernt Bewegungs-Tools bei harten Grenzen. Sonst reicht er unverändert durch. |
+| Vermittler | `vermittler/` | HTTP-Proxy zwischen speech-to-speech und llama.cpp. Meldet Gesagtes, startet die Deutung, setzt den Zustandsbericht als eigenen Eintrag vor den letzten Nutzersatz, entfernt Bewegungs-Tools bei harten Grenzen. Sonst reicht er unverändert durch. |
 | Werkzeuge | `werkzeuge/` | Tools der Conversation App, eine Datei pro Tool |
 | Dienste | `dienste/` | dauerhafte Hintergrunddienste (z. B. `waechter`) |
 
@@ -56,7 +56,7 @@ CLAUDE.md            diese Datei
 README.md            Was ist das, wie starte ich es
 .env.example         alle Einstellungen, ohne Geheimnisse (entsteht mit der ersten Einstellung)
 charakter/           Charakterwerte als TOML
-docs/                ARCHITEKTUR, FAHRPLAN, ENTSCHEIDUNGEN, BACKLOG, CHANGELOG
+docs/                ARCHITEKTUR, KONZEPT, FAHRPLAN, ENTSCHEIDUNGEN, MESSUNGEN, BACKLOG, CHANGELOG
 seele/               der Kern
 sinne/               eine Datei pro Sinn
 vermittler/          der Proxy
@@ -77,9 +77,11 @@ Neue Ordner auf oberster Ebene nur nach Eintrag in `docs/ENTSCHEIDUNGEN.md`.
 | ein Passwort oder einen Schlüssel | nur `.env`, nie ins Repo |
 | eine Idee für später | `docs/BACKLOG.md` |
 | eine Begründung | `docs/ENTSCHEIDUNGEN.md`, datiert |
+| eine Messtabelle | `docs/MESSUNGEN.md`, in ENTSCHEIDUNGEN nur Ergebnis und Verweis |
 
 ## Budgets – bei Überschreitung anhalten und Patrick fragen
 - Datei: höchstens 300 Zeilen. Funktion: höchstens 50 Zeilen. Werkzeug: höchstens 150 Zeilen.
+- Die 300 Zeilen gelten nur für Code, nicht für Dokumente in `docs/`.
 - Konfiguration (`.env.example`): höchstens 100 Zeilen.
 - Ereignistypen: höchstens 30. Diese Datei: höchstens 150 Zeilen.
 

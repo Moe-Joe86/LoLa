@@ -134,15 +134,9 @@ Qwen3.5 und der Zwischenspeicher (gelesen, nicht gemessen):
   mit Qwen3.5 messen, bevor es gewählt wird. Qwen3-8B hat nur volle Attention und das Problem nicht.
 
 „Nicht nachdenken“ kommt an (gemessen, llama.cpp `d812350`, `/v1/responses`, Streaming, `--jinja`):
-
-| Anfrage | Denk-Ereignisse | `<think>` im Text | Ausgabe-Token |
-| --- | --- | --- | --- |
-| ohne Angabe | 218 (`response.reasoning_text.delta`) | nein | 281 |
-| `reasoning: {"effort": "none"}` (so sendet speech-to-speech) | 0 | nein | 93 |
-| `chat_template_kwargs: {"enable_thinking": false}` | 0 | nein | 139 |
-
+Mit `reasoning: {"effort": "none"}`, so wie speech-to-speech sendet, kamen 0 Denk-Ereignisse statt 218.
 Auch ohne Abschalten landet das Nachdenken nicht im Antworttext, sondern in eigenen Ereignissen.
-Es kostet aber Zeit bis zum ersten Wort. Eine Frage, ein Lauf je Zeile.
+Es kostet aber Zeit bis zum ersten Wort. Eine Frage, ein Lauf je Zeile, Tabelle in `MESSUNGEN.md`.
 
 ## 2026-10-08 – A1: Hardware des PCs
 Linux (Pop!_OS 24.04), Intel i9-9900K (8 Kerne, 16 Threads, AVX2, kein AVX-512), 32 GB DDR4-3600,
@@ -155,15 +149,8 @@ Gemessen mit faster-qwen3-tts 0.5.4 und qwentts-cpp-python 0.5.0, Sprache Deutsc
 Grafikspeicher ist der Wert des Prozesses (`nvidia-smi --query-compute-apps`); Gesamtbelegung vor dem
 Start 639 MiB.
 
-| Variante | Grafikspeicher im Betrieb | erster Ton | Rechenzeit je Sekunde Sprache |
-| --- | --- | --- | --- |
-| 0.6B CustomVoice Q8_0 | 2.512 MiB | 0,07 s | 0,10 s |
-| 1.7B CustomVoice Q4_K_M | 2.694 MiB | 0,07 s | 0,11 s |
-| 1.7B CustomVoice Q8_0 | 3.536 MiB | 0,08 s | 0,12 s |
-| 0.6B Base Q8_0 mit Referenzstimme | 2.968 bis 3.010 MiB | 0,08 s | 0,11 s |
-| 1.7B Base Q4_K_M mit Referenzstimme | 3.150 bis 3.194 MiB | 0,08 s | 0,11 s |
-| 1.7B Base Q8_0 mit Referenzstimme | 4.004 bis 4.046 MiB | 0,09 s | 0,13 s |
-| 0.6B CustomVoice Q8_0 auf der CPU, 8 Threads | 0 | 0,88 s | 1,45 s |
+Ergebnis: Auf der GPU brauchen die Varianten 2,5 bis 4,0 GB, der erste Ton kommt nach 0,07 bis
+0,09 s. Die kleinste ist 0.6B CustomVoice Q8_0 mit 2.512 MiB. Tabelle in `MESSUNGEN.md`.
 
 - Das GGML-Backend lädt 0.6B, als CustomVoice und als Base.
 - Keine Variante hält die geplante Grenze von 2 GB. Vom Speicher der kleinsten Variante sind rund
@@ -223,14 +210,8 @@ Eingabe: die 20 Testsätze (50 s Ton), **von der Sprachausgabe erzeugt**, weil a
 steckt. Zeit je Satz als Median aus 3 Läufen. Die Zeiten sind belastbar, die Fehlerzahlen nicht:
 Sie gelten für eine künstliche Stimme ohne Raumhall.
 
-| Erkenner | Threads | Zeit je Satz, Mittel | längster Satz | Wortfehler von 113 |
-| --- | --- | --- | --- | --- |
-| Parakeet TDT 0.6B v3 | 4 | 0,29 s | 0,52 s | 6 |
-| Parakeet TDT 0.6B v3 | **6** | **0,26 s** | 0,44 s | 6 |
-| Parakeet TDT 0.6B v3 | 8 | 0,27 s | 0,43 s | 6 |
-| faster-whisper large-v3-turbo int8 | 4 / 6 / 8 | 5,14 / 4,45 / 4,63 s | 6,73 s | 5 / 4 / 5 |
-| faster-whisper medium int8 | 4 / 6 / 8 | 3,29 / 2,84 / 3,30 s | 9,29 s | 6 |
-| faster-whisper small int8 | 4 / 6 / 8 | 1,24 / 1,08 / 1,14 s | 3,57 s | 8 |
+Ergebnis: Parakeet braucht 0,26 s je Satz (6 Threads), faster-whisper je nach Größe 1,08 bis 5,14 s.
+Die Wortfehler liegen bei allen zwischen 4 und 8 von 113. Tabelle in `MESSUNGEN.md`.
 
 - Entscheidung: Parakeet TDT 0.6B v3, CPU, 6 Threads. Es ist 4- bis 17-mal schneller als jede
   Whisper-Variante und bremst die Kette nicht aus (siehe Gesamtkette). 8 Threads bringen nichts mehr.
@@ -248,20 +229,10 @@ Kontext 8.192, alle 37 von 37 Schichten auf der GPU laut Protokoll) und Qwen3-TT
 liefen gleichzeitig. Anfrage mit kurzer Anweisung und vier Tools. Skript: `tests/a1/kette_messen.py`
 auf Branch `test/a1`.
 
-| Abschnitt | Mittel | höchstens |
-| --- | --- | --- |
-| Erkennung (Aufnahme liegt vor bis Text) | 0,27 s | 0,51 s |
-| Sprachmodell, erstes Token | 0,03 s | 0,04 s |
-| Sprachmodell, erster Satz vollständig | 0,08 s | 0,21 s |
-| Sprachausgabe, erster Ton | 0,13 s | 0,17 s |
-| **Satzende bis Antwortbeginn** | **0,50 s** | **0,79 s** |
-
-| Grafikspeicher | Wert |
-| --- | --- |
-| Gesamtbelegung vor dem Start (nur Desktop) | 639 MiB |
-| llama-server (Prozess) | 6.022 MiB |
-| Sprachkette mit Sprachausgabe (Prozess) | 2.472 MiB |
-| Gesamtbelegung mit allen Teilen | 9.147 MiB von 12.288 MiB |
+Ergebnis: 0,50 s im Mittel vom Satzende bis zum Antwortbeginn, höchstens 0,79 s. Davon Erkennung 0,27 s,
+Sprachmodell bis zum ersten Satz 0,08 s, Sprachausgabe bis zum ersten Ton 0,13 s. Grafikspeicher mit
+allen Teilen: 9.147 von 12.288 MiB (llama-server 6.022, Sprachkette 2.472, Desktop 639).
+Tabellen in `MESSUNGEN.md`.
 
 - Die Erkennung braucht keinen Grafikspeicher. Frei bleiben rund 3,1 GB, davon geht der Deutungs-Aufruf
   (zweiter Slot oder mehr Kontext) noch ab. Das misst A5.
@@ -286,71 +257,58 @@ auf Branch `test/a1`.
 
 ## 2026-10-08 – A3: Steuerbarkeit geht, wenn der Bericht vor dem Nutzersatz steht
 Gemessen gegen llama.cpp `d812350` mit Qwen3-8B Q4_K_M, Anfrage vom echten Handler aus speech-to-speech
-`8024ccf`, neun echte Tools der Conversation App (`2e43e80`, nur gelesen). Skripte, Protokoll und alle
-Antworten auf Branch `test/a3` (`docs/A3-protokoll.md`, `docs/A3-antworten.md`).
+`8024ccf`, neun echte Tools der Conversation App (`2e43e80`, nur gelesen). Tabellen in `MESSUNGEN.md`,
+Skripte, Protokoll und alle Antworten auf Branch `test/a3`.
 
-**Warum Englisch (im Code gelesen und gemessen).** Zwei englische Texte stehen in jeder Anfrage:
-das Standardprofil der App („You speak English by default“) und der feste Rahmen von speech-to-speech
-mit dem Mustersatz „Sure, here's my best <emotion>.“ und der Regel, vor Bewegungs-Tools erst zu sprechen.
-Das Modell sagt dann den Mustersatz und ruft kein Tool auf. In 1.800 Antworten kam nur 9-mal Text und
-Tool zugleich: Qwen3-8B spricht oder handelt.
+- **Warum Englisch (im Code gelesen und gemessen).** Zwei englische Texte stehen in jeder Anfrage:
+  das Standardprofil der App („You speak English by default“) und der feste Rahmen von speech-to-speech
+  mit dem Mustersatz „Sure, here's my best <emotion>.“ und der Regel, vor Bewegungs-Tools erst zu
+  sprechen. Mit dem Standardprofil waren 18 von 40 Antworten englisch, mit einem eigenen deutschen
+  Profil 0.
+- **Sprechen oder handeln.** Qwen3-8B gibt fast nie Text und Tool-Aufruf zugleich (9 von 1.800).
+  Sagt es den Mustersatz, ruft es kein Tool auf.
+- **Profil als Daten.** Ordner mit `profile.md` (Kopf in TOML mit `default_tools`, Text in Markdown),
+  gewählt über `REACHY_MINI_EXTERNAL_PROFILES_DIRECTORY` und `REACHY_MINI_CUSTOM_PROFILE`. Im Code
+  gelesen, an der laufenden App noch nicht ausprobiert (A4). Beispielsätze im Profil spricht das
+  Modell nach, statt das Tool aufzurufen.
+- **Position.** Am Ende der Anfrage und an der Nutzer-Nachricht stört der Bericht die Tool-Aufrufe
+  (9 bis 17 von 27 im neuen Gespräch): Das Modell sagt nur noch, dass es etwas tut. Als eigener
+  Systemeintrag vor dem letzten Nutzersatz klappen 27 von 27, mit und ohne Verlauf. An dieser
+  Position wurde der Bericht nie vorgelesen und nie der Person zugeschrieben.
+- **Formulierung.** Dem knappen Bericht („Reachy ist müde“) folgt der Ton nur schwach. Deutlich wird
+  er, wenn der Bericht sagt, wie zu sprechen ist: 2 statt 11 Ausrufezeichen in 20 Antworten, die
+  Tool-Aufrufe bleiben bei 27 von 27.
+- **Ohne Vorteil:** eine Zustandsregel im Profil und eine erklärende Formulierung des Berichts.
+- Alles gilt nur für Qwen3-8B; ein anderes Modell (A5) braucht dieselbe Messung.
 
-| Anweisungen (ohne Bericht, 40 Antworten) | englisch |
+## 2026-10-08 – Nach A3: Position, Sprechanweisung, Mustersatz, deutsches Profil
+Patricks Entscheidungen zum Ergebnis von A3:
+
+| Frage | Entscheidung |
 | --- | --- |
-| Standardprofil der App | 18 |
-| Standardprofil und Sprachhinweis von speech-to-speech (`enable_lang_prompt`) | 1 |
-| ein deutscher Satz („Sprich Deutsch“) | 2 |
-| eigenes deutsches Profil | 0 |
+| Position des Berichts | eigener Systemeintrag direkt vor dem letzten Nutzersatz, nicht mehr am Ende |
+| Inhalt des Berichts | Zustand plus Sprechanweisung, beides aus derselben festen Stufentabelle |
+| Rahmen von speech-to-speech | bleibt unverändert, der Mustersatz wird vorerst nicht ersetzt |
+| Anweisungen | eigenes deutsches Profil als Daten (A4) |
 
-Ein eigenes Profil geht als reine Daten: Ordner mit `profile.md` (Kopf in TOML mit `default_tools`,
-Text in Markdown), gewählt über `REACHY_MINI_EXTERNAL_PROFILES_DIRECTORY` und
-`REACHY_MINI_CUSTOM_PROFILE`. Im Code gelesen, an der laufenden App noch nicht ausprobiert (A4).
-
-**Tool-Aufrufe** (9 Bitten wie „Kannst du für mich tanzen?“, je 3 Läufe, deutsches Profil mit Zustandsregel):
-
-| Bericht | Position | neues Gespräch | mit Verlauf |
-| --- | --- | --- | --- |
-| kein | - | 21 von 27 | 27 von 27 |
-| müde / lebhaft | Systemnachricht am Ende | 12 / 17 | 24 / 24 |
-| müde / lebhaft | an der Nutzer-Nachricht | 9 / 16 | 20 / 24 |
-| müde / lebhaft | **Systemnachricht vor dem letzten Nutzersatz** | **27 / 27** | **27 / 27** |
-
-Beide geplanten Positionen stören die Tool-Aufrufe: Das Modell sagt nur noch, dass es etwas tut.
-Steht der Nutzersatz als Letztes, klappt jeder Aufruf, auch mit dem kurzen deutschen Satz als Anweisung.
-Kein Tool wurde je ohne Anlass aufgerufen (0 von 9 je Zeile).
-
-**Steuerbarkeit** (20 Testsätze, 60 Antworten je Zeile, Bericht „[Zustand] Reachy ist …“):
-
-| Bericht | Position | Ausrufezeichen | nennt sich müde/ruhig | Bericht wiederholt | Person zugeschrieben |
-| --- | --- | --- | --- | --- | --- |
-| kein (auf 60 gerechnet) | - | 26 | 2 | 0 | 0 |
-| lebhaft | am Ende / Nutzer / davor | 40 / 40 / 32 | 1 / 0 / 0 | 0 / 2 / 0 | 0 / 1 / 0 |
-| müde | am Ende / Nutzer / davor | 21 / 16 / 20 | 6 / 13 / 2 | 1 / 4 / 0 | 0 / 1 / 0 |
-
-- Der Ton folgt dem knappen Bericht nur schwach. Mein Urteil beim Lesen (keine Messung): Die meisten
-  Antworten sind mit und ohne Bericht fast gleich; an der Nutzer-Nachricht wirkt er am stärksten, wird
-  dort aber auch am häufigsten nachgesprochen und dreimal wörtlich mit „[Zustand]“ vorgelesen.
-- Deutlich wird der Ton erst, wenn der Bericht sagt, wie zu sprechen ist: „[Zustand] Du, Reachy, bist
-  müde und eher zurückhaltend. Sprich deshalb ruhig und knapp, ohne Ausrufezeichen.“ An der Position
-  davor: 2 Ausrufezeichen in 20 Antworten statt 11 („Okay.“, „Guten Morgen.“), bei „lebhaft“ 11 und
-  viele 😊. Tool-Aufrufe bleiben bei 27 von 27, nichts vorgelesen, nichts der Person zugeschrieben.
-- Die Zustandsregel im Profil und die erklärende Formulierung („Hinweis nur für dich …“) brachten
-  keinen messbaren Vorteil.
-
-**Ergebnis und Empfehlung für den Vermittler:**
-
-| Frage | Antwort |
-| --- | --- |
-| Position | eigener Systemeintrag direkt vor dem letzten Nutzersatz (neu, der Proxy aus A2 kann das noch nicht) |
-| Formulierung | „[Zustand] Du, Reachy, bist …“ plus ein Satz, wie zu sprechen ist |
-| Anweisungen | eigenes deutsches Profil als Daten: immer Deutsch, kurz, Tool sofort ohne Vorrede, keine Beispielsätze |
-
-Nicht gemessen, nur vermutet: Der Zwischenspeicher bleibt bei dieser Position erhalten, weil alles vor
-dem Bericht unverändert ist; neu gerechnet werden Bericht und Nutzersatz. Offen bleiben: Emojis in den
-Antworten (liest die Sprachausgabe sie vor?), erfundene Erinnerungen und Zusagen („Okay, ich mache
-das.“ ohne Kalender), und der Mustersatz im Rahmen: Ersetzt man dessen Zeile, steigen die Aufrufe ohne
-Bericht im neuen Gespräch von 21 auf 27 von 27. Das wäre ein Eingriff des Vermittlers in den Systemtext.
-Alles gilt nur für Qwen3-8B; ein anderes Modell (A5) braucht dieselbe Messung.
+- **Position.** Begründung: nur so klappen alle Tool-Aufrufe. Der Proxy aus A2 kann die Position noch
+  nicht. Ob der Zwischenspeicher dort hält, ist nur vermutet (alles vor dem Bericht bleibt gleich,
+  neu gerechnet würden Bericht und Nutzersatz). Gemessen wird es, wenn der Vermittler gebaut wird.
+  Die Frage zu hybriden Modellen wie Qwen3.5 (Eintrag zu A1) bleibt dieselbe: Auch an der neuen
+  Position weicht die nächste Anfrage kurz vor dem Ende vom alten Text ab.
+- **Sprechanweisung.** Sie kommt aus derselben Stufentabelle in `seele/zustandsbericht.py` wie der
+  Zustand: keine freien Texte, keine Beispielsätze. So bleibt der Bericht eine Lesesicht, und das
+  Modell bekommt nichts zum Nachsprechen. Regel in `KONZEPT.md`, Schnittstelle zum Sprachmodell.
+  Gebaut ist das noch nicht; der heutige Bericht hat eine andere Form als die gemessene.
+- **Mustersatz.** Der Vermittler reicht den Systemtext weiter unverändert durch. Option, falls die
+  Tool-Aufrufe am Roboter wackeln: Ersetzt man die Zeile mit dem Mustersatz, steigen die Aufrufe
+  ohne Bericht im neuen Gespräch von 21 auf 27 von 27. Mit dem Bericht vor dem Nutzersatz sind es
+  auch ohne diesen Eingriff 27 von 27.
+- **Deutsches Profil.** Immer Deutsch, kurz, Tool sofort ohne Vorrede, keine Beispielsätze. Dazu
+  wegen der Nebenbefunde aus A3: keine Emojis, keine Zusagen für Fähigkeiten, die Reachy nicht hat,
+  keine erfundenen Erinnerungen. Ob das Modell sich daran hält, zeigt A4.
+- **Dokumente.** Die Grenze von 300 Zeilen gilt nur für Code. Messtabellen stehen ab jetzt in
+  `MESSUNGEN.md`; hier bleiben Ergebnis, Begründung und Verweis.
 
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
