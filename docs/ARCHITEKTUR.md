@@ -31,7 +31,7 @@ Reachy Mini Wireless                      Linux-PC (Gehirn)
 │                           │◄──────── conversation.say (/rpc) ─────────────── Seele │
 │ Wächter (unser Code)      │            │        │ angereichert           ▲         │
 │        │ /api/apps        │            │        ▼                        │         │
-│ Körper: Daemon (Pollen)   │──Audio, Bild, Akku──► Sinne (unser Code) ────┘         │
+│ Körper: Daemon (Pollen)   │──Audio, Bild, Log───► Sinne (unser Code) ────┘         │
 └───────────────────────────┘            │ Sprachmodell (llama.cpp)                 │
                                          └──────────────────────────────────────────┘
 ```
@@ -44,7 +44,7 @@ Reachy Mini Wireless                      Linux-PC (Gehirn)
 | Sprachmodell (llama.cpp) | in Worten denken | PC | nur Konfiguration |
 | Vermittler | gibt jeder Anfrage den Seelenzustand mit, meldet Gesagtes zurück | PC | **unser Code** |
 | Seele | Bewertung, Stimmung, Bedürfnisse, Beziehung, Gedächtnis, Eigeninitiative | PC | **unser Code** |
-| Sinne | Rohdaten werden zu Wahrnehmungen: wer spricht, woher, welches Geräusch, Akku | PC | **unser Code** |
+| Sinne | Rohdaten werden zu Wahrnehmungen: wer spricht, woher, welches Geräusch, Motorfehler | PC | **unser Code** |
 | Werkzeuge und Wächter | Timer, Kalender, App-Wechsel, Rückkehr nach dem Radio | Reachy | **unser Code** |
 
 Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den Vermittler an.
@@ -84,6 +84,19 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
 - Lokales Backend: `HF_REALTIME_CONNECTION_MODE=local`,
   `HF_REALTIME_WS_URL=ws://<PC-IP>:8765/v1/realtime`. Das Backend muss auf der
   Netzwerk-Adresse lauschen, nicht nur auf `127.0.0.1`.
+
+## Körperwahrnehmung (Stand 8. Oktober 2026)
+
+Quelle: Patricks Recherche bei Pollen. Von Claude nicht im Daemon-Code nachgeprüft.
+
+- **Kein Akkustand.** Der Daemon gibt ihn nicht heraus, Pollen nennt das eine „known limitation of
+  the design“; nur eine LED zeigt ihn. Müdigkeit kommt deshalb aus der Tageszeit.
+- **Motorschutz:** Der Daemon prüft jede Sekunde das Fehlerregister der Motoren (Überhitzung,
+  Überlast) und schreibt Fehler nur ins Log. Das Log ist lesbar über
+  `ws://<reachy>:8000/api/logs/ws/daemon`. Ab Phase 4 liest `sinne/koerper.py` es und meldet eine
+  Wahrnehmung. Die harte Grenze ist genau dieser Fehler.
+- **Keine Motortemperatur:** Der Daemon liest den Wert nicht. Ihn selbst aus den Motoren zu lesen,
+  hieße den Daemon zu ändern, also verboten. Lesbar ist die Temperatur der IMU über `/api/state`.
 
 ## Was aus Unit Sigma übernommen wird
 

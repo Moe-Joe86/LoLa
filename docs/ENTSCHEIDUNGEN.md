@@ -86,6 +86,27 @@ und mergt selbst. Machbarkeitstests bleiben in eigenen `test/...`-Branches und w
 Grund: Bei mehreren Branches und PRs pro Aufgabe ging der Überblick verloren (PR #2 zeigte auf
 den falschen Branch), und jeder Schritt brauchte Klicks von Patrick.
 
+## 2026-10-08 – Kein Akku, Motorschutz über das Daemon-Log
+Quelle: Patricks Recherche bei Pollen, von Claude nicht im Daemon-Code nachgeprüft.
+Der Akkustand ist nicht lesbar (Pollen: „known limitation of the design“, nur LED). Deshalb fallen
+alle Akku-Bezüge weg. Müdigkeit kommt später aus der Tageszeit, „Kannst du mich laden?“ wird zu
+„Hilfst du mir kurz?“. Motorschutz: Der Daemon prüft jede Sekunde das Fehlerregister der Motoren
+(Überhitzung, Überlast) und schreibt Fehler nur ins Log (`ws://<reachy>:8000/api/logs/ws/daemon`).
+Ab Phase 4 liest `sinne/koerper.py` dieses Log und meldet eine Wahrnehmung; die harte Grenze ist
+genau dieser Fehler. Die Motortemperatur liest der Daemon nicht, selbst auslesen hieße ihn zu
+ändern, also verboten. Lesbar ist zusätzlich die IMU-Temperatur über `/api/state`.
+Ein Issue bei Pollen steht im Backlog.
+
+## 2026-10-08 – Kern von Phase 1 vorgezogen, obwohl Phase 0 offen ist
+Gebaut ohne Hardware: Projektgrundlage (uv, ruff, pytest), Charakterdatei mit Lader, Grundzustand,
+Zustandsbericht als Lesesicht, Erklär-Log im Speicher. Begründung: Diese Teile hängen nicht an den
+offenen Punkten aus A1 (llama.cpp, Bericht-Variante) und A3 (folgt das Modell dem Bericht?).
+Der Bericht ist reiner Text; wo er in der Anfrage steht, entscheidet erst der Vermittler.
+Festgelegt: Erregung heißt ruhig bis aufgedreht, nicht wach bis müde. Der Bericht in Phase 1 nennt
+Laune, Erregung, Art aus dem Charakter und „Halte dich kurz“. Die Erregung in Ruhe (0,3) ist ein
+fester Wert im Code, kein Charakterwert. Charakterwerte: Grundstimmung 0,65, Reaktivität 0,5,
+Rückkehrstärke 0,6, Geselligkeit 0,7, Neugier 0,7, Vorsicht 0,5, Ausdauer 0,6.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 

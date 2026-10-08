@@ -20,8 +20,15 @@ Ein lebendig wirkender Familien-Companion auf dem Reachy Mini Wireless. Läuft l
 
 ## Stand
 
-Phase 0, Fundament und Messung. Noch kein Code. Wie man LoLa startet, steht hier,
-sobald es etwas zu starten gibt.
+Phase 0, Fundament und Messung. Dazu vorgezogen der Kern von Phase 1 ohne Hardware:
+Charakter, Grundzustand, Zustandsbericht und Erklär-Log. Noch nichts zu starten.
+
+Tests und Prüfung (braucht [uv](https://docs.astral.sh/uv/)):
+
+```bash
+uv run pytest
+uv run ruff check .
+```
 
 ## Lizenz
 
