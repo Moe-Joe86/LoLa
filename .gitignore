@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# Geheimnisse und Einstellungen
+.env
+
+# Laufzeitdaten (Gedächtnis, Stimmabdrücke, Logs) – bleiben lokal
+daten/
+logs/
+*.sqlite
+*.sqlite3
+*.db
+
+# Modelle und große Dateien
+modelle/
+*.gguf
+*.onnx
+
+# Editor und System
+.vscode/
+.idea/
+.DS_Store
