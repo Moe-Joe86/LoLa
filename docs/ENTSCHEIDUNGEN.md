@@ -87,7 +87,8 @@ Grund: Bei mehreren Branches und PRs pro Aufgabe ging der Überblick verloren (P
 den falschen Branch), und jeder Schritt brauchte Klicks von Patrick.
 
 ## 2026-10-08 – Kein Akku, Motorschutz über das Daemon-Log
-Quelle: Patricks Recherche bei Pollen, von Claude nicht im Daemon-Code nachgeprüft.
+Quelle: im SDK-Code geprüft (pollen-robotics/reachy_mini, Commit `fbdbca3`: `daemon/backend/robot/backend.py` `read_hardware_errors`,
+`daemon/app/routers/logs.py`, `docs/source/troubleshooting.md`). Am Roboter noch nicht geprüft, das macht A4.
 Der Akkustand ist nicht lesbar (Pollen: „known limitation of the design“, nur LED). Deshalb fallen
 alle Akku-Bezüge weg. Müdigkeit kommt später aus der Tageszeit, „Kannst du mich laden?“ wird zu
 „Hilfst du mir kurz?“. Motorschutz: Der Daemon prüft jede Sekunde das Fehlerregister der Motoren

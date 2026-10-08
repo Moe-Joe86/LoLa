@@ -87,7 +87,8 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
 
 ## Körperwahrnehmung (Stand 8. Oktober 2026)
 
-Quelle: Patricks Recherche bei Pollen. Von Claude nicht im Daemon-Code nachgeprüft.
+Quelle: im SDK-Code geprüft (pollen-robotics/reachy_mini, Commit `fbdbca3`: `daemon/backend/robot/backend.py` `read_hardware_errors`,
+`daemon/app/routers/logs.py`, `docs/source/troubleshooting.md`). Am Roboter noch nicht geprüft, das macht A4.
 
 - **Kein Akkustand.** Der Daemon gibt ihn nicht heraus, Pollen nennt das eine „known limitation of
   the design“; nur eine LED zeigt ihn. Müdigkeit kommt deshalb aus der Tageszeit.

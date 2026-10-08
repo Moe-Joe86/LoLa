@@ -2,6 +2,9 @@
 
 Neueste Einträge oben.
 
+## 2026-10-08 – Docs mit den Live-Dokumenten abgeglichen
+- Akku und Motorschutz in ARCHITEKTUR und ENTSCHEIDUNGEN als im SDK-Code geprüft markiert (`fbdbca3`).
+
 ## 2026-10-08 – Phase 1, Kern ohne Hardware
 - Erster Code: `pyproject.toml` (uv, Python 3.12, nur ruff und pytest), `charakter/reachy.toml`.
 - `seele/charakter.py` lädt und prüft den Charakter, `seele/zustand.py` hält die Stimmung
