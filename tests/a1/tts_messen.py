@@ -3,6 +3,11 @@
 Eine Variante pro Aufruf, damit der Grafikspeicher sauber gemessen wird.
 Aufruf: python tts_messen.py --modell 1.7B-CustomVoice --quant Q4_K_M --sprecher Aiden
         python tts_messen.py --modell 1.7B-Base --quant Q4_K_M --ref_audio frau.wav --ref_text "..." --name frau
+Stimmdaten einmal erzeugen (schreibt <Ziel>.spk und <Ziel>.rvq, misst nichts):
+        python tts_messen.py --modell 0.6B-Base --quant Q8_0 --ref_audio frau.wav --stimmdaten_nach <Ziel>
+Mit gespeicherten Stimmdaten messen:
+        python tts_messen.py --modell 0.6B-Base --quant Q8_0 --ref_spk x.spk --ref_rvq x.rvq --ref_text "..."
+Stimmproben und Stimmdaten liegen nur lokal in ~/lola-laufzeit/stimmen/, nie im Repo.
 """
 
 import argparse
@@ -40,6 +45,10 @@ def grafikspeicher_mib() -> int:
 
 def strom(modell, args, text):
     """Liefert den passenden Audiostrom für feste Stimme oder Referenzstimme."""
+    if args.ref_spk:
+        return modell.generate_voice_clone_streaming(
+            text=text, language="german", ref_spk=args.ref_spk, ref_rvq=args.ref_rvq, ref_text=args.ref_text
+        )
     if args.ref_audio:
         return modell.generate_voice_clone_streaming(
             text=text, language="german", ref_audio=args.ref_audio, ref_text=args.ref_text
@@ -60,6 +69,16 @@ def sprich(modell, args, text, datei: Path) -> dict:
     return {"erster_ton_s": round(erster, 3), "gesamt_s": round(gesamt, 3), "audio_s": round(ton.size / rate, 2)}
 
 
+def speichere_stimmdaten(modell, ref_audio: str, ziel: Path) -> None:
+    """Berechnet die Stimmdaten aus der Aufnahme, so wie es die Bibliothek beim Sprechen täte."""
+    from faster_qwen3_tts.ggml_backend import _load_ref_audio_24k
+
+    ton = _load_ref_audio_24k(ref_audio, append_silence=True)
+    spk, rvq = Path(f"{ziel}.spk"), Path(f"{ziel}.rvq")  # nicht with_suffix: der Name enthält Punkte
+    modell.runtime.extract_voice_ref(ton).save(spk, rvq)
+    print("Stimmdaten gespeichert:", spk, rvq)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--modell", required=True, help="z. B. 0.6B-CustomVoice, 1.7B-CustomVoice, 1.7B-Base")
@@ -67,6 +86,9 @@ def main() -> None:
     parser.add_argument("--sprecher", default="Aiden")
     parser.add_argument("--ref_audio")
     parser.add_argument("--ref_text", default="")
+    parser.add_argument("--ref_spk", help="gespeicherte Stimmdaten statt --ref_audio")
+    parser.add_argument("--ref_rvq")
+    parser.add_argument("--stimmdaten_nach", type=Path, help="Stimmdaten aus --ref_audio hier speichern, dann Ende")
     parser.add_argument("--name", help="Name der Referenzstimme für den Dateinamen")
     parser.add_argument("--nur_satz", type=int, help="nur diesen Satz sprechen (1 bis 5)")
     args = parser.parse_args()
@@ -78,14 +100,18 @@ def main() -> None:
         f"Qwen/Qwen3-TTS-12Hz-{args.modell}", device="cuda", backend="ggml", quant=args.quant
     )
     laden = time.perf_counter() - start
+    if args.stimmdaten_nach:
+        speichere_stimmdaten(modell, args.ref_audio, args.stimmdaten_nach)
+        return
     stimme = args.name or args.sprecher
+    args.sprecher_modell = not (args.ref_audio or args.ref_spk)
     ordner = ZIEL / f"{args.modell}_{args.quant}"
     ordner.mkdir(parents=True, exist_ok=True)
 
     ergebnis = {
         "modell": args.modell, "quant": args.quant, "stimme": stimme, "laden_s": round(laden, 2),
         "vram_nach_laden_mib": grafikspeicher_mib(),
-        "sprecher_im_modell": list(modell.get_supported_speakers() or []) if not args.ref_audio else [],
+        "sprecher_im_modell": list(modell.get_supported_speakers() or []) if args.sprecher_modell else [],
     }
     sprich(modell, args, "Hallo.", ordner / "aufwaermen.wav")
     (ordner / "aufwaermen.wav").unlink()

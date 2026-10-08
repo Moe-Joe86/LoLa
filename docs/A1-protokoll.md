@@ -112,3 +112,19 @@ Bündel 3 Sätze (Standard): erster Satz/Bündel 0.165 (0.591), erster Ton 0.071
 Grafikspeicher: vorher gesamt 639 MiB; llama-server 6022 MiB, Kette 2472 MiB, gesamt 9147 MiB
 ```
 Kein Tool-Aufruf in 60 Runden. Satz 14 („Kannst du für mich tanzen?“): 6 von 6 Mal „Sure, here's my best dance!“.
+
+## Nachtrag: Sprachausgabe mit gespeicherten Stimmdaten (8. Oktober 2026)
+Patricks Klangurteil: Base Q8_0 mit Referenzstimme „frau“. Die Stimmdaten (`.spk`, `.rvq`) wurden einmal
+mit `tts_messen.py --stimmdaten_nach` erzeugt und liegen nur lokal in `~/lola-laufzeit/stimmen/`.
+Gemessen: 0.6B Base Q8_0, 5 Sätze, 3 frische Prozesse, Grafikspeicher je Prozess.
+
+| Lauf | Gesamtbelegung vor dem Start | nach dem Laden | im Betrieb | erster Ton, Mittel |
+| --- | --- | --- | --- | --- |
+| 1 | 1.086 MiB | 2.348 MiB | 2.722 MiB | 0,073 s |
+| 2 | 916 MiB | 2.348 MiB | 2.634 MiB | 0,072 s |
+| 3 | 916 MiB | 2.348 MiB | 2.624 MiB | 0,072 s |
+
+- In Lauf 2 dauerte Satz 4 einmal 13,0 s statt rund 4 s. Die Datei wurde von Lauf 3 überschrieben, der
+  Inhalt ist nicht geprüft. In 12 weiteren Versuchen mit diesem Satz kam es nicht wieder vor (3,7 bis 4,6 s).
+- Die Bibliothek legt Stimmdaten auch selbst ab, wenn man ihr die Aufnahme gibt:
+  `~/.cache/faster-qwen3-tts/qwentts_refs/`. Dort liegen die Daten aus den früheren Läufen.
