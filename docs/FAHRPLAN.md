@@ -30,6 +30,8 @@ alle Machbarkeitstests bestanden.
 ## Phase 1 – Seelen-Skelett
 - Der Vermittler reicht alles durch und fügt einen festen Zustandsbericht aus der
   Charakterdatei hinzu. Dazu kommt das Erklär-Log.
+- Vorgezogen am 8. Oktober 2026 (ohne Hardware): Charakterdatei mit Lader, Grundzustand,
+  Zustandsbericht, Erklär-Log im Speicher, Tests. Offen: Vermittler, Log in eine Datei.
 - *Abnahme:* Reachy hat eine erkennbare Persönlichkeit, jede Anfrage ans Modell ist im Log nachlesbar.
 
 ## Phase 2 – Haushalt
@@ -47,7 +49,7 @@ alle Machbarkeitstests bestanden.
 
 ## Phase 4 – Gefühl
 - Schnelle Bewertung und Deutung, Affekt, Stimmung, Bedürfnisse, harte Grenzen.
-- Körperwahrnehmung (Akku, Temperatur), Tageszeit, Leerlauf.
+- Körperwahrnehmung (Motorfehler aus dem Daemon-Log, IMU-Temperatur), Tageszeit (daraus Müdigkeit), Leerlauf.
 - *Abnahme:* Die Stimmung reagiert nachvollziehbar, jede Änderung lässt sich im Log auf ein Ereignis zurückführen.
 
 ## Phase 5 – Beziehung

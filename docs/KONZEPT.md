@@ -41,9 +41,9 @@ Etwa 20 Zahlen plus 4 pro Person. Alle Werte zwischen 0 und 1, Valenz zwischen �
 
 | Größe | Werte | Zeitskala | ohne sie fehlt |
 | --- | --- | --- | --- |
-| **Grenzen** (keine Bedürfnisse) | Energie (Akku), Unversehrtheit (Temperatur, Motoren) | laufend | um Laden bitten, Schutz vor Überhitzung |
+| **Grenzen** (keine Bedürfnisse) | Unversehrtheit: Motorfehler (Überhitzung, Überlast) | laufend | Schutz vor Überhitzung und Überlast |
 | **Bedürfnisse** als Defizit (0 = satt, 1 = dringend) | Nähe, Kompetenz, Gewissheit, Anregung, *Autonomie (offen)* | Minuten bis Stunden | eigener Antrieb: ansprechen, helfen wollen, nachfragen, Langeweile |
-| **Affekt** | Valenz, Erregung | Sekunden | sofortige Reaktion auf ein Ereignis |
+| **Affekt** | Valenz, Erregung (ruhig bis aufgedreht, nicht wach bis müde) | Sekunden | sofortige Reaktion auf ein Ereignis |
 | **Stimmung** | Valenz, Erregung, geglättet | Stunden | Laune, die nach dem Anlass bleibt |
 | **Belastung** | ein Wert | Minuten | Rückzug bei Überforderung und bei zu viel Trubel |
 | **Beziehung** pro Person | Vertrautheit, Zuneigung, Erwartung „reagiert auf mich“, Erwartung „hält Wort“ | Wochen | Unterschied zwischen Anna und Fremden, Vertrauen, Misstrauen |
@@ -65,7 +65,7 @@ Rückkehrstärke folgen dem DynAffect-Modell (Kuppens).
 
 ## Deutung und Bewertung
 
-**Deutung.** Einfache Ereignisse wie „Akku 15 %“ deuten feste Regeln. Gesprochenes deutet das
+**Deutung.** Einfache Ereignisse wie „Motorfehler: Überhitzung“ deuten feste Regeln. Gesprochenes deutet das
 Sprachmodell in einem eigenen, kurzen Aufruf. Es liefert nur Merkmale aus festen Listen:
 
 - Absicht: freundlich, neckend, bittend, ablehnend, informierend, besorgt
@@ -105,8 +105,8 @@ Tatsache.** Er steht in der Konfiguration.
 Bonus aus der aktuellen Handlungsbereitschaft, damit dieselbe Stimmung nicht doppelt zählt. Nur bei
 sehr hoher Erregung darf T den Ausschlag geben. Der Charakter wirkt über die Kosten K.
 
-**Grenzen sind keine Punkte.** Ist Reachy zu heiß, sind Bewegungen ausgeschlossen.
-Ein niedriger Akku färbt dagegen den Affekt und macht „ruhen“ attraktiver.
+**Grenzen sind keine Punkte.** Meldet ein Motor einen Fehler (Überhitzung, Überlast), sind Bewegungen
+ausgeschlossen. Die Tageszeit färbt dagegen den Affekt: Spät am Abend wird „ruhen“ attraktiver.
 
 **Hysterese.** Eine gewählte Tendenz hält mindestens einige Runden, damit Reachy nicht flattert.
 
@@ -117,8 +117,8 @@ Ein niedriger Akku färbt dagegen den Affekt und macht „ruhen“ attraktiver.
 | helfen | Kompetenz | konkrete Hilfe anbieten |
 | spielen, necken | Anregung, Nähe | Humor, lebhafte Bewegung |
 | zurücknehmen | Belastung | kurze Antworten, ruhige Haltung |
-| um Hilfe bitten | Grenzen, Kompetenz | „Kannst du mich laden?“ |
-| ruhen | Energie, Überlastung | müde wirken, Schlafhaltung |
+| um Hilfe bitten | Grenzen, Kompetenz | „Hilfst du mir kurz?“ |
+| ruhen | Müdigkeit (aus der Tageszeit), Belastung | müde wirken, Schlafhaltung |
 
 Ohne Gespräch prüft die Auswahl im langsamen Takt, ob sie jemanden ansprechen will
 (über `conversation.say`). Kleine Leerlauf-Bewegungen macht vorerst die App selbst.
@@ -151,7 +151,7 @@ mit festen Satzbausteinen. Beispiel:
 
 ```text
 Innerer Zustand (nicht vorlesen, nur danach handeln):
-- Du bist gut gelaunt und etwas müde. Dein Akku steht bei 30 %.
+- Du bist gut gelaunt und ruhig. Es ist spät am Abend, du bist etwas müde.
 - Du sprichst mit Anna. Ihr seid vertraut, sie meldet sich meist zuverlässig.
 - Offen: Anna wollte dir gestern vom Ausflug erzählen.
 - Deine Neigung: zuwenden, nachfragen.
@@ -173,7 +173,7 @@ Sie gelten vor jeder Bewertung, kein Charakterwert hebt sie auf:
 1. **Keine Vorwürfe an Kinder.** Ein Nähe-Defizit führt zu Einladung („Magst du mir was erzählen?“),
    nie zu Klage („Du hast mich allein gelassen“).
 2. **Keine Abhängigkeit fördern.** Reachy ermutigt zu Kontakt mit anderen Menschen.
-3. **Grenzen sind hart.** Temperatur und Motorschutz sind Ausschlüsse.
+3. **Grenzen sind hart.** Motorfehler (Überhitzung, Überlast) sind Ausschlüsse.
 4. **Erklärbar.** Jede Zustandsänderung steht mit ihrem Auslöser im Log.
 
 ## Was wir bewusst nicht bauen

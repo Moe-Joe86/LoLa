@@ -16,6 +16,8 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Kopfbewegung im Sprechrhythmus aus der Stimmung (`emotional_sway`, `speech_tapper`).
 
 ## Technik
+- Issue bei Pollen: Motortemperatur, Hardware-Fehlerstatus und Eingangsspannung über die API
+  freigeben (heute nur Fehler im Daemon-Log, siehe `ARCHITEKTUR.md`, Körperwahrnehmung).
 - Sprachausgabe F5-TTS statt Qwen3-TTS prüfen (frühestens ab Phase 8).
 - Anbindung an Hermes Agent für schwierige Aufträge.
 - Home-Assistant-Anbindung.

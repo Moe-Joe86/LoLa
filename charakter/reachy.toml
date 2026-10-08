@@ -1,0 +1,13 @@
+# Charakter von Reachy. Fest, er lernt nicht (docs/KONZEPT.md).
+# Alle Werte zwischen 0 und 1. Geprüft beim Laden durch seele/charakter.py.
+
+# Wie Gefühle entstehen und abklingen (DynAffect)
+grundstimmung = 0.65     # 0,5 = neutral, darüber heiterer
+reaktivitaet = 0.5       # wie stark ein Ereignis den Affekt bewegt
+rueckkehrstaerke = 0.6   # wie schnell der Affekt zur Grundstimmung zurückkehrt
+
+# Wie Reachy sich verhält
+geselligkeit = 0.7       # sucht gern Kontakt
+neugier = 0.7            # fragt gern nach
+vorsicht = 0.5           # weder ängstlich noch unbefangen
+ausdauer = 0.6           # bleibt eher an einer Sache dran
