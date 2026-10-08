@@ -3,6 +3,7 @@
 Neueste Einträge oben.
 
 ## 2026-10-08 – Docs mit den Live-Dokumenten abgeglichen
+- Motortemperatur: möglicher Weg über `/api/move/ws/raw/write` (Register 146), Prüfung in A4 eingetragen.
 - Akku und Motorschutz in ARCHITEKTUR und ENTSCHEIDUNGEN als im SDK-Code geprüft markiert (`fbdbca3`).
 
 ## 2026-10-08 – Phase 1, Kern ohne Hardware

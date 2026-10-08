@@ -96,8 +96,14 @@ Quelle: im SDK-Code geprüft (pollen-robotics/reachy_mini, Commit `fbdbca3`: `da
   Überlast) und schreibt Fehler nur ins Log. Das Log ist lesbar über
   `ws://<reachy>:8000/api/logs/ws/daemon`. Ab Phase 4 liest `sinne/koerper.py` es und meldet eine
   Wahrnehmung. Die harte Grenze ist genau dieser Fehler.
-- **Keine Motortemperatur:** Der Daemon liest den Wert nicht. Ihn selbst aus den Motoren zu lesen,
-  hieße den Daemon zu ändern, also verboten. Lesbar ist die Temperatur der IMU über `/api/state`.
+- **Motortemperatur:** Der Daemon liest den Wert nicht von sich aus. Die Motoren (XL330) melden ihn
+  aber in Register 146 (in Pollens Treiber rustypot als `present_temperature` geführt). Möglicher Weg:
+  der offizielle Endpunkt `ws://<reachy>:8000/api/move/ws/raw/write`. Er gibt ein rohes Dynamixel-Paket
+  über die Leitung des Daemons an den Motor und liefert die Antwort zurück. So ginge es ohne Fork und
+  ohne zweiten Zugriff auf die Leitung. Ungeprüft: ob das bei laufender App sauber funktioniert (A4).
+  Über diesen Weg ließen sich auch Register schreiben. Unser Code baut deshalb nur Lese-Pakete,
+  ein Test sichert das ab. Rustypot selbst nutzen wir nicht: Die Leitung gehört dem Daemon.
+- **IMU-Temperatur:** lesbar über `/api/state`.
 
 ## Was aus Unit Sigma übernommen wird
 

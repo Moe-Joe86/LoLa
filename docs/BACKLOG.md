@@ -16,8 +16,9 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Kopfbewegung im Sprechrhythmus aus der Stimmung (`emotional_sway`, `speech_tapper`).
 
 ## Technik
-- Issue bei Pollen: Motortemperatur, Hardware-Fehlerstatus und Eingangsspannung über die API
-  freigeben (heute nur Fehler im Daemon-Log, siehe `ARCHITEKTUR.md`, Körperwahrnehmung).
+- Issue bei Pollen (Repo `pollen-robotics/reachy_mini`, erst nach A4): Motortemperatur (Register 146),
+  Hardware-Fehlerstatus und Eingangsspannung über `/api/state` freigeben. Der Daemon liest Register 70
+  und 144 schon in `read_hardware_errors`. Dringend, falls der Raw-Endpunkt in A4 scheitert.
 - Sprachausgabe F5-TTS statt Qwen3-TTS prüfen (frühestens ab Phase 8).
 - Anbindung an Hermes Agent für schwierige Aufträge.
 - Home-Assistant-Anbindung.
