@@ -111,6 +111,39 @@ Laune, Erregung, Art aus dem Charakter und „Halte dich kurz“. Die Erregung i
 fester Wert im Code, kein Charakterwert. Charakterwerte: Grundstimmung 0,65, Reaktivität 0,5,
 Rückkehrstärke 0,6, Geselligkeit 0,7, Neugier 0,7, Vorsicht 0,5, Ausdauer 0,6.
 
+## 2026-10-08 – A1: Sprachmodell zum Start ist Qwen3-8B, Qwen3.5 und Gemma 4 erst in A5
+A1 misst die Kette und die A2-Nachprüfungen mit einem bewährten Modell: Qwen3-8B Instruct, GGUF Q4_K_M
+(5,03 GB, `Qwen/Qwen3-8B-GGUF`, Apache 2.0). Die endgültige Wahl trifft A5. Kandidaten dort:
+Qwen3.5-9B (Q4_K_M 5,68 GB) und Gemma 4 12B (Q4_K_M 7,12 GB).
+Grafikspeicher (gemessen, Wert des Prozesses laut `nvidia-smi --query-compute-apps`): 6.010 MiB bei
+Kontextlänge 8.192 Token, einem Slot (`-c 8192 --parallel 1 -ngl 999`). Mehr Kontext oder ein zweiter
+Slot für den Deutungs-Aufruf kosten zusätzlich; das ist noch nicht gemessen.
+
+Qwen3.5 und der Zwischenspeicher (gelesen, nicht gemessen):
+- Qwen3.5-9B ist hybrid. Laut `config.json` und Modellkarte: 32 Schichten, 8 × (3 × Gated DeltaNet,
+  dann 1 × volle Attention), also 24 Schichten mit linearer Attention.
+- llama.cpp `d812350` unterstützt das Modell (`src/models/qwen35.cpp`) und führt dafür einen hybriden
+  Speicher (`llama-memory-hybrid`, `llama-memory-recurrent`).
+- Folge: Der Zustand der DeltaNet-Schichten lässt sich nicht an beliebiger Stelle abschneiden
+  (`llama_memory_recurrent::seq_rm`). Zurückrollen geht nur um wenige Token (`n_rs_seq`, als
+  experimentell markiert) oder auf einen gespeicherten Kontext-Checkpoint (`--ctx-checkpoints`,
+  Standard 32 pro Slot, Mindestabstand 8192 Token).
+- Für uns heißt das: Reines Anhängen am Ende nutzt den Zwischenspeicher. Unser Bericht steht aber am
+  Ende und ändert sich bei jeder Anfrage, die nächste Anfrage weicht also mitten im alten Text ab.
+  Vermutung: Ohne passenden Checkpoint rechnet llama.cpp dann den ganzen Anfang neu. A5 muss das
+  mit Qwen3.5 messen, bevor es gewählt wird. Qwen3-8B hat nur volle Attention und das Problem nicht.
+
+„Nicht nachdenken“ kommt an (gemessen, llama.cpp `d812350`, `/v1/responses`, Streaming, `--jinja`):
+
+| Anfrage | Denk-Ereignisse | `<think>` im Text | Ausgabe-Token |
+| --- | --- | --- | --- |
+| ohne Angabe | 218 (`response.reasoning_text.delta`) | nein | 281 |
+| `reasoning: {"effort": "none"}` (so sendet speech-to-speech) | 0 | nein | 93 |
+| `chat_template_kwargs: {"enable_thinking": false}` | 0 | nein | 139 |
+
+Auch ohne Abschalten landet das Nachdenken nicht im Antworttext, sondern in eigenen Ereignissen.
+Es kostet aber Zeit bis zum ersten Wort. Eine Frage, ein Lauf je Zeile.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
