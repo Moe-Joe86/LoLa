@@ -13,8 +13,8 @@ Arbeitsaufträge, je einer pro Sitzung. A0 bis A3 brauchen den Roboter nicht.
 | # | Auftrag | Roboter nötig | Ergebnis |
 | --- | --- | --- | --- |
 | A0 | Repo-Gerüst: CLAUDE.md, `docs/`, README, `.gitignore` | nein | erledigt am 8. Oktober 2026 |
-| A1 | Lokale Sprachkette auf dem PC: speech-to-speech und llama.cpp, deutsche Spracherkennung (Parakeet gegen faster-whisper), Qwen3-TTS mit deutscher Stimme. Test mit dem Mikrofon des PCs. | nein | Gespräch am PC läuft, Versionen in `ENTSCHEIDUNGEN.md` |
-| A2 | Machbarkeitstest Vermittler: Reicht ein Proxy zwischen speech-to-speech und llama.cpp Anfragen samt Tools unverändert durch? Lassen sich Tools pro Anfrage entfernen? | nein | Ergebnis in `ENTSCHEIDUNGEN.md` |
+| A1 | Lokale Sprachkette auf dem PC: speech-to-speech und llama.cpp, deutsche Spracherkennung (Parakeet gegen faster-whisper), Qwen3-TTS mit deutscher Stimme. Test mit dem Mikrofon des PCs. | nein | Gespräch am PC läuft, Versionen in `ENTSCHEIDUNGEN.md`, Nachprüfungen aus A2 erledigt |
+| A2 | Machbarkeitstest Vermittler: Reicht ein Proxy zwischen speech-to-speech und llama.cpp Anfragen samt Tools unverändert durch? Lassen sich Tools pro Anfrage entfernen? | nein | geht mit Einschränkung (8. Oktober 2026), Nachprüfung in A1; siehe `ENTSCHEIDUNGEN.md` |
 | A3 | Machbarkeitstest Steuerbarkeit: Folgt das Modell einem festen Zustandsbericht (etwa „müde und zurückhaltend“) bei 20 Testsätzen? | nein | Ergebnis in `ENTSCHEIDUNGEN.md` |
 | A4 | Reachy mit der lokalen Sprachkette verbinden, Versionen von Daemon, SDK und App festhalten | ja | Reachy spricht über das lokale Backend |
 | A5 | Latenz bis Antwortbeginn, Deutsch-Qualität und Grafikspeicher messen | ja | Entscheidung: weiter oder Backend wechseln |

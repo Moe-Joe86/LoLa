@@ -42,6 +42,41 @@ wenn ein beobachtetes Verhalten ohne es fehlt.
 Der PC läuft mit Linux. Code bleibt plattformneutral (`pathlib`, keine Shell-Spezialitäten),
 damit Windows später möglich ist. Windows wird nicht aktiv getestet, bis es gebraucht wird.
 
+## 2026-10-08 – A2: Vermittler als Proxy geht, mit Einschränkung
+**Ergebnis: geht mit Einschränkung.** Ein kleiner HTTP-Proxy zwischen speech-to-speech und
+llama.cpp reicht Anfragen samt Tools byte-genau durch, hängt einen Bericht an und entfernt
+Tools, ohne dass Streaming oder Tool-Aufrufe brechen. Einschränkung: Geprüft nur gegen eine
+Attrappe von llama.cpp, nicht gegen das echte Modell.
+
+Geprüft an speech-to-speech Commit `8024ccf` (8. Oktober 2026, `openai==2.28.0`), Backend `responses-api`:
+- Im Code gesehen: `POST <responses_api_base_url>/responses`. In `input` steht zuerst der Systemtext
+  (ein englischer Rahmen von speech-to-speech um die Anweisungen der App), dann der Verlauf, zuletzt
+  der neue Nutzersatz. `tools` kommen unverändert aus der Realtime-Sitzung der App,
+  dazu `stream: true` und `reasoning: {"effort": "none"}`.
+- Im Test bestätigt, mit dem echten Handler von speech-to-speech: Durchreichen byte-genau, Bericht
+  in beiden Varianten, Tools entfernen, Streaming im Takt der Attrappe, Abbruch mitten im Strom.
+  Code und Protokoll auf Branch `test/vermittler` (`docs/A2-protokoll.md`), nicht gemergt.
+
+In A1 am echten PC nachprüfen:
+1. Versteht llama.cpp `/v1/responses` mit Tools und Streaming? Sieht der Ereignisstrom so aus wie in der Attrappe?
+2. Bericht als **letzter Eintrag** (Systemnachricht hinter dem Nutzersatz): Lehnt die Gesprächsvorlage
+   des Modells eine Systemnachricht an dieser Stelle ab? Manche Vorlagen erlauben System nur vorne.
+   Das ist die einzige Variante, deren Annahme durch llama.cpp unsicher ist.
+3. Bericht **an der letzten Nutzer-Nachricht**: Das Format passt immer. Prüfen, ob das Modell den
+   Bericht für Gesagtes der Person hält und darauf antwortet.
+   Welche Variante das Verhalten besser steuert, klärt A3.
+4. Nutzt llama.cpp den unveränderten Anfang weiter aus dem Zwischenspeicher?
+5. Kommt llama.cpp klar, wenn ein Tool fehlt, das im Verlauf noch aufgerufen wurde?
+6. Bricht llama.cpp die Erzeugung ab, wenn der Proxy die Verbindung schließt?
+
+Hinweise für Phase 1:
+- **Vorgreifende Anfragen:** speech-to-speech startet manchmal eine Anfrage, bevor die Person fertig
+  ist, und verwirft sie wieder. Derselbe Satz kann also mehrfach durch den Vermittler laufen.
+  Der Vermittler darf Gesagtes nur einmal an die Seele melden (Kreislauf-Regel 1).
+  Wie er das erkennt, ist offen.
+- Der Testproxy hängt den Bericht auch an die Aufwärm-Anfrage. Aufwärm- und Zusammenfassungs-Anfragen
+  brauchen keinen Bericht.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
@@ -49,7 +84,7 @@ Werden in Phase 0 eingetragen (A1 und A4):
 | --- | --- | --- |
 | Reachy-Daemon / SDK | offen | |
 | Conversation App | offen | |
-| speech-to-speech | offen | |
+| speech-to-speech | Commit `8024ccf` (in A2 geprüft, A1 bestätigt oder ersetzt) | 2026-10-08 |
 | llama.cpp | offen | |
 | Sprachmodell | offen | |
 | Spracherkennung | offen | |
