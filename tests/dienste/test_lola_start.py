@@ -56,8 +56,9 @@ def test_stoppe_beendet_gestarteten_prozess(tmp_path, monkeypatch):
     monkeypatch.setattr(lola_start.time, "sleep", lambda _: None)  # der Test erntet den Prozess erst danach
     lauf = tmp_path / "lauf"
     lauf.mkdir()
-    prozess = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)", str(tmp_path)])
-    (lauf / "sprachmodell.pid").write_text(str(prozess.pid), encoding="utf-8")
+    befehl = [sys.executable, "-c", "import time; time.sleep(60)"]
+    prozess = subprocess.Popen(befehl)
+    (lauf / "sprachmodell.pid").write_text(f"{prozess.pid}\n{lola_start._kennung(befehl)}", encoding="utf-8")
     assert lola_start.stoppe(werte(tmp_path)) == 0
     assert prozess.wait(timeout=5) is not None
     assert not (lauf / "sprachmodell.pid").exists()
@@ -67,7 +68,8 @@ def test_stoppe_laesst_fremden_prozess_in_ruhe(tmp_path):
     lauf = tmp_path / "lauf"
     lauf.mkdir()
     fremd = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
-    (lauf / "sprachmodell.pid").write_text(str(fremd.pid), encoding="utf-8")
+    kennung = lola_start._kennung(["/anderes/programm", "serve"])
+    (lauf / "sprachmodell.pid").write_text(f"{fremd.pid}\n{kennung}", encoding="utf-8")
     lola_start.stoppe(werte(tmp_path))
     assert fremd.poll() is None
     fremd.kill()
@@ -162,8 +164,9 @@ def test_reachy_bereit_meldet_ausgeschalteten_reachy(tmp_path, monkeypatch):
 def test_stoppe_legt_den_reachy_nach_der_app_schlafen(daemon):
     lauf = Path(daemon["LOLA_LAUFZEIT"]) / "lauf"
     lauf.mkdir()
-    prozess = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)", daemon["LOLA_LAUFZEIT"]])
-    (lauf / "app.pid").write_text(str(prozess.pid), encoding="utf-8")
+    befehl = [sys.executable, "-c", "import time; time.sleep(60)"]
+    prozess = subprocess.Popen(befehl)
+    (lauf / "app.pid").write_text(f"{prozess.pid}\n{lola_start._kennung(befehl)}", encoding="utf-8")
     lola_start.stoppe(daemon)
     assert prozess.wait(timeout=5) is not None
     gesendet = [pfad for methode, pfad, _ in Daemon.aufrufe if methode == "POST"]
@@ -173,4 +176,21 @@ def test_stoppe_legt_den_reachy_nach_der_app_schlafen(daemon):
 def test_stoppe_ohne_app_laesst_den_reachy_in_ruhe(daemon):
     (Path(daemon["LOLA_LAUFZEIT"]) / "lauf").mkdir()
     lola_start.stoppe(daemon)
+    assert Daemon.aufrufe == []
+
+
+def test_sprachkette_fragt_den_vermittler_und_der_vermittler_das_sprachmodell(tmp_path):
+    befehle = lola_start.befehle(werte(tmp_path))
+    assert list(befehle) == ["sprachmodell", "vermittler", "sprachkette", "app"]  # Reihenfolge des Starts
+    kette = befehle["sprachkette"][0]
+    assert kette[kette.index("--responses_api_base_url") + 1] == "http://127.0.0.1:8091/v1"
+    vermittler, gesund, umgebung = befehle["vermittler"]
+    assert vermittler[1:] == ["-m", "vermittler.proxy", "8091", "8090"]
+    assert gesund == "http://127.0.0.1:8091/health"
+    assert umgebung == {"LOLA_ANFRAGE_LOG_TAGE": "7"}
+
+
+def test_kette_startet_keine_app_und_fasst_den_reachy_nicht_an(daemon, monkeypatch):
+    monkeypatch.setattr(lola_start, "_antwortet", lambda adresse: True)  # alle Programme „laufen schon“
+    assert lola_start.starte(daemon, mit_app=False) == 0
     assert Daemon.aufrufe == []

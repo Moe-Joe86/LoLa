@@ -1,7 +1,7 @@
-"""Startet und stoppt LoLa auf dem PC: llama.cpp, speech-to-speech und die Conversation App.
+"""Startet und stoppt LoLa auf dem PC: llama.cpp, Vermittler, speech-to-speech und die Conversation App.
 
-Aufruf: uv run python -m dienste.lola_start start | stop
-Die drei Programme liegen ausserhalb des Repos im Laufzeit-Ordner und bleiben unveraendert.
+Aufruf: uv run python -m dienste.lola_start start | kette | stop   (kette: alles ausser der App)
+llama.cpp, speech-to-speech und die App liegen ausserhalb des Repos im Laufzeit-Ordner und bleiben unveraendert.
 Auf dem Reachy laeuft nur der Daemon; er wird ueber seine REST-Schnittstelle angesprochen.
 """
 
@@ -15,10 +15,12 @@ import urllib.request
 from pathlib import Path
 
 PORT_SPRACHMODELL = 8090
+PORT_VERMITTLER = 8091
 PORT_SPRACHKETTE = 8765
 PORT_APP = 7860
 WARTEZEIT_S = 180
-PROFILE = Path(__file__).resolve().parent.parent / "charakter" / "profile"
+REPO = Path(__file__).resolve().parent.parent
+PROFILE = REPO / "charakter" / "profile"
 # Mikrofon-Werte, die die Conversation App beim Start setzt, wenn sie auf dem Reachy laeuft (Stand 2e43e80).
 MIKROFON = {
     "PP_AGCMAXGAIN": [10.0],
@@ -36,6 +38,7 @@ STANDARD = {
     "LOLA_STIMME": "frau_0.6B-Base_Q8_0",
     "LOLA_REACHY": "reachy-mini.local",
     "LOLA_PROFIL": "lola_deutsch",
+    "LOLA_ANFRAGE_LOG_TAGE": "7",
 }
 
 
@@ -67,7 +70,7 @@ def befehle(werte: dict[str, str]) -> dict[str, tuple[list[str], str, dict[str, 
         *("serve", "--host", "0.0.0.0", "--port", str(PORT_SPRACHKETTE)),
         *("--stt", "parakeet-tdt", "--parakeet_tdt_device", "cpu"),
         *("--llm_backend", "responses-api", "--model_name", "qwen3", "--responses_api_api_key", ""),
-        *("--responses_api_base_url", f"http://127.0.0.1:{PORT_SPRACHMODELL}/v1"),
+        *("--responses_api_base_url", f"http://127.0.0.1:{PORT_VERMITTLER}/v1"),
         *("--stream_batch_sentences", "1", "--log_transcripts"),
         *("--tts", "qwen3", "--qwen3_tts_model_name", "Qwen/Qwen3-TTS-12Hz-0.6B-Base"),
         *("--qwen3_tts_backend", "ggml", "--qwen3_tts_ggml_quantization", "Q8_0"),
@@ -91,8 +94,11 @@ def befehle(werte: dict[str, str]) -> dict[str, tuple[list[str], str, dict[str, 
         "REACHY_MINI_INSTANCE_PATH": str(laufzeit / "app-daten"),
     }
     app = [str(laufzeit / "app-venv/bin/reachy-mini-conversation-app"), "--ui"]
+    vermittler = [sys.executable, "-m", "vermittler.proxy", str(PORT_VERMITTLER), str(PORT_SPRACHMODELL)]
+    frist = {"LOLA_ANFRAGE_LOG_TAGE": werte["LOLA_ANFRAGE_LOG_TAGE"]}
     return {
         "sprachmodell": (llama, f"http://127.0.0.1:{PORT_SPRACHMODELL}/health", {}),
+        "vermittler": (vermittler, f"http://127.0.0.1:{PORT_VERMITTLER}/health", frist),
         "sprachkette": (kette, f"http://127.0.0.1:{PORT_SPRACHKETTE}/v1/pool", kette_umgebung),
         "app": (app, f"http://127.0.0.1:{PORT_APP}/", app_umgebung),
     }
@@ -161,13 +167,16 @@ def _warte(name: str, prozess: subprocess.Popen, adresse: str) -> bool:
     return False
 
 
-def starte(werte: dict[str, str]) -> int:
-    """Startet die drei Programme nacheinander; die App erst, wenn der Reachy bereit ist."""
+def starte(werte: dict[str, str], mit_app: bool = True) -> int:
+    """Startet die Programme nacheinander; die App erst, wenn der Reachy bereit ist."""
     laufzeit = Path(werte["LOLA_LAUFZEIT"]).expanduser()
     lauf = laufzeit / "lauf"
     lauf.mkdir(parents=True, exist_ok=True)
     (laufzeit / "app-daten").mkdir(exist_ok=True)
     for name, (befehl, adresse, eigene) in befehle(werte).items():
+        if name == "app" and not mit_app:
+            print("\nDie Sprachkette läuft. Die App wurde nicht gestartet, der Reachy bleibt, wie er ist.")
+            return 0
         if _antwortet(adresse):
             print(f"{name}: läuft schon.")
             continue
@@ -175,11 +184,11 @@ def starte(werte: dict[str, str]) -> int:
             print("Die Sprachkette läuft, die App wurde nicht gestartet.")
             return 1
         with open(lauf / f"{name}.log", "w", encoding="utf-8") as log:
+            ort = REPO if name == "vermittler" else laufzeit / "app-daten"  # der Vermittler schreibt nach daten/
             prozess = subprocess.Popen(
-                befehl, stdout=log, stderr=log, env=os.environ | eigene, cwd=laufzeit / "app-daten",
-                start_new_session=True,
+                befehl, stdout=log, stderr=log, env=os.environ | eigene, cwd=ort, start_new_session=True
             )
-        (lauf / f"{name}.pid").write_text(str(prozess.pid), encoding="utf-8")
+        (lauf / f"{name}.pid").write_text(f"{prozess.pid}\n{_kennung(befehl)}", encoding="utf-8")
         print(f"{name}: startet …")
         if not _warte(name, prozess, adresse):
             print(f"Abbruch. Mehr steht in {lauf / f'{name}.log'}. Ich stoppe wieder alles.")
@@ -190,13 +199,19 @@ def starte(werte: dict[str, str]) -> int:
     return 0
 
 
+def _kennung(befehl: list[str]) -> str:
+    """Anfang der Kommandozeile, so wie das Betriebssystem ihn fuehrt: daran erkennt `stoppe` das Programm."""
+    return "\0".join(befehl[:3])
+
+
 def stoppe(werte: dict[str, str]) -> int:
     """Beendet die Programme, die `starte` gestartet hat, die App zuerst. Danach schlaeft der Reachy."""
     lauf = Path(werte["LOLA_LAUFZEIT"]).expanduser() / "lauf"
     for datei in sorted(lauf.glob("*.pid")):
-        pid = int(datei.read_text(encoding="utf-8"))
-        kennung = Path(f"/proc/{pid}/cmdline")
-        fremd = kennung.exists() and str(lauf.parent).encode() not in kennung.read_bytes()
+        nummer, _, kennung = datei.read_text(encoding="utf-8").partition("\n")
+        pid = int(nummer)
+        zeile = Path(f"/proc/{pid}/cmdline")
+        fremd = zeile.exists() and kennung.encode() not in zeile.read_bytes()
         try:
             if not fremd:  # nach einem Neustart des PCs kann die Nummer einem anderen Programm gehoeren
                 os.kill(pid, signal.SIGINT)  # wie Strg+C, damit jedes Programm sauber aufraeumt
@@ -214,9 +229,10 @@ def stoppe(werte: dict[str, str]) -> int:
 
 
 def main() -> int:
-    aktion = {"start": starte, "stop": stoppe}.get(sys.argv[1] if len(sys.argv) > 1 else "")
+    aktionen = {"start": starte, "kette": lambda werte: starte(werte, mit_app=False), "stop": stoppe}
+    aktion = aktionen.get(sys.argv[1] if len(sys.argv) > 1 else "")
     if aktion is None:
-        print("Aufruf: uv run python -m dienste.lola_start start | stop")
+        print("Aufruf: uv run python -m dienste.lola_start start | kette | stop")
         return 2
     return aktion(einstellungen())
 

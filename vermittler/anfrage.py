@@ -14,6 +14,7 @@ class Aenderung:
     gesagt: str = ""
     bericht: str = ""
     entfernte_tools: list[str] = field(default_factory=list)
+    stelle: int = -1  # Platz des letzten Nutzersatzes in der Anfrage; -1, wenn er nicht am Ende steht
 
 
 def letzter_nutzersatz(eintraege: list) -> tuple[int, str] | None:
@@ -55,14 +56,20 @@ def bearbeite(roh: bytes, bericht: str, gesperrte_tools: frozenset[str] = frozen
     if gesperrte_tools and isinstance(koerper.get("tools"), list):
         neu["tools"] = [tool for tool in koerper["tools"] if tool.get("name") not in gesperrte_tools]
         entfernt = [tool["name"] for tool in koerper["tools"] if tool.get("name") in gesperrte_tools]
+    am_ende = stelle if stelle == len(koerper["input"]) - 1 else -1  # danach kann noch ein Tool-Ergebnis stehen
     if not bericht and not entfernt:
-        return roh, Aenderung(gesagt=gesagt)
-    return json.dumps(neu, ensure_ascii=False).encode(), Aenderung(gesagt, bericht, entfernt)
+        return roh, Aenderung(gesagt=gesagt, stelle=am_ende)
+    return json.dumps(neu, ensure_ascii=False).encode(), Aenderung(gesagt, bericht, entfernt, am_ende)
 
 
-def setzt_fort(vorher: str, jetzt: str) -> bool:
-    """Wahr, wenn `jetzt` denselben Satz wie `vorher` meint: gleich oder dessen Fortsetzung.
+FRIST_WIEDERHOLUNG_S = 5.0  # gemessen: 2,7 s zwischen verworfener und neuer Anfrage
 
-    speech-to-speech fragt manchmal schon an, bevor die Person fertig ist, und fragt dann erneut.
+
+def setzt_fort(vorher: Aenderung, jetzt: Aenderung, abstand_s: float) -> bool:
+    """Wahr, wenn `jetzt` dieselbe Runde wie `vorher` ist: gleicher Platz im Gespräch, kurz danach.
+
+    speech-to-speech fragt manchmal schon an, bevor die Person fertig ist, und fragt dann erneut. Den Text
+    erkennt es dabei neu, er kann sich also ändern (gemessen in B4); verglichen wird deshalb der Platz.
+    Sagt die Person denselben Satz später noch einmal, steht er weiter hinten und gilt nicht als Wiederholung.
     """
-    return bool(vorher) and jetzt.startswith(vorher)
+    return bool(vorher.gesagt) and vorher.stelle == jetzt.stelle >= 0 and abstand_s <= FRIST_WIEDERHOLUNG_S

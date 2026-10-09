@@ -170,3 +170,40 @@ speech-to-speech mit Neuverbindung der App.
 | Abstand 20 s | 12 | 0 |
 | Abstand 0,5 s | 100 | 3 (dazu 15-mal „no active session“) |
 | Abstand 0,4 s, Mikrofon beim Senden stumm | 100 | 0 |
+
+## B4 – Vermittler in der echten Kette, ohne Roboter (9. Oktober 2026)
+speech-to-speech `8024ccf` → Vermittler → llama.cpp `d812350`, Qwen3-8B Q4_K_M. Profil `lola_deutsch`, neun
+Tools, Bericht im Grundzustand. Skripte und Protokoll auf Branch `test/b4`.
+
+| Zusatzzeit (40 Paare, Anfrage 5,5 kB) | direkt | über den Vermittler |
+| --- | --- | --- |
+| erstes Textstück, Median | 22,1 ms | 22,9 ms |
+| erstes Textstück, höchstens | 36,8 ms | 33,5 ms |
+| Unterschied je Paar | - | Median 0,7 ms, höchstens 11,4 ms |
+
+| Zwischenspeicher, Gespräch über 8 Runden | ohne Vermittler | mit Vermittler |
+| --- | --- | --- |
+| neu gerechnete Eingabe-Token je Anfrage (ab Runde 2) | 27 bis 81 | 71 bis 152 |
+| Token im Kontext | 1.817 bis 2.128 | 1.873 bis 2.213 |
+| erste Anfrage der Sitzung | 1.805 (neuer Systemtext) | 71 (Systemtext lag schon im Speicher) |
+
+| Tool-Aufrufe, 9 Bitten je 3 Läufe | Tool richtig | Tool ohne Anlass |
+| --- | --- | --- |
+| neues Gespräch | 27 von 27 | 0 von 9 |
+| mit Verlauf (2 Runden davor) | 24 von 27 | 0 von 9 |
+
+| Abbruch (je 3 Läufe) | direkt | über den Vermittler |
+| --- | --- | --- |
+| nach dem ersten Textstück: llama.cpp ruht nach | 11 bis 17 ms | 17 bis 23 ms |
+| 20 ms nach dem Senden: llama.cpp ruht nach | 1 bis 18 ms | 1 bis 29 ms |
+
+| Ganze Kette mit Ton, 20 Aufnahmen | ohne Vermittler | mit Vermittler |
+| --- | --- | --- |
+| Ende der Aufnahme bis erster Ton, Mittel / höchstens | 1,41 s / 2,36 s | 1,46 s / 2,57 s |
+| eigene Angabe von speech-to-speech (`e2e`), Mittel | 1,62 s | 1,67 s |
+| davon Erkennung / Sprachmodell / erster Ton, Mittel | 0,68 / 0,43 / 0,11 s | 0,72 / 0,40 / 0,10 s |
+| Sätze ohne Antwort | 1 („Ja.“) | 1 („Ja.“) |
+| Anfragen beim Vermittler, davon `wiederholt` | - | 20, davon 0 |
+
+Sprechpause mitten im Satz (zwei Aufnahmen, 0,7 s Stille dazwischen): erste Anfrage nach 0,47 s abgebrochen,
+zweite 2,7 s später, als `wiederholt` gekennzeichnet. Bei Pausen ab 0,9 s gab es zwei getrennte Runden.

@@ -33,7 +33,7 @@ def test_bericht_steht_als_eigener_systemeintrag_vor_dem_letzten_nutzersatz():
     assert nachher["input"][3] == nachricht("system", BERICHT)
     assert nachher["input"][4] == vorher["input"][3]
     assert {k: v for k, v in nachher.items() if k != "input"} == {k: v for k, v in vorher.items() if k != "input"}
-    assert aenderung == Aenderung("Kannst du für mich tanzen?", BERICHT, [])
+    assert aenderung == Aenderung("Kannst du für mich tanzen?", BERICHT, [], stelle=3)
 
 
 def test_bericht_steht_auch_nach_einem_tool_ergebnis_vor_dem_nutzersatz():
@@ -42,10 +42,11 @@ def test_bericht_steht_auch_nach_einem_tool_ergebnis_vor_dem_nutzersatz():
         {"type": "function_call", "call_id": "c1", "name": "dance", "arguments": "{}"},
         {"type": "function_call_output", "call_id": "c1", "output": "{}"},
     ]
-    nachher = json.loads(bearbeite(roh(vorher), BERICHT)[0])
-    assert [e.get("role", e["type"]) for e in nachher["input"][3:]] == [
+    neu, aenderung = bearbeite(roh(vorher), BERICHT)
+    assert [e.get("role", e["type"]) for e in json.loads(neu)["input"][3:]] == [
         "system", "user", "function_call", "function_call_output",
     ]
+    assert aenderung.stelle == -1
 
 
 def test_aufwaermen_ohne_streaming_bleibt_byte_gleich():
@@ -66,7 +67,7 @@ def test_gesperrte_tools_werden_entfernt_und_gemeldet():
 
 def test_ohne_bericht_und_ohne_sperre_bleibt_die_anfrage_byte_gleich():
     koerper = roh(anfrage())
-    assert bearbeite(koerper, "") == (koerper, Aenderung(gesagt="Kannst du für mich tanzen?"))
+    assert bearbeite(koerper, "") == (koerper, Aenderung(gesagt="Kannst du für mich tanzen?", stelle=3))
 
 
 def test_umlaute_bleiben_lesbar():
@@ -78,8 +79,11 @@ def test_letzter_nutzersatz_mit_einfachem_text_und_ohne_treffer():
     assert letzter_nutzersatz([nachricht("system", "x")]) is None
 
 
-def test_setzt_fort_erkennt_gleichen_und_verlaengerten_satz():
-    assert setzt_fort("Wie geht", "Wie geht es dir?")
-    assert setzt_fort("Wie geht es dir?", "Wie geht es dir?")
-    assert not setzt_fort("Wie geht es dir?", "Tanz bitte.")
-    assert not setzt_fort("", "Tanz bitte.")
+def test_setzt_fort_erkennt_dieselbe_runde_aber_nicht_den_zweimal_gesagten_satz():
+    erste = Aenderung("Hi, sir, Patrick.", stelle=3)  # so in B4 gemessen: der Text ändert sich beim zweiten Anlauf
+    assert setzt_fort(erste, Aenderung("Ich heiße Patrick. Wie spät ist es gerade?", stelle=3), 2.7)
+    assert setzt_fort(erste, Aenderung("Hi, sir, Patrick.", stelle=3), 0.5)
+    assert not setzt_fort(erste, Aenderung("Hi, sir, Patrick.", stelle=5), 2.0)  # später im Gespräch noch einmal
+    assert not setzt_fort(erste, Aenderung("Hallo.", stelle=3), 60.0)  # neues Gespräch, viel später
+    assert not setzt_fort(Aenderung("Tanz.", stelle=-1), Aenderung("Tanz.", stelle=-1), 0.2)  # nach Tool-Ergebnis
+    assert not setzt_fort(Aenderung(), Aenderung("Tanz bitte.", stelle=1), 0.0)
