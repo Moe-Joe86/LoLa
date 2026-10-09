@@ -126,3 +126,84 @@ Bei drei Werten in einem Feld: Position am Ende / an der Nutzer-Nachricht / davo
   Unterschied.
 - Urteil beim Lesen, keine Messung: Mit dem knappen Bericht sind die meisten Antworten fast dieselben
   wie ohne. Alle Antworten stehen in `docs/A3-antworten.md` auf Branch `test/a3`.
+
+## A4 – Motortemperatur über den Raw-Endpunkt (9. Oktober 2026)
+Lese-Paket (Anweisung 0x02) für Register 146 über `/api/move/ws/raw/write`. Reachy in Schlafhaltung,
+Motoren aus, keine App. Skript: `tests/a4/motortemperatur.py` auf Branch `test/a4-pc`.
+
+| Motor | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Temperatur | 25 °C | 28 °C | 26 °C | 26 °C | 26 °C | 27 °C | 29 °C | 31 °C | 33 °C |
+
+Bei allen Antworten ist das Warn-Bit gesetzt. IMU-Temperatur zur selben Zeit: 44,4 °C.
+
+## A4 – Start und Grafikspeicher mit der App auf dem PC (9. Oktober 2026)
+`lola_start start`: 22 s bis alle drei Programme antworten. Grafikspeicher vorher 635 MiB, mit Gespräch
+9.544 bis 9.556 MiB. `lola_start stop`: 8 s, danach wieder 635 MiB, Reachy schläft, Motoren aus.
+
+## A7 – Zweites Programm liest Ton und Bild mit (9. Oktober 2026)
+App auf dem PC (`2e43e80`), Mitleser per WebRTC, 75 und 100 s. Sätze über `conversation.say`.
+
+| Größe | ohne Mitleser | mit Mitleser |
+| --- | --- | --- |
+| CPU App (Prozent eines Kerns von 16) | 51 | 48 bis 54 |
+| CPU speech-to-speech | 10 | 9 |
+| CPU Mitleser | - | 52 |
+| Regeltakt des Daemons, Mittel | 48,9 bis 49,4 Hz | 45,7 bis 46,7 Hz |
+| längster Abstand im Regeltakt | 21 bis 24 ms | 35 bis 39 ms |
+| eingeschleuste Sätze ausgeführt | 6 von 7 | 6 von 7 |
+
+| Strom beim Mitleser | Wert |
+| --- | --- |
+| Bild | 1280×720, 28,8 und 29,3 je Sekunde; Abstand im Mittel 35 ms, 99 % unter 143 ms, längste Lücke 452 ms |
+| Ton | 16 kHz, 2 Kanäle; 15.549 und 15.344 Werte je Sekunde; je Lauf 4 Lücken über 100 ms, längste 210 ms |
+| Kopfbewegung im Log bis Bildänderung | 0,44 / 0,49 / 0,54 / 0,62 / 0,77 s |
+
+## `conversation.say`: Abbrüche der Sitzung (9. Oktober 2026)
+App auf dem PC (`2e43e80`), speech-to-speech `8024ccf`. Ein Abbruch ist ein `JSONDecodeError` in
+speech-to-speech mit Neuverbindung der App.
+
+| Reihe | Sätze | Abbrüche |
+| --- | --- | --- |
+| A7, Abstand 9 und 20 s, je Satz eine neue `/rpc`-Verbindung | 14 | 2 |
+| Abstand 4 s, eine `/rpc`-Verbindung | 30 | 0 |
+| Abstand 20 s | 12 | 0 |
+| Abstand 0,5 s | 100 | 3 (dazu 15-mal „no active session“) |
+| Abstand 0,4 s, Mikrofon beim Senden stumm | 100 | 0 |
+
+## B4 – Vermittler in der echten Kette, ohne Roboter (9. Oktober 2026)
+speech-to-speech `8024ccf` → Vermittler → llama.cpp `d812350`, Qwen3-8B Q4_K_M. Profil `lola_deutsch`, neun
+Tools, Bericht im Grundzustand. Skripte und Protokoll auf Branch `test/b4`.
+
+| Zusatzzeit (40 Paare, Anfrage 5,5 kB) | direkt | über den Vermittler |
+| --- | --- | --- |
+| erstes Textstück, Median | 22,1 ms | 22,9 ms |
+| erstes Textstück, höchstens | 36,8 ms | 33,5 ms |
+| Unterschied je Paar | - | Median 0,7 ms, höchstens 11,4 ms |
+
+| Zwischenspeicher, Gespräch über 8 Runden | ohne Vermittler | mit Vermittler |
+| --- | --- | --- |
+| neu gerechnete Eingabe-Token je Anfrage (ab Runde 2) | 27 bis 81 | 71 bis 152 |
+| Token im Kontext | 1.817 bis 2.128 | 1.873 bis 2.213 |
+| erste Anfrage der Sitzung | 1.805 (neuer Systemtext) | 71 (Systemtext lag schon im Speicher) |
+
+| Tool-Aufrufe, 9 Bitten je 3 Läufe | Tool richtig | Tool ohne Anlass |
+| --- | --- | --- |
+| neues Gespräch | 27 von 27 | 0 von 9 |
+| mit Verlauf (2 Runden davor) | 24 von 27 | 0 von 9 |
+
+| Abbruch (je 3 Läufe) | direkt | über den Vermittler |
+| --- | --- | --- |
+| nach dem ersten Textstück: llama.cpp ruht nach | 11 bis 17 ms | 17 bis 23 ms |
+| 20 ms nach dem Senden: llama.cpp ruht nach | 1 bis 18 ms | 1 bis 29 ms |
+
+| Ganze Kette mit Ton, 20 Aufnahmen | ohne Vermittler | mit Vermittler |
+| --- | --- | --- |
+| Ende der Aufnahme bis erster Ton, Mittel / höchstens | 1,41 s / 2,36 s | 1,46 s / 2,57 s |
+| eigene Angabe von speech-to-speech (`e2e`), Mittel | 1,62 s | 1,67 s |
+| davon Erkennung / Sprachmodell / erster Ton, Mittel | 0,68 / 0,43 / 0,11 s | 0,72 / 0,40 / 0,10 s |
+| Sätze ohne Antwort | 1 („Ja.“) | 1 („Ja.“) |
+| Anfragen beim Vermittler, davon `wiederholt` | - | 20, davon 0 |
+
+Sprechpause mitten im Satz (zwei Aufnahmen, 0,7 s Stille dazwischen): erste Anfrage nach 0,47 s abgebrochen,
+zweite 2,7 s später, als `wiederholt` gekennzeichnet. Bei Pausen ab 0,9 s gab es zwei getrennte Runden.

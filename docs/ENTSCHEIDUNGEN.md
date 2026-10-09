@@ -92,7 +92,7 @@ Quelle: im SDK-Code geprüft (pollen-robotics/reachy_mini, Commit `fbdbca3`: `da
 Der Akkustand ist nicht lesbar (Pollen: „known limitation of the design“, nur LED). Deshalb fallen
 alle Akku-Bezüge weg. Müdigkeit kommt später aus der Tageszeit, „Kannst du mich laden?“ wird zu
 „Hilfst du mir kurz?“. Motorschutz: Der Daemon prüft jede Sekunde das Fehlerregister der Motoren
-(Überhitzung, Überlast) und schreibt Fehler nur ins Log (`ws://<reachy>:8000/api/logs/ws/daemon`).
+(Überhitzung, Überlast) und schreibt Fehler nur ins Log (`ws://<reachy>:8000/logs/ws/daemon`).
 Ab Phase 4 liest `sinne/koerper.py` dieses Log und meldet eine Wahrnehmung; die harte Grenze ist
 genau dieser Fehler. Die Motortemperatur liest der Daemon nicht, selbst auslesen hieße ihn zu
 ändern, also verboten. Lesbar ist zusätzlich die IMU-Temperatur über `/api/state`.
@@ -248,9 +248,9 @@ Tabellen in `MESSUNGEN.md`.
   (mit ihr wurde die Gesamtkette gemessen). Patrick hat den Klang noch nicht beurteilt. Die endgültige
   Stimme wählt die eigene Aufgabe „Sprachausgabe-Vergleich“ hinter A5 (`FAHRPLAN.md`).
 - **Bündelung: 1 Satz statt 3.** speech-to-speech spricht, sobald der erste Satz des Sprachmodells
-  fertig ist. Einstellung beim Start: `--responses_api_stream_batch_sentences 1` (Feld
-  `stream_batch_sentences`, Standard 3). Im Handler gemessen; der Schalter auf der Kommandozeile ist
-  aus dem Namensschema der anderen Schalter abgeleitet und wird in A4 beim ersten echten Start geprüft.
+  fertig ist. Einstellung beim Start: `--stream_batch_sentences 1` (Standard 3). Im Handler
+  gemessen; der Schalter ist in A4 an `--help` und beim Start geprüft (die frühere Annahme
+  `--responses_api_stream_batch_sentences` war falsch).
 - Weitere Einstellungen der Sprachausgabe: `--qwen3_tts_ggml_quantization Q8_0`,
   `--qwen3_tts_speaker aiden`, Sprache Deutsch. Sie kommen in `.env.example`, sobald ein Startskript
   sie liest (A4); in A1 entsteht kein Code.
@@ -342,16 +342,216 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
   Eingabe schreibt die Bibliothek gar keine Stimmdaten, der Ordner greift nur, falls doch einmal
   eine Aufnahme übergeben wird. Geprüft wird der Schalter beim ersten Start in A4.
 
+## 2026-10-09 – A4: Stände am Reachy festgenagelt, Fehler in der Update-Prüfung des Daemons
+- **Festgenagelt:** Daemon 1.11.0, Conversation App 1.0.1 (`ddc3096`), Reachy Control 0.9.35 auf dem PC.
+- **Geprüft an der laufenden App:** alle 30 Dateien der Einstellungsseite haben dieselbe Prüfsumme wie
+  im Stand `ddc3096`; `/rpc` antwortet auf `conversation.status`. Die Reachy-Bibliothek in der
+  gemeinsamen App-Umgebung erfüllt `>=1.10.0rc5` (die Installation hat sie nicht getauscht); fünf
+  Zeilennummern im Log passen zum Code von 1.11.0. Die genaue Version ist damit abgeleitet, nicht abgelesen.
+- **Fehler im Daemon 1.11.0:** Alle Apps teilen sich eine Umgebung (`/venvs/apps_venv`).
+  `apps/sources/app_update_checker.py` sucht die Paketdaten mit `{name}*.dist-info`. Für
+  `reachy_mini_conversation_app` trifft das auch `reachy_mini_conversation_app_local` (fremde App).
+  Folgen, beide am Roboter gesehen: Die Update-Prüfung meldet „aktuell“, obwohl 0.9.0 statt 1.0.1
+  installiert war. Das Update entfernte Pollens App und installierte die fremde neu; dabei fiel die
+  Reachy-Bibliothek in der Umgebung von 1.11.0 auf 1.8.0.
+- **Behebung:** fremde App über die REST-API entfernt, Pollens App neu installiert. Die Bibliothek war
+  danach wieder passend. Gelesen: Der Daemon gleicht sie beim Start an seine eigene Version an
+  (`check_and_sync_apps_venv_sdk`); der Reachy war über Nacht aus. Gesehen haben wir diesen Schritt nicht.
+- **Regel:** Auf dem Reachy sind nur die Apps installiert, die wir wirklich nutzen. Jede weitere App
+  kann Pakete der gemeinsamen Umgebung tauschen.
+- **Einstellungen überleben das Entfernen:** Die `.env` der App liegt im Paketordner und blieb liegen.
+- **Daemon-Log:** `ws://<reachy>:8000/logs/ws/daemon` (nicht `/api/logs/...`, das gibt 403).
+- **Reachy Control auf dem PC:** Das deb-Paket aktualisiert sich nicht selbst (der eingebaute Updater
+  ersetzt es nicht). Neue Version von der Release-Seite von Pollen laden, Prüfsumme vergleichen, mit `apt` installieren.
+- Belege liegen lokal in `~/lola-laufzeit/messung/a4/`. Issue bei Pollen: siehe `BACKLOG.md`.
+
+## 2026-10-09 – A4: Startskript `dienste/lola_start.py`
+- Python statt Shell, nur Standardbibliothek, damit es später auch unter Windows geht.
+  Aufruf: `uv run python -m dienste.lola_start start` und `stop`. Der kurze Name `uv run lola-start`
+  ginge nur, wenn das Projekt als Paket gebaut wird (Eintrag `[build-system]` in `pyproject.toml`); offen.
+- Das Sprachmodell lauscht nur auf dem PC selbst (`127.0.0.1:8090`), die Sprachkette im Heimnetz
+  (`0.0.0.0:8765`). Sie startet mit `HF_HUB_OFFLINE=1`: im Log keine Anfrage an huggingface.co (geprüft).
+- Laufdaten (Prozessnummern, Logs) liegen in `~/lola-laufzeit/lauf/`, nicht im Repo.
+- Der Speicher-Wächter aus A1 gehört nicht dazu; er bleibt ein Messwerkzeug.
+- Gemessen am PC: Start 21 s; Grafikspeicher vorher 635 MiB, danach 9.265 MiB (llama-server 6.012 MiB,
+  speech-to-speech 2.604 MiB nach dem Laden, noch ohne Gespräch).
+
+## 2026-10-09 – Zwischenstand: Die Conversation App läuft auf dem PC (Tests mit Patrick offen)
+- **Grundsatz (Patrick):** Der Reachy ist nur Körper (Mikrofon, Lautsprecher, Kamera, Motoren). Auf ihm
+  läuft keine Logik von uns, später höchstens kleine Auslöser für den PC.
+- **Anlass:** Auf dem Reachy schickt App 1.0.1 die Erkennungssprache „en“; speech-to-speech nimmt mit
+  Parakeet nur „auto“ an und verwirft dann die ganze Sitzungs-Einstellung samt Profil und Tools. Die
+  Sprache ist dort nur per Umgebungsvariable einstellbar, also nur über eine Datei auf dem Roboter.
+- **Stand:** App aus GitHub, Commit `2e43e80` (Standard „auto“, Sprache einstellbar), unverändert in
+  `~/lola-laufzeit/app-venv`, Reachy-Bibliothek 1.11.0 wie der Daemon. Ton und Bild kommen per WebRTC
+  direkt vom Daemon. GStreamer 1.24.2 und das WebRTC-Plugin 0.14.5 waren auf dem PC schon vorhanden.
+- **Geprüft ohne Patrick:** Profil und Tools kommen an, Begrüßung „Hallo! Ich bin LoLa …“, eingeschleuste
+  Bitten lösen `move_head` und `dance` aus. TCP-Verbindungen der App nur zum Reachy, zur Sprachkette und
+  zum Router (Port 49000, vermutlich UPnP der WebRTC-Bibliothek). CPU im Leerlauf: 55 % eines Kerns von 16.
+- **Offen, mit Patrick:** Klang, sichtbare Bewegungen und Kopfwackeln, Latenz am Reachy, 21 Testsätze,
+  Motortemperatur bei laufender App. `ARCHITEKTUR.md` wird erst danach geändert. Die App auf dem Reachy
+  bleibt installiert, wird aber nicht mehr gestartet.
+- **Beenden (Code gelesen, am Roboter gesehen):** Die App legt den Reachy beim Stoppen absichtlich nicht
+  schlafen, nur über das Tool `go_to_sleep` und nach 24 Stunden Stille. Läuft sie auf dem Reachy, räumt
+  danach der Daemon auf; auf dem PC tut das niemand, die Motoren blieben an. Deshalb beendet `lola_start
+  stop` die App wie mit Strg+C (ihr eigener Abschluss läuft) und legt den Reachy dann über die REST-API
+  schlafen und schaltet die Motoren aus.
+- **Kopfwackeln:** Die App schaltet es im Daemon bei jedem Start selbst ein und beim Beenden aus (im
+  Daemon-Log gesehen). Nichts zu tun. Die Warnung der Bibliothek betrifft nur ihre eigene, zweite Variante.
+- **Mikrofon-Werte:** Aus der Ferne setzt die App sie nicht. Sie werden nur flüchtig geschrieben (Code
+  gelesen; ob sie einen Neustart des Reachy überleben, ist nicht ausprobiert). `lola_start start` setzt
+  deshalb sechs Werte über die REST-API. Den siebten (`PP_NLATTENONOFF`, Ganzzahl) lehnt der Daemon
+  1.11.0 über REST ab („required argument is not an integer“); er wird nur geprüft und gemeldet.
+- **Profil:** `charakter/profile/lola_deutsch/profile.md`, der Name ist LoLa. Die App liest den Ordner
+  über `REACHY_MINI_EXTERNAL_PROFILES_DIRECTORY`; das Gedächtnis der App ist aus.
+- **Motortemperatur (nur Lese-Pakete, Reachy schlafend):** alle neun Motoren antworten, 25 bis 33 °C,
+  der Daemon lief ohne Fehler weiter. Bei allen ist das Warn-Bit gesetzt; vermutlich die
+  Spannungsmeldung, die der Daemon selbst ausblendet. Werte in `MESSUNGEN.md`.
+- `dienste/lola_start.py` hat jetzt 225 Zeilen (Ziel war eher 120): dazu kamen App, Reachy-Prüfung,
+  Mikrofon-Werte und Schlafenlegen.
+
+## 2026-10-09 – A7: Ein zweites Programm kann Ton und Bild mitlesen
+- **Ergebnis:** Ja. Der Daemon bedient mehrere WebRTC-Abnehmer zugleich. Ein zweites Programm auf dem PC
+  (der WebRTC-Client aus der Reachy-Bibliothek, ohne Steuerverbindung) bekam Bild und Ton, während die
+  Conversation App lief. Die App zeigte dabei keine zusätzlichen Fehler, ihre CPU-Last blieb gleich.
+- **Kosten:** rund ein halber CPU-Kern am PC für das Mitlesen in voller Auflösung. Auf dem Reachy sinkt der
+  Regeltakt des Daemons von 49 auf 46 Hz, der längste Abstand steigt von 24 auf bis zu 39 ms, ohne Fehler.
+  Für die Sinne heißt das: höchstens ein Mitleser, und klären, ob eine kleinere Auflösung reicht.
+- **Qualität:** Bild 1280×720 mit 29 Bildern je Sekunde, sichtbar zusammengedrückt; für „Gesicht da oder
+  nicht“ in der Nähe vermutlich genug, für Einzelheiten in der Ferne nicht. Ton 16 kHz in 2 Kanälen, 3 bis
+  4 % der Werte fehlten, vereinzelt Lücken bis 210 ms. Verzögerung im Bild: 0,4 bis 0,8 s bis zur
+  sichtbaren Kopfbewegung, Motoranlauf eingerechnet.
+- **Offen, mit Patrick:** ob LoLa hörbar weiterspricht, solange der Mitleser verbunden ist (jeder Client
+  sendet einen stillen Tonstrom zum Reachy); Tonqualität bei echter Sprache; Verzögerung im Ton.
+- **Nebenbefund für A6:** 2 von 14 Sätzen über `conversation.say` gingen verloren, unabhängig vom Mitleser.
+  speech-to-speech meldet einen Lesefehler (`JSONDecodeError`), beendet die Sitzung, die App verbindet
+  sich nach 1,4 s neu. Ursache offen.
+- Messwerte in `MESSUNGEN.md`, Skripte und Protokoll auf Branch `test/a7`. Aufnahmen aus der Wohnung
+  liegen nur lokal in `~/lola-laufzeit/messung/a7/`.
+
+## 2026-10-09 – B1: Form des Zustandsberichts
+- Eine Zeile: `[Zustand] Du, LoLa, bist <Laune> und <Erregung>. Deine Art: <Worte aus dem Charakter>.
+  Sprich <Ton> und dabei <Tempo>.` Jede Stufe von Laune und Erregung hat in `seele/zustandsbericht.py`
+  genau zwei feste Bausteine: einen für den Zustand, einen für die Sprechanweisung.
+- Kopfzeile und „Halte dich kurz“ sind entfallen: Die Kürze regelt das Profil, die in A3 gemessene Form
+  hatte beides nicht. „Deine Art“ bleibt, lässt sich aber streichen, falls B5 keinen Nutzen zeigt.
+- Der Name steht als Vorgabe „LoLa“ im Code und lässt sich beim Aufruf setzen.
+- **Gemessen** ist aus A3 nur der Baustein „ruhig und knapp, ohne Ausrufezeichen“ (mit Qwen3-8B). Die
+  anderen Bausteine (ernst, zurückhaltend, sachlich, freundlich, herzlich; langsam, lebhaft, schnell)
+  sind ein Vorschlag und werden in B5 am Modell geprüft.
+
+## 2026-10-09 – B2: Erklär-Log und Anfrage-Log als Dateien
+- Beide liegen im Ordner `daten/` (nicht im Repo), eine Zeile JSON je Eintrag, nur Standardbibliothek.
+- **Erklär-Log** (`daten/erklaer-log.jsonl`, in `seele/erklaer_log.py`): Zeit, Auslöser, Größe, alter und
+  neuer Wert. Es wird nicht gelöscht, weil es nichts Gesagtes enthält. Sobald Auslöser Namen oder Gesagtes
+  enthalten könnten (Deutung, Phase 3), braucht es dieselbe Frist.
+- **Anfrage-Log** (`daten/anfragen-JJJJ-MM-TT.jsonl`, in `vermittler/anfrage_log.py`): Zeit, Gesagtes,
+  eingefügter Bericht, entfernte Tools, Dauer. Es enthält Gesagtes der Familie und bleibt lokal.
+- **Löschfrist:** `LOLA_ANFRAGE_LOG_TAGE`, Standard 7. Gelöscht werden ganze Tagesdateien, deren Tag mehr
+  als die Frist zurückliegt; geprüft wird bei jedem Schreiben. Ein Tag, der genau sieben Tage alt ist,
+  bleibt noch. Folge: Schreibt niemand, wird auch nichts gelöscht. Der Vermittler (B3) räumt deshalb
+  zusätzlich bei jedem Start auf.
+- Noch nicht angeschlossen: Das Anfrage-Log schreibt erst, wenn der Vermittler es benutzt (B3).
+
+## 2026-10-09 – Verlorene Sätze bei `conversation.say`: Ursache und Vorschlag
+- **Ursache (Code gelesen, am Roboter nachgestellt):** In der Conversation App läuft `/rpc` in einem eigenen
+  Faden („ui-server“), die Verbindung zur Sprachkette im Hauptfaden. `conversation.say` sendet direkt aus
+  dem fremden Faden auf diese Verbindung, während der Hauptfaden dort laufend den Mikrofonton sendet. Andere
+  Methoden der App (Profil, Stimme) wechseln dafür sauber in den Hauptfaden, `say` nicht. Treffen zwei
+  Sendungen zusammen, kommt bei speech-to-speech eine unlesbare Nachricht an (`JSONDecodeError`), es
+  beendet die Sitzung, und die App verbindet sich nach rund 1,4 s neu. Der Satz ist verloren, das
+  bisherige Gespräch der Sitzung auch. Gleiche Stelle in 1.0.1 (`ddc3096`) und `2e43e80`.
+- **Gemessen:** mit Abstand von 4 bis 20 s: 2 Abbrüche in 56 Sätzen. Im Halbsekundentakt: 3 Abbrüche in
+  100 Sätzen, dazu 15 Ablehnungen („no active session“) während der Neuverbindung. Mit stummem Mikrofon
+  im Moment des Sendens (`conversation.mic`): 0 Abbrüche in 100 Sätzen.
+- **Normales Gespräch:** nicht betroffen, soweit gelesen und gesehen. Dort sendet nur der Hauptfaden
+  (Ton, Tool-Ergebnisse). Im Log des Gesprächs von heute früh steht kein solcher Fehler.
+- **Vorschlag:** Wer `conversation.say` aufruft (später die Seele), schaltet davor das Mikrofon über
+  `conversation.mic` stumm, wartet 0,1 s, sendet den Satz und schaltet das Mikrofon wieder ein. Kosten:
+  LoLa ist dabei etwa eine Viertelsekunde taub. Zusätzlich danach `conversation.status` prüfen und bei
+  einem Abbruch einmal wiederholen. An Pollens Code und an speech-to-speech ändern wir nichts.
+- Der Fehler gehört an Pollen gemeldet (`BACKLOG.md`). A6 baut auf diesem Befund auf.
+
+## 2026-10-09 – B3: Vermittler gebaut, nur mit der Standardbibliothek
+- **Entscheidung (Patrick):** keine HTTP-Bibliothek. `http.server` für den Eingang, `http.client` für den
+  Ausgang, ein Faden je Anfrage. aiohttp bleibt der Rückfallweg, falls B4 es verlangt (Abbruch zu spät
+  oder mehr als 20 ms Zusatzzeit).
+- **Aufbau:** `vermittler/anfrage.py` enthält alles, was an einer Anfrage geändert wird, als reine
+  Funktionen. `vermittler/proxy.py` nimmt an, gibt weiter und schreibt das Anfrage-Log.
+- **Welche Anfragen den Bericht bekommen:** nur `POST …/responses` mit `stream: true` und einem Nutzersatz.
+  Gelesen in speech-to-speech `8024ccf`: Aufwärm- und Zusammenfassungs-Anfragen laufen ohne Streaming. Sie
+  und alles Unbekannte gehen Byte für Byte unverändert durch.
+- **Position:** eigener Systemeintrag direkt vor der letzten Nutzer-Nachricht, auch wenn danach noch
+  Tool-Aufruf und Tool-Ergebnis folgen. Alles davor bleibt gleich.
+- **Abbruch:** Ein Wächter-Faden je Anfrage prüft alle 50 ms, ob der Aufrufer noch da ist, und schließt
+  sonst die Verbindung zu llama.cpp, auch bevor das erste Wort gekommen ist. Gegen die Attrappe getestet.
+- **Anfrage-Log:** je Gesprächsanfrage eine Zeile; `wiederholt` kennzeichnet einen Satz, der gleich ist
+  wie in der Anfrage davor oder ihn fortsetzt (vorgreifende Anfragen), `abgebrochen` einen geschlossenen
+  Strom. Beim Start räumt der Vermittler alte Tagesdateien weg.
+- **Noch nicht drin:** die Deutung, das Melden von Gesagtem an die Seele, Auslöser für das Entfernen von
+  Tools (die Funktion ist da und getestet). Der Bericht kommt vorerst aus Charakter und Grundzustand.
+- **Vermutet, nicht gemessen:** dass speech-to-speech vorgreifende Anfragen so schickt, wie `wiederholt`
+  es annimmt (gleicher oder verlängerter Satz), und dass der Zwischenspeicher von llama.cpp an dieser
+  Position hält. Beides misst B4 an der echten Kette.
+
+## 2026-10-09 – B4: Vermittler in der echten Kette (ohne Roboter)
+- **Aufbau:** speech-to-speech → Vermittler (127.0.0.1:8091) → llama.cpp (127.0.0.1:8090). `lola_start`
+  startet den Vermittler als zweites von vier Programmen; die neue Aktion `kette` startet alles außer der
+  App und fasst den Reachy nicht an. Gemessen wurde mit einem Programm, das die Rolle der App an der
+  Realtime-Schnittstelle spielt: Profil `lola_deutsch`, die neun Tools, Sätze als Text oder als Ton
+  (die Aufnahmen aus A1).
+- **Zusatzzeit:** im Median 0,7 ms bis zum ersten Textstück (Ziel unter 20 ms), höchstens 11 ms.
+- **Zwischenspeicher hält.** Je Anfrage rechnet llama.cpp mit Vermittler 71 bis 152 von rund 1.900 bis
+  2.200 Token neu, ohne Vermittler 27 bis 81. Der Unterschied sind der Bericht und die vorige Runde,
+  die hinter die alte Stelle des Berichts rutscht. Die Vermutung aus A3 ist damit gemessen.
+- **Tool-Aufrufe:** neues Gespräch 27 von 27, mit Verlauf 24 von 27, nie ein Tool ohne Anlass, nie Text und
+  Tool zugleich. Die drei Fehler: „Was siehst du gerade?“ nach zwei Runden Verlauf, das Modell beschrieb
+  etwas, ohne die Kamera zu fragen. In A3 waren es mit Verlauf 27 von 27; Verlauf und Bericht sind hier anders.
+- **Abbruch:** llama.cpp hört über den Vermittler 17 bis 29 ms nach dem Schließen auf (direkt 11 bis 18 ms),
+  mitten im Strom und vor der ersten Antwortzeile. Die volle Antwort hätte 12 s gedauert.
+- **Vorgreifende Anfragen:** In 20 gesprochenen Sätzen kam keine einzige beim Vermittler an;
+  speech-to-speech verwirft Zwischenstände meist schon bei der Erkennung. Mit einer Sprechpause von 0,7 s
+  mitten im Satz ließ sich eine auslösen: erste Anfrage abgebrochen, zweite 2,7 s später mit neu erkanntem,
+  anderem Text. Deshalb gilt für `wiederholt` jetzt: gleiche Stelle im Gespräch und höchstens 5 s nach der
+  vorigen Anfrage, nicht mehr der Vergleich der Satzanfänge. Die Folgeanfrage nach einem Tool-Ergebnis zählt
+  nicht. Belegt ist die Regel mit genau diesem einen echten Fall.
+- **Ganze Kette mit Ton:** vom Ende der Aufnahme bis zum ersten Ton 1,46 s im Mittel mit Vermittler, 1,41 s
+  ohne (je 18 Sätze, Unterschied im Rauschen). Darin steckt die Pausenerkennung, die A1 nicht mitgemessen hat.
+- **Nebenbefunde für A4 Teil 2:** „Ja.“ allein wird von der Pausenerkennung verworfen (zu kurz); „Stopp!“
+  wurde als „Oh“ erkannt, „Reachy“ als „Richie“; ein früh abgeschnittenes „Ich heiße Patrick.“ als „Hi, sir,
+  Patrick.“ Auf „Frau Schneider kommt um halb vier“ sagte das Modell „Okay, ich notiere das“ (leere Zusage
+  trotz Profil). In 42 von 72 Textantworten stand ein Ausrufezeichen, obwohl der Bericht das Gegenteil sagt.
+- **Offen:** die Probe am Roboter (mit A4 Teil 2). `ARCHITEKTUR.md` bleibt bis dahin unverändert.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
 | Komponente | Version | Datum |
 | --- | --- | --- |
-| Reachy-Daemon / SDK | offen | |
-| Conversation App | offen; in A3 gelesen: Commit `2e43e80` | |
+| Reachy-Daemon / SDK | 1.11.0 (PyPI) | 2026-10-09 |
+| Conversation App | 1.0.1, Hugging-Face-Stand `ddc3096` (in A3 gelesen: GitHub `2e43e80`) | 2026-10-09 |
+| Reachy Control (PC) | 0.9.35 (deb) | 2026-10-08 |
+| Conversation App auf dem PC (Zwischenstand) | GitHub `2e43e80`, Reachy-Bibliothek 1.11.0, GStreamer 1.24.2, gst-plugins-rs 0.14.5 | 2026-10-09 |
 | speech-to-speech | Commit `8024ccf` (in A2 geprüft, in A1 installiert) | 2026-10-08 |
 | llama.cpp | Commit `d81235049384534c167caea52b85a694f6103d14` (0.6.0), CUDA 12.0, gcc 12 | 2026-10-08 |
 | Sprachmodell | Qwen3-8B Q4_K_M, `Qwen/Qwen3-8B-GGUF` Stand `7c41481`, SHA-256 `d98cdcbd…5745785` (nur für A1, Wahl in A5) | 2026-10-08 |
 | Spracherkennung | Parakeet TDT 0.6B v3 (`nvidia/parakeet-tdt-0.6b-v3`) über nano-parakeet 0.2.1, CPU, 6 Threads | 2026-10-08 |
 | Sprachausgabe | Qwen3-TTS 0.6B Base Q8_0 mit Referenzstimme „frau“ (gespeicherte Stimmdaten); faster-qwen3-tts 0.5.4, qwentts-cpp-python 0.5.0, GGUF aus `Serveurperso/Qwen3-TTS-GGUF` | 2026-10-08 |
 | PyTorch | 2.14.1+cu130 | 2026-10-08 |
+
+## 2026-10-09 – Phase 2: Werkzeuge, App-Wechsel, Uhrzeit und Wetter
+Im Code der Conversation App (GitHub `2e43e80`) und des Daemons (`fbdbca3`) gelesen, am Roboter
+noch ungeprüft (C0):
+- **Werkzeuge:** Tool Spaces nehmen nur `*.hf.space` an und taugen damit nicht für Privates.
+  Externe Werkzeuge aus `REACHY_MINI_EXTERNAL_TOOLS_DIRECTORY` schon. Entscheidung: dünne Hüllen auf
+  dem Reachy, Logik und Passwörter im Werkzeugdienst auf dem PC.
+- **Hintergrund-Werkzeuge:** Jedes Werkzeug läuft im Hintergrund, Ergebnis geht ans Modell, sobald es
+  fertig ist (höchstens ein Tag). Daraus wird der Timer.
+- **App-Wechsel:** `POST /api/apps/start-app/{name}` verdrängt die laufende App. Rückweg einheitlich
+  über eine Ausstiegsgeste (zweimal auf den Kopf tippen), die der Wächter im Zustandsstrom
+  `/api/state/ws/full` erkennt. Begründung: Apps von Pollen dürfen wir nicht kopieren oder ändern,
+  ein Ausstieg pro App wäre also nicht möglich. Antennen scheiden aus, die Radio-App nutzt sie.
+- **Uhrzeit** im Zustandsbericht statt als Werkzeug, **Wetter** über Open-Meteo vom PC, beides ohne
+  Hugging Face. **Suche:** vorerst Pollen, später SearXNG (Backlog).
+- **Kalender:** Synology Calendar über CalDAV.
+

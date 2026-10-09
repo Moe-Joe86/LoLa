@@ -17,12 +17,47 @@ Ein lebendig wirkender Familien-Companion auf dem Reachy Mini Wireless. Läuft l
 | `docs/ENTSCHEIDUNGEN.md` | Entscheidungen mit Begründung, festgenagelte Versionen |
 | `docs/MESSUNGEN.md` | Messtabellen aus den Machbarkeitstests |
 | `docs/BACKLOG.md` | Ideen für später |
+| `docs/issues-entwuerfe.md` | Entwürfe für Fehlermeldungen an Pollen, nicht eingereicht |
 | `docs/CHANGELOG.md` | was sich wann geändert hat |
 
 ## Stand
 
 Phase 0, Fundament und Messung. Dazu vorgezogen der Kern von Phase 1 ohne Hardware:
-Charakter, Grundzustand, Zustandsbericht und Erklär-Log. Noch nichts zu starten.
+Charakter, Grundzustand, Zustandsbericht und Erklär-Log.
+
+## So starte ich LoLa
+
+Zwischenstand vom 9. Oktober 2026: Die Conversation App läuft auf dem PC, der Reachy ist nur Körper.
+Der Test mit Patrick am Roboter steht noch aus.
+
+Voraussetzung: Im Ordner `~/lola-laufzeit/` liegen llama.cpp, speech-to-speech, die Conversation App,
+das Sprachmodell und die Stimmdaten (Versionen in `docs/ENTSCHEIDUNGEN.md`). Abweichende Pfade stehen
+in `.env`, Vorlage ist `.env.example`.
+
+1. Reachy einschalten. Auf ihm darf keine App laufen.
+2. Auf dem PC, im Ordner dieses Repos (dauert rund 20 Sekunden):
+
+   ```bash
+   uv run python -m dienste.lola_start start
+   ```
+
+   Der Reachy wacht auf und LoLa begrüßt dich.
+3. Beenden:
+
+   ```bash
+   uv run python -m dienste.lola_start stop
+   ```
+
+   Der Reachy legt sich schlafen, die Motoren gehen aus.
+
+Ohne Roboter, nur die Sprachkette auf dem PC (zum Prüfen und Messen):
+`uv run python -m dienste.lola_start kette`.
+
+Gestartet werden der Reihe nach: Sprachmodell (llama.cpp), Vermittler (unser Proxy, setzt den
+Zustandsbericht ein), Sprachkette (speech-to-speech) und die Conversation App.
+
+Klappt der Start nicht, steht der Grund in `~/lola-laufzeit/lauf/` (`sprachmodell.log`,
+`vermittler.log`, `sprachkette.log`, `app.log`). LoLa belegt rund 9 GB Grafikspeicher.
 
 Tests und Prüfung (braucht [uv](https://docs.astral.sh/uv/)):
 

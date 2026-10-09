@@ -2,6 +2,72 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – Entwürfe für Issues bei Pollen
+- Neu: `docs/issues-entwuerfe.md` mit vier Entwürfen (Fundstelle, Schritte, Logs, AI-Angabe). Nicht eingereicht.
+
+## 2026-10-09 – B4: Vermittler in der echten Kette (ohne Roboter)
+- `dienste/lola_start.py` startet den Vermittler mit; speech-to-speech fragt jetzt ihn statt llama.cpp.
+  Neue Aktion `kette`: alles außer der App, der Reachy bleibt unberührt.
+- `wiederholt` im Anfrage-Log: gleiche Stelle im Gespräch und höchstens 5 s Abstand; die Folgeanfrage nach
+  einem Tool-Ergebnis zählt nicht. Beides nach Messung an der echten Kette geändert.
+- Gemessen: Zusatzzeit 0,7 ms, Zwischenspeicher hält, Tools 27 von 27 und 24 von 27, Abbruch nach rund 20 ms.
+  Werte in `MESSUNGEN.md`, Ergebnis in `ENTSCHEIDUNGEN.md`. Probe am Roboter steht aus.
+
+## 2026-10-09 – B3: Vermittler
+- Neu: `vermittler/anfrage.py` (Bericht einsetzen, Tools entfernen) und `vermittler/proxy.py` (HTTP-Proxy
+  mit Streaming und Abbruch, nur Standardbibliothek). Neu: Attrappe `tests/attrappen/llama.py`.
+- Anfrage-Log kennzeichnet wiederholte und abgebrochene Anfragen; der Vermittler räumt beim Start auf.
+- 31 neue Tests gegen die Attrappe. Noch nicht in der echten Kette (B4), `lola_start` unverändert.
+
+## 2026-10-09 – Ursache der verlorenen `conversation.say`-Sätze
+- Gefunden und nachgestellt: `say` sendet aus einem fremden Faden; mit stummem Mikrofon beim Senden kein
+  Abbruch mehr. Ergebnis und Vorschlag in `ENTSCHEIDUNGEN.md`, Reihen in `MESSUNGEN.md`.
+- BACKLOG: Issue für Pollen; Tonlücken und fehlendes `rtpgccbwe` vor Phase 3 prüfen. Kein Code geändert.
+
+## 2026-10-09 – B2: Protokolle als Dateien
+- `seele/erklaer_log.py` schreibt jeden Eintrag zusätzlich als Zeile JSON, wenn eine Datei angegeben ist.
+- Neu: `vermittler/anfrage_log.py` mit Tagesdateien und Löschfrist (`LOLA_ANFRAGE_LOG_TAGE`, Standard 7).
+- 13 neue Tests, die Löschfrist mit der Uhr-Attrappe. Noch nirgends angeschlossen (kommt mit B3).
+
+## 2026-10-09 – B1: Zustandsbericht in der Form aus A3
+- `seele/zustandsbericht.py`: eine Zeile mit Kennung `[Zustand]`, „Du, LoLa, bist …“, Sprechanweisung je
+  Stufe aus derselben festen Tabelle. Kopfzeile und „Halte dich kurz“ entfallen.
+- Tests: alle 20 Kombinationen der Stufen, keine Zahlen, keine Beispielsätze. Beispiel in `KONZEPT.md`.
+
+## 2026-10-09 – A7: Machbarkeitstest Sinne
+- Ein zweites Programm auf dem PC kann Ton und Bild des Reachy per WebRTC mitlesen, während die App läuft.
+  Ergebnis in `ENTSCHEIDUNGEN.md`, Messwerte in `MESSUNGEN.md`, Fahrplan nachgezogen.
+- Nebenbefund für A6: 2 von 14 eingeschleusten Sätzen gingen verloren. Kein Code auf `entwicklung` geändert.
+
+## 2026-10-09 – Zwischenstand: Conversation App auf dem PC
+- `dienste/lola_start.py` startet jetzt auch die Conversation App auf dem PC, prüft vorher den Reachy,
+  setzt die Mikrofon-Werte und legt den Reachy beim Stoppen schlafen (Motoren aus). 14 Tests.
+- Neu: `charakter/profile/lola_deutsch/profile.md` (Name LoLa). `.env.example`: `LOLA_REACHY`, `LOLA_PROFIL`.
+- README: Startabschnitt angepasst. `ENTSCHEIDUNGEN.md`: Zwischenstand, Tests mit Patrick offen.
+  `MESSUNGEN.md`: Motortemperaturen, Start und Grafikspeicher. `ARCHITEKTUR.md` bewusst noch unverändert.
+- Am Roboter geprüft: Start, Begrüßung, Stopp mit Schlafhaltung. Gespräch mit Patrick steht aus.
+
+## 2026-10-09 – A4: Startskript für die Sprachkette
+- Neu: `dienste/lola_start.py` startet und stoppt llama.cpp und speech-to-speech, prüft, ob beide
+  antworten, und nennt die Adresse für die App. Nur Standardbibliothek, 151 Zeilen, 6 Tests.
+- Neu: `.env.example` mit drei Einstellungen. README: Abschnitt „So starte ich LoLa“.
+- Am PC geprüft: Start in 21 s, Grafikspeicher 635 → 9.265 MiB, Stopp gibt alles frei.
+- Mit dem Reachy noch nicht geprüft.
+
+## 2026-10-09 – A4: Stände am Reachy festgenagelt
+- Daemon 1.11.0, Conversation App 1.0.1 (`ddc3096`), Reachy Control 0.9.35. An der laufenden App geprüft.
+- Fehler in der Update-Prüfung des Daemons gefunden und in `ENTSCHEIDUNGEN.md` beschrieben; Issue im Backlog.
+- Regel: auf dem Reachy nur Apps, die wir nutzen.
+- Korrigiert: Adresse des Daemon-Logs (`/logs/ws/daemon`) und Schalter `--stream_batch_sentences`.
+- `ARCHITEKTUR.md`: Fakten zur App auf Stand 1.0.1 gebracht. Kein Code geändert.
+
+## 2026-10-09 – Fahrplan Phase 2 in Aufträge C0 bis C8 aufgeteilt
+- Werkzeug-Brücke, Timer, Kalender (Synology), App-Wechsel mit Ausstiegsgeste, Uhrzeit und Wetter lokal.
+- BACKLOG: SearXNG, Ausstieg per Sprache, Storyteller. Entscheidung in ENTSCHEIDUNGEN.
+
+## 2026-10-09 – Fahrplan Phase 1 in Aufträge B1 bis B6 aufgeteilt
+- Phase 1 im FAHRPLAN mit sechs Aufträgen wie in Phase 0, Herkunft aus Unit Sigma benannt.
+
 ## 2026-10-08 – Sprachausgabe gewählt
 - Qwen3-TTS 0.6B Base Q8_0 mit Referenzstimme „frau“, als gespeicherte Stimmdaten. Ersetzt „aiden“.
 - Gemessen: 2.624 bis 2.722 MiB Grafikspeicher für den Prozess, Grenze 3 GB hält.
