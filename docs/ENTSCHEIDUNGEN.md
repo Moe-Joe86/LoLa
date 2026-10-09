@@ -472,6 +472,28 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
   einem Abbruch einmal wiederholen. An Pollens Code und an speech-to-speech ändern wir nichts.
 - Der Fehler gehört an Pollen gemeldet (`BACKLOG.md`). A6 baut auf diesem Befund auf.
 
+## 2026-10-09 – B3: Vermittler gebaut, nur mit der Standardbibliothek
+- **Entscheidung (Patrick):** keine HTTP-Bibliothek. `http.server` für den Eingang, `http.client` für den
+  Ausgang, ein Faden je Anfrage. aiohttp bleibt der Rückfallweg, falls B4 es verlangt (Abbruch zu spät
+  oder mehr als 20 ms Zusatzzeit).
+- **Aufbau:** `vermittler/anfrage.py` enthält alles, was an einer Anfrage geändert wird, als reine
+  Funktionen. `vermittler/proxy.py` nimmt an, gibt weiter und schreibt das Anfrage-Log.
+- **Welche Anfragen den Bericht bekommen:** nur `POST …/responses` mit `stream: true` und einem Nutzersatz.
+  Gelesen in speech-to-speech `8024ccf`: Aufwärm- und Zusammenfassungs-Anfragen laufen ohne Streaming. Sie
+  und alles Unbekannte gehen Byte für Byte unverändert durch.
+- **Position:** eigener Systemeintrag direkt vor der letzten Nutzer-Nachricht, auch wenn danach noch
+  Tool-Aufruf und Tool-Ergebnis folgen. Alles davor bleibt gleich.
+- **Abbruch:** Ein Wächter-Faden je Anfrage prüft alle 50 ms, ob der Aufrufer noch da ist, und schließt
+  sonst die Verbindung zu llama.cpp, auch bevor das erste Wort gekommen ist. Gegen die Attrappe getestet.
+- **Anfrage-Log:** je Gesprächsanfrage eine Zeile; `wiederholt` kennzeichnet einen Satz, der gleich ist
+  wie in der Anfrage davor oder ihn fortsetzt (vorgreifende Anfragen), `abgebrochen` einen geschlossenen
+  Strom. Beim Start räumt der Vermittler alte Tagesdateien weg.
+- **Noch nicht drin:** die Deutung, das Melden von Gesagtem an die Seele, Auslöser für das Entfernen von
+  Tools (die Funktion ist da und getestet). Der Bericht kommt vorerst aus Charakter und Grundzustand.
+- **Vermutet, nicht gemessen:** dass speech-to-speech vorgreifende Anfragen so schickt, wie `wiederholt`
+  es annimmt (gleicher oder verlängerter Satz), und dass der Zwischenspeicher von llama.cpp an dieser
+  Position hält. Beides misst B4 an der echten Kette.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 

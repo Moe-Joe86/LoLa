@@ -18,7 +18,15 @@ def test_eintrag_landet_als_eine_zeile_in_der_tagesdatei(tmp_path):
         "bericht": "[Zustand] Du, LoLa, bist ruhig.",
         "entfernte_tools": ["dance"],
         "dauer_ms": 12.3,
+        "wiederholt": False,
+        "abgebrochen": False,
     }
+
+
+def test_vorgreifende_und_abgebrochene_anfragen_sind_gekennzeichnet(tmp_path):
+    datei = AnfrageLog(tmp_path, FesteUhr()).schreiben("Wie geht", "", [], 1, wiederholt=True, abgebrochen=True)
+    eintrag = json.loads(datei.read_text(encoding="utf-8"))
+    assert (eintrag["wiederholt"], eintrag["abgebrochen"]) == (True, True)
 
 
 def test_mehrere_eintraege_am_selben_tag_in_derselben_datei(tmp_path):

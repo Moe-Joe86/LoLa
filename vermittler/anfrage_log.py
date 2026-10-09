@@ -32,8 +32,20 @@ class AnfrageLog:
         self._uhr = uhr
         self._frist = frist
 
-    def schreiben(self, gesagt: str, bericht: str, entfernte_tools: list[str], dauer_ms: float) -> Path:
-        """Hängt einen Eintrag an die Datei des heutigen Tages an und räumt alte Tage weg."""
+    def schreiben(
+        self,
+        gesagt: str,
+        bericht: str,
+        entfernte_tools: list[str],
+        dauer_ms: float,
+        wiederholt: bool = False,
+        abgebrochen: bool = False,
+    ) -> Path:
+        """Hängt einen Eintrag an die Datei des heutigen Tages an und räumt alte Tage weg.
+
+        `wiederholt`: derselbe Satz wie in der Anfrage davor (speech-to-speech fragt manchmal vorgreifend).
+        `abgebrochen`: Der Aufrufer hat die Verbindung geschlossen, bevor die Antwort fertig war.
+        """
         zeit = self._uhr()
         self._ordner.mkdir(parents=True, exist_ok=True)
         self.aufraeumen()
@@ -43,6 +55,8 @@ class AnfrageLog:
             "bericht": bericht,
             "entfernte_tools": entfernte_tools,
             "dauer_ms": round(dauer_ms, 1),
+            "wiederholt": wiederholt,
+            "abgebrochen": abgebrochen,
         }
         datei = self._ordner / f"{VORSILBE}{zeit.date().isoformat()}.jsonl"
         with datei.open("a", encoding="utf-8") as ziel:

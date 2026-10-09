@@ -2,6 +2,12 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – B3: Vermittler
+- Neu: `vermittler/anfrage.py` (Bericht einsetzen, Tools entfernen) und `vermittler/proxy.py` (HTTP-Proxy
+  mit Streaming und Abbruch, nur Standardbibliothek). Neu: Attrappe `tests/attrappen/llama.py`.
+- Anfrage-Log kennzeichnet wiederholte und abgebrochene Anfragen; der Vermittler räumt beim Start auf.
+- 31 neue Tests gegen die Attrappe. Noch nicht in der echten Kette (B4), `lola_start` unverändert.
+
 ## 2026-10-09 – Ursache der verlorenen `conversation.say`-Sätze
 - Gefunden und nachgestellt: `say` sendet aus einem fremden Faden; mit stummem Mikrofon beim Senden kein
   Abbruch mehr. Ergebnis und Vorschlag in `ENTSCHEIDUNGEN.md`, Reihen in `MESSUNGEN.md`.
