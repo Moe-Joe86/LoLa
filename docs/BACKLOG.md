@@ -49,8 +49,9 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
   zurückgesetzt, f: Silero setzt torch auf einen Thread). Einreichen entscheidet Patrick.
 - Nächstes Mal: Sprachausgabe mit „x-vector only“ testen (`--qwen3_tts_xvec_only`). Verschwinden damit die
   stillen Überlängen (7 s und 19,5 s Ton für einen kurzen Satz, 9. Oktober 2026)?
-- „Stopp!“ kam am 9. Oktober 2026 in keinem Lauf an. Für den Ausstieg per Sprache wichtig; mit Mitschnitt
-  nachstellen, wenn es so weit ist.
+- **Wichtig:** „Stopp!“ wurde am 9. Oktober 2026 in keinem Lauf erkannt, auch nicht mit Mindestlänge 192 ms.
+  Es ist das natürliche Wort zum Unterbrechen. Beim nächsten Mal am Roboter untersuchen, mit Mitschnitt:
+  Kommt der Ton an, schlägt Silero an, was erkennt Parakeet?
 - `dienste/sprachkette_start.py` wieder entfernen, sobald speech-to-speech die Thread-Zahl nach dem Laden
   von Silero nicht mehr auf 1 lässt (Issue-Entwurf f).
 - Anbindung an Hermes Agent für schwierige Aufträge.

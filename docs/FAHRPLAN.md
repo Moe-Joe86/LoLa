@@ -48,7 +48,7 @@ Zustandsbericht, Erklär-Log im Speicher, Tests.
 | B4 | Vermittler in die echte Kette: speech-to-speech zeigt auf den Vermittler, `lola-start` startet ihn mit. Messen: Zwischenspeicher an der neuen Position (offene Frage), Zusatzzeit durch den Vermittler (Ziel unter 20 ms), Tool-Aufrufe wie in A3 | ja (nach A4) | ohne Roboter erledigt am 9. Oktober 2026: Kette läuft mit Vermittler, `lola_start` startet ihn mit, Zusatzzeit unter 1 ms, Zwischenspeicher hält, Tools 27 von 27 und 24 von 27, Abbruch nach rund 20 ms. Am Roboter geprüft am 9. Oktober 2026 mit A4 Teil 2: Gespräch und Tools laufen über den Vermittler. Messwerte in `MESSUNGEN.md` |
 | B4b | Steckbriefe aus Unit Sigma für `companion_dna`, `humor_engine` und `tracing` (Ablauf siehe `CLAUDE.md`, Verboten). Sigma-Code nur außerhalb des Repos lesen. Klären: Braucht LoLa einen Humor-Wert? Woran war Persönlichkeit bei Sigma erkennbar, und was davon soll B5 prüfen? Ein Test schlägt Alarm, wenn unser Code längere Zeilen aus Sigma enthält | nein | Steckbriefe geschrieben am 9. Oktober 2026 (`docs/sigma/`), Test läuft. Entschieden: `companion_dna` verkleinern, `humor_engine` und `tracing` streichen (`ENTSCHEIDUNGEN.md`) |
 | B5 | Persönlichkeitstest: zwei Charakterdateien mit deutlichem Unterschied (z. B. gesellig/neugierig gegen zurückhaltend/vorsichtig), je 15 Minuten Gespräch, ohne zu sagen, welche läuft. Erkennt die Familie den Unterschied? Wenn nicht: Bericht schärfen oder Werte streichen. Fehlt erkennbar Humor: erst dann ein Humor-Wort ergänzen. Dazu die vier Humor-Prüffragen aus `docs/sigma/humor_engine.md` und die Frage, ob LoLa eigene Themen fehlen („Interessen“) | ja | Ergebnis in `ENTSCHEIDUNGEN.md`, endgültige Charakterwerte |
-| B6 | Phasenabschluss: eine Woche Familienalltag mit Vermittler und Profil. Auffälligkeiten aus dem Anfrage-Log auswerten. Danach „Stand sichern“: `entwicklung` nach `main`, Git-Tag `v0.1` | ja | Phase 1 abgeschlossen |
+| B6 | Phasenabschluss: eine Woche Familienalltag mit Vermittler und Profil. Auffälligkeiten aus dem Anfrage-Log auswerten. Danach „Stand sichern“: `entwicklung` nach `main`, Git-Tag `v0.1` | ja | Phase 1 abgeschlossen. Danach die Conversation App auf dem Reachy deinstallieren (bis dahin Rückfall, nicht starten; Patrick, 9. Oktober 2026) |
 
 Die übrigen Sigma-Module bekommen ihren Steckbrief jeweils zu Beginn ihrer Phase (z. B.
 `voice_recognition` und `episodic_memory` vor Phase 3).
@@ -65,8 +65,9 @@ Ziel: kleine Alltagsfähigkeiten (Timer, Kalender, Wetter), Wechsel zu anderen A
 Rückweg, erste Eigeninitiative. Entschieden am 9. Oktober 2026 (Begründung in `ENTSCHEIDUNGEN.md`):
 
 - **Werkzeuge:** externe Werkzeuge der Conversation App (`REACHY_MINI_EXTERNAL_TOOLS_DIRECTORY`).
-  Auf dem Reachy liegen nur dünne Hüllen (`werkzeuge/`), die den PC fragen. Logik und Passwörter
-  liegen im `dienste/werkzeugdienst` auf dem PC. Tool Spaces von Hugging Face (nur `*.hf.space`)
+  Seit dem 9. Oktober 2026 läuft die App auf dem PC: Die Werkzeuge liegen im Repo unter `werkzeuge/` und
+  werden von der App direkt geladen. Hüllen auf dem Reachy und ein eigener Werkzeugdienst entfallen,
+  Passwörter bleiben in `.env` auf dem PC. Tool Spaces von Hugging Face (nur `*.hf.space`)
   sind für Privates tabu.
 - **Hintergrund:** Die App führt jedes Werkzeug im Hintergrund aus und meldet das Ergebnis ans
   Sprachmodell, sobald es fertig ist (bis zu einem Tag). `task_status` und `task_cancel` gibt es schon.
@@ -81,13 +82,13 @@ Rückweg, erste Eigeninitiative. Entschieden am 9. Oktober 2026 (Begründung in 
 
 | # | Auftrag | Roboter nötig | Ergebnis |
 | --- | --- | --- | --- |
-| C0 | Machbarkeitstests (Branch `test/c0`): (a) externer Werkzeug-Ordner auf dem Reachy setzbar (Datei auf dem Roboter, nur mit Ja), (b) eine Hülle ruft einen Dienst auf dem PC, (c) Ergebnis eines Hintergrund-Werkzeugs nach 2 Minuten wird angesagt, auch wenn gerade niemand spricht, (d) Ausstiegsgeste: Ist zweimaliges Antippen im IMU-Strom sicher erkennbar, ohne Fehlauslösung durch Tanz, Emotionen oder Kopfbewegungen? | ja | Ergebnis in `ENTSCHEIDUNGEN.md` |
-| C1 | Werkzeug-Brücke: `dienste/werkzeugdienst` auf dem PC (nur im Heimnetz erreichbar, Schlüssel in `.env`), eine Hülle je Werkzeug auf dem Reachy. Ist der PC aus, antwortet die Hülle freundlich mit einem Fehler. `lola-start` startet den Dienst mit | ja | ein Test-Werkzeug läuft über die Brücke |
-| C2 | Timer als Hintergrund-Werkzeug (stellen, „wie lange noch?“, abbrechen über `task_status`/`task_cancel`). Testen, ob ein Timer einen App-Wechsel überlebt; wenn nicht, wandert er in den Werkzeugdienst und meldet sich über `conversation.say` | ja | Timer im Alltag nutzbar |
+| C0 | Machbarkeitstests (Branch `test/c0`): (a) die App auf dem PC lädt ein Test-Werkzeug aus `werkzeuge/` (`REACHY_MINI_EXTERNAL_TOOLS_DIRECTORY`; bisher nur im Code gelesen), (b) entfällt, (c) Ergebnis eines Hintergrund-Werkzeugs nach 2 Minuten wird angesagt, auch wenn gerade niemand spricht, (d) Ausstiegsgeste: Ist zweimaliges Antippen im IMU-Strom sicher erkennbar, ohne Fehlauslösung durch Tanz, Emotionen oder Kopfbewegungen? | ja | Ergebnis in `ENTSCHEIDUNGEN.md` |
+| C1 | entfällt seit dem 9. Oktober 2026: Die App läuft auf dem PC und lädt die Werkzeuge direkt, eine Werkzeug-Brücke braucht es nicht. Übrig bleibt: `lola_start` nennt der App den Ordner `werkzeuge/` (ein Schalter, kommt mit C0 a) | – | – |
+| C2 | Timer als Hintergrund-Werkzeug (stellen, „wie lange noch?“, abbrechen über `task_status`/`task_cancel`). Testen, ob ein Timer einen App-Wechsel überlebt; wenn nicht, läuft er als eigener kleiner Dienst auf dem PC und meldet sich über `conversation.say` | ja | Timer im Alltag nutzbar |
 | C3 | Kalender lesen: Synology Calendar über CalDAV, inkl. wiederkehrender Termine. Abhängigkeit (vermutlich `caldav`, `icalendar`) nur nach Rückfrage, nur auf dem PC. Zugangsdaten nur in `.env` | ja | „Was steht morgen an?“ klappt |
 | C4 | Kalender eintragen mit Bestätigung: Das Werkzeug liefert erst einen Vorschlag („Donnerstag 18 Uhr Fußballtraining, eintragen?“), eingetragen wird erst nach einem Ja. Kein Löschen per Sprache | ja | Eintrag mit Bestätigung klappt |
-| C5 | App-Wechsel: Werkzeug `app_starten` (nur Apps aus einer festen Liste in `.env`), `dienste/waechter` mit Ausstiegsgeste aus C0. Der Wächter startet die Conversation App nur neu, wenn er die andere App selbst gestartet hat (nicht nach „geh schlafen“). Ordner `apps/` anlegen (Eintrag in `ENTSCHEIDUNGEN.md`) | ja | Radio hin und per Antippen zurück |
-| C6 | Datum und Uhrzeit in den Zustandsbericht (Pollen-Uhrzeit-Werkzeug abschalten). Wetter-Werkzeug über Open-Meteo im Werkzeugdienst (Pollen-Wetter-Werkzeug abschalten) | ja | Uhrzeit und Wetter ohne Hugging Face |
+| C5 | App-Wechsel: Werkzeug `app_starten` (nur Apps aus einer festen Liste in `.env`), `dienste/waechter` mit Ausstiegsgeste aus C0. Der Wächter startet die Conversation App nur neu, wenn er die andere App selbst gestartet hat (nicht nach „geh schlafen“). Ordner `apps/` anlegen (Eintrag in `ENTSCHEIDUNGEN.md`). Neu zu klären, weil die Conversation App auf dem PC läuft: Sie muss den Reachy freigeben, solange eine andere App auf ihm läuft, und danach wieder starten (`lola_start` startet nicht neben einer App auf dem Reachy) | ja | Radio hin und per Antippen zurück |
+| C6 | Datum und Uhrzeit in den Zustandsbericht (Pollen-Uhrzeit-Werkzeug abschalten). Wetter als Werkzeug in `werkzeuge/` über Open-Meteo (Pollen-Wetter-Werkzeug abschalten) | ja | Uhrzeit und Wetter ohne Hugging Face |
 | C7 | Erste Eigeninitiative: einfache Gesichtserkennung (nur „Gesicht erschienen / verschwunden“, kein Erkennen der Person) lässt Reachy über `conversation.say` grüßen. Höchstens einmal pro Stunde und Person-unabhängig, nie während jemand spricht, nicht nachts. Setzt A6 und A7 voraus | ja | Reachy grüßt, nervt aber nicht |
 | C8 | Phasenabschluss: eine Woche fehlerfreier Betrieb, dann „Stand sichern“ und Git-Tag `v0.2` | ja | Phase 2 abgeschlossen |
 
@@ -149,6 +150,9 @@ und per Antippen zurück; Reachy grüßt von sich aus mit Obergrenze; eine Woche
 - [x] Kann ein zweiter Prozess Mikrofon und Kamera parallel zur App lesen? Ja (A7, 9. Oktober 2026).
 - [ ] Körpersprache aus der Stimmung: siehe Phase 8.
 - [ ] Grenzwert für die Latenz bestätigen. Vorschlag: 1,5 s.
+
+**Nächstes Mal am Roboter** (Patrick, 9. Oktober 2026), in dieser Reihenfolge: A6 (`conversation.say`),
+Patricks Noten für das Deutsch, Latenz-Grenzwert festlegen, Sprachausgabe „x-vector only“, „Stopp!“. Danach B5.
 - [x] Pausenerkennung: „Ja.“ bekommt mit den Standardwerten keine Antwort. Entschieden am Roboter: Mindestlänge 192 ms. Vorgemessen am 9. Oktober
       2026 (`MESSUNGEN.md`), Empfehlung in `ENTSCHEIDUNGEN.md`. Patrick entscheidet in A4 am Roboter.
 - [ ] Ausrufezeichen trotz Sprechanweisung „ohne Ausrufezeichen“: in B4 in 42 von 72 Antworten.

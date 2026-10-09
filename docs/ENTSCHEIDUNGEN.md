@@ -634,4 +634,7 @@ Sitzung mit Patrick am Roboter, 15:02 bis 17:30 Uhr. Messwerte in `MESSUNGEN.md`
   (rund 2,3 s). Bestätigung des Grenzwerts durch Patrick steht aus.
 
 **Weg 2 (App auf dem PC) hat sich bewährt:** Gespräch, Tools, Kopfwackeln, Körperdaten und Start/Stopp
-laufen. ARCHITEKTUR wird nach Patricks Freigabe der Änderungen umgestellt.
+laufen. ARCHITEKTUR ist umgestellt (Patricks Freigabe am 9. Oktober 2026): App auf dem PC, Reachy nur
+Körper, Werkzeuge direkt im Repo statt Hüllen auf dem Reachy, C1 (Werkzeug-Brücke) entfällt.
+**Mindestlänge 192 ms** von Patrick bestätigt. **Die Conversation App auf dem Reachy** bleibt vorerst als
+Rückfall installiert, wird nicht gestartet und nach der Alltagswoche (B6) entfernt.

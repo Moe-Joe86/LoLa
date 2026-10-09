@@ -2,6 +2,12 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – ARCHITEKTUR auf Weg 2 umgestellt
+- ARCHITEKTUR: Die Conversation App läuft auf dem PC, der Reachy ist nur Körper; Werkzeuge und Wächter auf
+  dem PC. FAHRPLAN Phase 2: C1 (Werkzeug-Brücke) entfällt, C0, C2, C5 und C6 angepasst.
+- FAHRPLAN: App auf dem Reachy wird nach B6 entfernt; Reihenfolge für die nächste Sitzung am Roboter.
+- BACKLOG: „Stopp!“ als wichtig markiert.
+
 ## 2026-10-09 – A4 Teil 2 und A5 am Roboter: Einstellungen fest im Startskript
 - `dienste/lola_start.py`: speech-to-speech startet über das neue `dienste/sprachkette_start.py` (stellt die
   Thread-Zahl nach dem Laden von Silero zurück), mit Mindestlänge 192 ms, Teilerkennung aus und Sprachausgabe

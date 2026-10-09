@@ -1,13 +1,13 @@
 # Architektur
 
-Stand: 8. Oktober 2026. Quelle: Live-Dokument „Familien-Companion – Architektur & Fahrplan“
+Stand: 9. Oktober 2026 (Bausteine auf Weg 2 umgestellt: App auf dem PC). Quelle: Live-Dokument „Familien-Companion – Architektur & Fahrplan“
 (https://claude.ai/code/artifact/e1370057-a130-448d-8bc3-b9fd9f31aa50).
 Bei Widerspruch gilt diese Datei im Repo. Änderungen hier und im Live-Dokument nachziehen.
 
 ## Kurzfassung
 
 Der Roboter wird lokal gebaut: Der Reachy Mini Wireless ist der Körper, der Linux-PC mit
-NVIDIA-Grafikkarte das Gehirn. Pollens Conversation App bleibt unverändert die Stimme.
+NVIDIA-Grafikkarte das Gehirn. Pollens Conversation App bleibt unverändert die Stimme und läuft auf dem PC.
 Unser eigentliches Projekt ist die **Seele**, ein eigener Dienst. Er reichert jede Anfrage
 ans Sprachmodell mit Stimmung, Bedürfnissen, Beziehung und Erinnerungen an.
 
@@ -21,31 +21,51 @@ ans Sprachmodell mit Stimmung, Bedürfnissen, Beziehung und Erinnerungen an.
 
 ## Bausteine
 
+Seit dem 9. Oktober 2026 läuft auch die Conversation App auf dem PC (Weg 2, am Roboter geprüft).
+**Der Reachy ist nur Körper:** Mikrofon, Lautsprecher, Kamera, Motoren. Auf ihm läuft nur Pollens Daemon,
+keine App und keine Datei von uns.
+
 ```text
 Reachy Mini Wireless                      Linux-PC (Gehirn)
-┌───────────────────────────┐            ┌──────────────────────────────────────────┐
-│ Stimme: Conversation App  │◄─Realtime─►│ Sprachkette (speech-to-speech)           │
-│ (Pollen, unverändert)     │            │        │ Anfrage                          │
-│        │ lädt             │            │        ▼                                  │
-│ Werkzeuge (unser Code)    │            │ Vermittler (unser Code) ◄─Kontext─► Seele │
-│                           │◄──────── conversation.say (/rpc) ─────────────── Seele │
-│ Wächter (unser Code)      │            │        │ angereichert           ▲         │
-│        │ /api/apps        │            │        ▼                        │         │
-│ Körper: Daemon (Pollen)   │──Audio, Bild, Log───► Sinne (unser Code) ────┘         │
-└───────────────────────────┘            │ Sprachmodell (llama.cpp)                 │
-                                         └──────────────────────────────────────────┘
+┌───────────────────────────┐            ┌───────────────────────────────────────────┐
+│ Körper: Daemon (Pollen)   │◄─WebRTC───►│ Stimme: Conversation App (Pollen)         │
+│ Mikrofon, Lautsprecher,   │  Ton, Bild │        │ lädt Profil und Werkzeuge (Repo) │
+│ Kamera, Motoren           │◄─REST─────►│        │ Realtime                         │
+│                           │  Bewegung  │        ▼                                  │
+│                           │            │ Sprachkette (speech-to-speech)            │
+│                           │            │        │ Anfrage                          │
+│                           │            │        ▼                                  │
+│                           │            │ Vermittler (unser Code) ◄─Kontext─► Seele │
+│                           │            │        │ angereichert                     │
+│                           │            │        ▼                                  │
+│                           │            │ Sprachmodell (llama.cpp)                  │
+│                           │──Ton, Bild, Zustand, Log──► Sinne, Wächter (unser Code)│
+└───────────────────────────┘            │ Seele ──conversation.say (/rpc)──► App    │
+                                         └───────────────────────────────────────────┘
 ```
 
 | Baustein | Aufgabe | läuft auf | Code |
 | --- | --- | --- | --- |
-| Körper (Daemon) | Motoren, Mikrofone, Kamera, Schallrichtung, App-Start | Reachy | Pollen, unverändert |
-| Stimme (Conversation App) | Gesprächsschleife, Bewegung, Tool-Aufrufe | Reachy | Pollen, unverändert |
+| Körper (Daemon) | Motoren, Mikrofone, Lautsprecher, Kamera, Schallrichtung, Kopfwackeln zum Ton | Reachy | Pollen, unverändert |
+| Stimme (Conversation App) | Gesprächsschleife, Bewegung, Tool-Aufrufe | PC | Pollen, unverändert (`2e43e80`), eigene Umgebung |
 | Sprachkette (speech-to-speech) | Sprache erkennen und erzeugen | PC | Hugging Face, nur Konfiguration |
 | Sprachmodell (llama.cpp) | in Worten denken | PC | nur Konfiguration |
 | Vermittler | gibt jeder Anfrage den Seelenzustand mit, meldet Gesagtes zurück | PC | **unser Code** |
 | Seele | Bewertung, Stimmung, Bedürfnisse, Beziehung, Gedächtnis, Eigeninitiative | PC | **unser Code** |
 | Sinne | Rohdaten werden zu Wahrnehmungen: wer spricht, woher, welches Geräusch, Motorfehler | PC | **unser Code** |
-| Werkzeuge und Wächter | Timer, Kalender, App-Wechsel, Rückkehr nach dem Radio | Reachy | **unser Code** |
+| Werkzeuge | Timer, Kalender, Wetter: liegen im Repo unter `werkzeuge/`, die App lädt sie direkt | PC | **unser Code** |
+| Wächter | App-Wechsel und Rückkehr nach dem Radio, über die REST-Schnittstelle des Daemons | PC | **unser Code** |
+
+**Start und Stopp:** `dienste/lola_start.py` startet Sprachmodell, Vermittler, Sprachkette und App, stellt
+Lautstärke und Mikrofon des Reachy ein und legt ihn beim Stoppen schlafen (das tut die App auf dem PC nicht
+selbst). Alle Einstellungen der Kette stehen dort und in `.env.example`. speech-to-speech wird über
+`dienste/sprachkette_start.py` aufgerufen, das nur die Thread-Zahl nach dem Laden von Silero zurückstellt.
+
+**Werkzeuge:** Weil die App auf dem PC läuft, braucht es keine Hüllen auf dem Reachy und keinen eigenen
+Werkzeugdienst. Der Ordner wird der App wie das Profil per Umgebungsvariable genannt
+(`REACHY_MINI_EXTERNAL_TOOLS_DIRECTORY`). Im Code gelesen, noch nicht ausprobiert (C0).
+
+**Nicht im Profil:** das Kamera-Tool. Das Sprachmodell kann keine Bilder (Entscheidung offen, BACKLOG).
 
 Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den Vermittler an.
 
@@ -56,7 +76,7 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
 | Wahrnehmung | sieht das erkannte Gesprochene. Alles andere melden die Sinne direkt an die Seele. |
 | schnelle Bewertung | prüft Sprecher, Name und Wortliste, bevor die Anfrage weitergeht (Millisekunden) |
 | Deutung | schickt das Gesagte parallel zur Antwort als eigenen kurzen Aufruf an dasselbe Sprachmodell |
-| Verhalten | setzt den Zustandsbericht als eigenen Systemeintrag direkt vor den letzten Nutzersatz. Nur dort klappen alle Tool-Aufrufe (A3, gemessen). Vermutet, noch nicht gemessen: llama.cpp nutzt den unveränderten Anfang weiter aus dem Zwischenspeicher |
+| Verhalten | setzt den Zustandsbericht als eigenen Systemeintrag direkt vor den letzten Nutzersatz. Nur dort klappen alle Tool-Aufrufe (A3, gemessen). Gemessen in B4: llama.cpp nutzt den unveränderten Anfang weiter aus dem Zwischenspeicher |
 | harte Grenzen | entfernt Bewegungs-Tools aus der Anfrage, solange eine Grenze greift |
 | Folge | sieht die Antwort und in der nächsten Anfrage die Ergebnisse der Tool-Aufrufe |
 | Eigeninitiative | läuft nicht über den Vermittler, sondern über `conversation.say` der App |
@@ -73,7 +93,7 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
    Sprachkette und bekommt so auch den Zustandsbericht.
 3. **Haltung** (ab Phase 8): eine dauerhafte Körperhaltung aus der Stimmung, siehe Fahrplan.
 
-## Geprüfte Fakten zur Conversation App (Stand 1.0.1, `ddc3096`, gelesen am 9. Oktober 2026)
+## Geprüfte Fakten zur Conversation App (gelesen am Stand 1.0.1, `ddc3096`; in Betrieb ist `2e43e80`)
 
 - Bewegung: Ein einziger Steuerpunkt (`MovementManager`). Darauf laufen nacheinander
   Emotionen, Tänze, Zielposen und ein „Atmen“ mit festen Werten (5 mm, 0,1 Hz, Antennen 15°).
@@ -91,9 +111,11 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
   die Einstellungsseite.
 - Nach 24 Stunden ohne Aktivität legt sich die App schlafen (`REACHY_MINI_APP_TIMEOUT_MINUTES`, Standard 1440).
 - Werkzeuge (Tools) bekommen Zugriff auf `reachy_mini` und `movement_manager`.
-- Lokales Backend: `HF_REALTIME_CONNECTION_MODE=local`,
-  `HF_REALTIME_WS_URL=ws://<PC-IP>:8765/v1/realtime`. Das Backend muss auf der
-  Netzwerk-Adresse lauschen, nicht nur auf `127.0.0.1`.
+- Lokales Backend: `HF_REALTIME_CONNECTION_MODE=local`, `HF_REALTIME_WS_URL=ws://127.0.0.1:8765/v1/realtime`
+  (App und Sprachkette laufen beide auf dem PC), Erkennungssprache `auto`.
+- Die App legt den Reachy beim Beenden nicht schlafen und kann vom PC aus die Mikrofon-Werte nicht setzen;
+  beides übernimmt `lola_start`.
+- Kopfwackeln beim Sprechen macht der Daemon zum ankommenden Ton; am Roboter gesehen.
 
 ## Körperwahrnehmung (Stand 8. Oktober 2026)
 
