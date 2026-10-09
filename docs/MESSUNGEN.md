@@ -126,3 +126,17 @@ Bei drei Werten in einem Feld: Position am Ende / an der Nutzer-Nachricht / davo
   Unterschied.
 - Urteil beim Lesen, keine Messung: Mit dem knappen Bericht sind die meisten Antworten fast dieselben
   wie ohne. Alle Antworten stehen in `docs/A3-antworten.md` auf Branch `test/a3`.
+
+## A4 – Motortemperatur über den Raw-Endpunkt (9. Oktober 2026)
+Lese-Paket (Anweisung 0x02) für Register 146 über `/api/move/ws/raw/write`. Reachy in Schlafhaltung,
+Motoren aus, keine App. Skript: `tests/a4/motortemperatur.py` auf Branch `test/a4-pc`.
+
+| Motor | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Temperatur | 25 °C | 28 °C | 26 °C | 26 °C | 26 °C | 27 °C | 29 °C | 31 °C | 33 °C |
+
+Bei allen Antworten ist das Warn-Bit gesetzt. IMU-Temperatur zur selben Zeit: 44,4 °C.
+
+## A4 – Start und Grafikspeicher mit der App auf dem PC (9. Oktober 2026)
+`lola_start start`: 22 s bis alle drei Programme antworten. Grafikspeicher vorher 635 MiB, mit Gespräch
+9.544 bis 9.556 MiB. `lola_start stop`: 8 s, danach wieder 635 MiB, Reachy schläft, Motoren aus.

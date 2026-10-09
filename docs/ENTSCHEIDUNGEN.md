@@ -376,6 +376,40 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
 - Gemessen am PC: Start 21 s; Grafikspeicher vorher 635 MiB, danach 9.265 MiB (llama-server 6.012 MiB,
   speech-to-speech 2.604 MiB nach dem Laden, noch ohne Gespräch).
 
+## 2026-10-09 – Zwischenstand: Die Conversation App läuft auf dem PC (Tests mit Patrick offen)
+- **Grundsatz (Patrick):** Der Reachy ist nur Körper (Mikrofon, Lautsprecher, Kamera, Motoren). Auf ihm
+  läuft keine Logik von uns, später höchstens kleine Auslöser für den PC.
+- **Anlass:** Auf dem Reachy schickt App 1.0.1 die Erkennungssprache „en“; speech-to-speech nimmt mit
+  Parakeet nur „auto“ an und verwirft dann die ganze Sitzungs-Einstellung samt Profil und Tools. Die
+  Sprache ist dort nur per Umgebungsvariable einstellbar, also nur über eine Datei auf dem Roboter.
+- **Stand:** App aus GitHub, Commit `2e43e80` (Standard „auto“, Sprache einstellbar), unverändert in
+  `~/lola-laufzeit/app-venv`, Reachy-Bibliothek 1.11.0 wie der Daemon. Ton und Bild kommen per WebRTC
+  direkt vom Daemon. GStreamer 1.24.2 und das WebRTC-Plugin 0.14.5 waren auf dem PC schon vorhanden.
+- **Geprüft ohne Patrick:** Profil und Tools kommen an, Begrüßung „Hallo! Ich bin LoLa …“, eingeschleuste
+  Bitten lösen `move_head` und `dance` aus. TCP-Verbindungen der App nur zum Reachy, zur Sprachkette und
+  zum Router (Port 49000, vermutlich UPnP der WebRTC-Bibliothek). CPU im Leerlauf: 55 % eines Kerns von 16.
+- **Offen, mit Patrick:** Klang, sichtbare Bewegungen und Kopfwackeln, Latenz am Reachy, 21 Testsätze,
+  Motortemperatur bei laufender App. `ARCHITEKTUR.md` wird erst danach geändert. Die App auf dem Reachy
+  bleibt installiert, wird aber nicht mehr gestartet.
+- **Beenden (Code gelesen, am Roboter gesehen):** Die App legt den Reachy beim Stoppen absichtlich nicht
+  schlafen, nur über das Tool `go_to_sleep` und nach 24 Stunden Stille. Läuft sie auf dem Reachy, räumt
+  danach der Daemon auf; auf dem PC tut das niemand, die Motoren blieben an. Deshalb beendet `lola_start
+  stop` die App wie mit Strg+C (ihr eigener Abschluss läuft) und legt den Reachy dann über die REST-API
+  schlafen und schaltet die Motoren aus.
+- **Kopfwackeln:** Die App schaltet es im Daemon bei jedem Start selbst ein und beim Beenden aus (im
+  Daemon-Log gesehen). Nichts zu tun. Die Warnung der Bibliothek betrifft nur ihre eigene, zweite Variante.
+- **Mikrofon-Werte:** Aus der Ferne setzt die App sie nicht. Sie werden nur flüchtig geschrieben (Code
+  gelesen; ob sie einen Neustart des Reachy überleben, ist nicht ausprobiert). `lola_start start` setzt
+  deshalb sechs Werte über die REST-API. Den siebten (`PP_NLATTENONOFF`, Ganzzahl) lehnt der Daemon
+  1.11.0 über REST ab („required argument is not an integer“); er wird nur geprüft und gemeldet.
+- **Profil:** `charakter/profile/lola_deutsch/profile.md`, der Name ist LoLa. Die App liest den Ordner
+  über `REACHY_MINI_EXTERNAL_PROFILES_DIRECTORY`; das Gedächtnis der App ist aus.
+- **Motortemperatur (nur Lese-Pakete, Reachy schlafend):** alle neun Motoren antworten, 25 bis 33 °C,
+  der Daemon lief ohne Fehler weiter. Bei allen ist das Warn-Bit gesetzt; vermutlich die
+  Spannungsmeldung, die der Daemon selbst ausblendet. Werte in `MESSUNGEN.md`.
+- `dienste/lola_start.py` hat jetzt 225 Zeilen (Ziel war eher 120): dazu kamen App, Reachy-Prüfung,
+  Mikrofon-Werte und Schlafenlegen.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
@@ -384,6 +418,7 @@ Werden in Phase 0 eingetragen (A1 und A4):
 | Reachy-Daemon / SDK | 1.11.0 (PyPI) | 2026-10-09 |
 | Conversation App | 1.0.1, Hugging-Face-Stand `ddc3096` (in A3 gelesen: GitHub `2e43e80`) | 2026-10-09 |
 | Reachy Control (PC) | 0.9.35 (deb) | 2026-10-08 |
+| Conversation App auf dem PC (Zwischenstand) | GitHub `2e43e80`, Reachy-Bibliothek 1.11.0, GStreamer 1.24.2, gst-plugins-rs 0.14.5 | 2026-10-09 |
 | speech-to-speech | Commit `8024ccf` (in A2 geprüft, in A1 installiert) | 2026-10-08 |
 | llama.cpp | Commit `d81235049384534c167caea52b85a694f6103d14` (0.6.0), CUDA 12.0, gcc 12 | 2026-10-08 |
 | Sprachmodell | Qwen3-8B Q4_K_M, `Qwen/Qwen3-8B-GGUF` Stand `7c41481`, SHA-256 `d98cdcbd…5745785` (nur für A1, Wahl in A5) | 2026-10-08 |

@@ -1,5 +1,13 @@
+import http.server
+import json
 import subprocess
 import sys
+import threading
+import tomllib
+import urllib.request
+from pathlib import Path
+
+import pytest
 
 from dienste import lola_start
 
@@ -64,3 +72,105 @@ def test_stoppe_laesst_fremden_prozess_in_ruhe(tmp_path):
     assert fremd.poll() is None
     fremd.kill()
     fremd.wait()
+
+
+class Daemon(http.server.BaseHTTPRequestHandler):
+    """Attrappe des Reachy-Daemons: merkt sich alle Aufrufe und antwortet aus einer Tabelle."""
+
+    aufrufe: list = []
+    antworten: dict = {}
+
+    def _antworte(self):
+        laenge = int(self.headers.get("Content-Length") or 0)
+        rumpf = json.loads(self.rfile.read(laenge)) if laenge else None
+        Daemon.aufrufe.append((self.command, self.path, rumpf))
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(json.dumps(Daemon.antworten.get(self.path, {})).encode())
+
+    do_GET = do_POST = _antworte
+
+    def log_message(self, *args):
+        pass
+
+
+@pytest.fixture
+def daemon(tmp_path, monkeypatch):
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Daemon)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    Daemon.aufrufe = []
+    Daemon.antworten = {
+        "/api/daemon/status": {"state": "running"},
+        "/api/apps/current-app-status": None,
+        "/api/audio/config/apply": {"applied": True},
+        "/api/move/running": [],
+        "/api/audio/config/parameter/PP_NLATTENONOFF": {"values": [0]},
+    }
+    echtes_oeffnen = urllib.request.urlopen
+
+    def umgeleitet(anfrage, timeout):
+        anfrage.full_url = anfrage.full_url.replace("reachy-mini.local:8000", f"127.0.0.1:{server.server_port}")
+        return echtes_oeffnen(anfrage, timeout=timeout)
+
+    monkeypatch.setattr(lola_start.urllib.request, "urlopen", umgeleitet)
+    monkeypatch.setattr(lola_start.time, "sleep", lambda _: None)
+    yield werte(tmp_path)
+    server.shutdown()
+
+
+def test_app_spricht_lokal_mit_sprache_auto_und_unserem_profil(tmp_path):
+    befehl, _, umgebung = lola_start.befehle(werte(tmp_path))["app"]
+    assert befehl[0].endswith("app-venv/bin/reachy-mini-conversation-app")
+    assert umgebung["HF_REALTIME_CONNECTION_MODE"] == "local"
+    assert umgebung["HF_REALTIME_WS_URL"] == "ws://127.0.0.1:8765/v1/realtime"
+    assert umgebung["REALTIME_TRANSCRIPTION_LANGUAGE"] == "auto"
+    profil = Path(umgebung["REACHY_MINI_EXTERNAL_PROFILES_DIRECTORY"]) / umgebung["REACHY_MINI_CUSTOM_PROFILE"]
+    _, kopf, text = (profil / "profile.md").read_text(encoding="utf-8").split("+++", 2)
+    assert tomllib.loads(kopf)["schema_version"] == 1
+    assert "Du bist LoLa" in text
+
+
+def test_reachy_bereit_setzt_die_mikrofon_werte(daemon):
+    assert lola_start.reachy_bereit(daemon) is True
+    methode, pfad, rumpf = Daemon.aufrufe[-2]
+    assert (methode, pfad) == ("POST", "/api/audio/config/apply")
+    assert {"name": "PP_AGCMAXGAIN", "values": [10.0]} in rumpf["config"]
+    assert len(rumpf["config"]) == 6
+    assert all(isinstance(zahl, float) for paar in rumpf["config"] for zahl in paar["values"])
+
+
+def test_reachy_bereit_warnt_wenn_der_ganzzahl_wert_abweicht(daemon, capsys):
+    Daemon.antworten["/api/audio/config/parameter/PP_NLATTENONOFF"] = {"values": [1]}
+    assert lola_start.reachy_bereit(daemon) is True
+    assert "PP_NLATTENONOFF" in capsys.readouterr().out
+
+
+def test_reachy_bereit_startet_nicht_neben_einer_app_auf_dem_reachy(daemon):
+    Daemon.antworten["/api/apps/current-app-status"] = {"state": "running"}
+    assert lola_start.reachy_bereit(daemon) is False
+    assert all(methode == "GET" for methode, _, _ in Daemon.aufrufe)
+
+
+def test_reachy_bereit_meldet_ausgeschalteten_reachy(tmp_path, monkeypatch):
+    def keine_antwort(anfrage, timeout):
+        raise OSError
+
+    monkeypatch.setattr(lola_start.urllib.request, "urlopen", keine_antwort)
+    assert lola_start.reachy_bereit(werte(tmp_path)) is False
+
+
+def test_stoppe_legt_den_reachy_nach_der_app_schlafen(daemon):
+    lauf = Path(daemon["LOLA_LAUFZEIT"]) / "lauf"
+    lauf.mkdir()
+    prozess = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)", daemon["LOLA_LAUFZEIT"]])
+    (lauf / "app.pid").write_text(str(prozess.pid), encoding="utf-8")
+    lola_start.stoppe(daemon)
+    assert prozess.wait(timeout=5) is not None
+    gesendet = [pfad for methode, pfad, _ in Daemon.aufrufe if methode == "POST"]
+    assert gesendet == ["/api/move/play/goto_sleep", "/api/motors/set_mode/disabled"]
+
+
+def test_stoppe_ohne_app_laesst_den_reachy_in_ruhe(daemon):
+    (Path(daemon["LOLA_LAUFZEIT"]) / "lauf").mkdir()
+    lola_start.stoppe(daemon)
+    assert Daemon.aufrufe == []

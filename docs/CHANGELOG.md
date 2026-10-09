@@ -2,6 +2,14 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – Zwischenstand: Conversation App auf dem PC
+- `dienste/lola_start.py` startet jetzt auch die Conversation App auf dem PC, prüft vorher den Reachy,
+  setzt die Mikrofon-Werte und legt den Reachy beim Stoppen schlafen (Motoren aus). 14 Tests.
+- Neu: `charakter/profile/lola_deutsch/profile.md` (Name LoLa). `.env.example`: `LOLA_REACHY`, `LOLA_PROFIL`.
+- README: Startabschnitt angepasst. `ENTSCHEIDUNGEN.md`: Zwischenstand, Tests mit Patrick offen.
+  `MESSUNGEN.md`: Motortemperaturen, Start und Grafikspeicher. `ARCHITEKTUR.md` bewusst noch unverändert.
+- Am Roboter geprüft: Start, Begrüßung, Stopp mit Schlafhaltung. Gespräch mit Patrick steht aus.
+
 ## 2026-10-09 – A4: Startskript für die Sprachkette
 - Neu: `dienste/lola_start.py` startet und stoppt llama.cpp und speech-to-speech, prüft, ob beide
   antworten, und nennt die Adresse für die App. Nur Standardbibliothek, 151 Zeilen, 6 Tests.

@@ -16,6 +16,8 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Kopfbewegung im Sprechrhythmus aus der Stimmung (`emotional_sway`, `speech_tapper`).
 
 ## Technik
+- Issue bei Pollen (Repo `pollen-robotics/reachy_mini`): `POST /api/audio/config/apply` wandelt alle Werte
+  in Kommazahlen um; Ganzzahl-Parameter wie `PP_NLATTENONOFF` scheitern („required argument is not an integer“).
 - Issue bei Pollen (Repo `pollen-robotics/reachy_mini`, nach A4, mit Protokollauszug): Die Update-Prüfung
   verwechselt Apps mit gleichem Namensanfang (`app_update_checker.py`, Suche `{name}*.dist-info`).
   Sie meldet „aktuell“ und installiert beim Update die falsche App. Siehe `ENTSCHEIDUNGEN.md`, 9. Oktober.

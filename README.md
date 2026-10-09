@@ -26,28 +26,31 @@ Charakter, Grundzustand, Zustandsbericht und Erklär-Log.
 
 ## So starte ich LoLa
 
-Voraussetzung: Im Ordner `~/lola-laufzeit/` liegen llama.cpp, speech-to-speech, das Sprachmodell und
-die Stimmdaten (Versionen in `docs/ENTSCHEIDUNGEN.md`). Abweichende Pfade stehen in `.env`,
-Vorlage ist `.env.example`.
+Zwischenstand vom 9. Oktober 2026: Die Conversation App läuft auf dem PC, der Reachy ist nur Körper.
+Der Test mit Patrick am Roboter steht noch aus.
 
-1. Auf dem PC, im Ordner dieses Repos, die Sprachkette starten (dauert rund 20 Sekunden):
+Voraussetzung: Im Ordner `~/lola-laufzeit/` liegen llama.cpp, speech-to-speech, die Conversation App,
+das Sprachmodell und die Stimmdaten (Versionen in `docs/ENTSCHEIDUNGEN.md`). Abweichende Pfade stehen
+in `.env`, Vorlage ist `.env.example`.
+
+1. Reachy einschalten. Auf ihm darf keine App laufen.
+2. Auf dem PC, im Ordner dieses Repos (dauert rund 20 Sekunden):
 
    ```bash
    uv run python -m dienste.lola_start start
    ```
 
-   Am Ende steht dort, welche Adresse in die App gehört, zum Beispiel `pop-os.local`, Port 8765.
-2. Reachy einschalten und in Reachy Control die Conversation App starten.
-3. Nur beim ersten Mal: in den Einstellungen der App unter „Connection“ auf „Local“ stellen und
-   Host und Port aus Schritt 1 eintragen.
-4. Beenden: die App in Reachy Control stoppen, dann auf dem PC:
+   Der Reachy wacht auf und LoLa begrüßt dich.
+3. Beenden:
 
    ```bash
    uv run python -m dienste.lola_start stop
    ```
 
-Klappt der Start nicht, steht der Grund in `~/lola-laufzeit/lauf/sprachmodell.log` oder
-`sprachkette.log`. Die Sprachkette belegt rund 8,6 GB Grafikspeicher.
+   Der Reachy legt sich schlafen, die Motoren gehen aus.
+
+Klappt der Start nicht, steht der Grund in `~/lola-laufzeit/lauf/` (`sprachmodell.log`,
+`sprachkette.log`, `app.log`). LoLa belegt rund 9 GB Grafikspeicher.
 
 Tests und Prüfung (braucht [uv](https://docs.astral.sh/uv/)):
 

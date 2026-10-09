@@ -1,12 +1,13 @@
-"""Startet und stoppt die lokale Sprachkette auf dem PC: llama.cpp und speech-to-speech.
+"""Startet und stoppt LoLa auf dem PC: llama.cpp, speech-to-speech und die Conversation App.
 
 Aufruf: uv run python -m dienste.lola_start start | stop
-Beide Programme liegen ausserhalb des Repos im Laufzeit-Ordner und bleiben unveraendert.
+Die drei Programme liegen ausserhalb des Repos im Laufzeit-Ordner und bleiben unveraendert.
+Auf dem Reachy laeuft nur der Daemon; er wird ueber seine REST-Schnittstelle angesprochen.
 """
 
+import json
 import os
 import signal
-import socket
 import subprocess
 import sys
 import time
@@ -15,11 +16,26 @@ from pathlib import Path
 
 PORT_SPRACHMODELL = 8090
 PORT_SPRACHKETTE = 8765
+PORT_APP = 7860
 WARTEZEIT_S = 180
+PROFILE = Path(__file__).resolve().parent.parent / "charakter" / "profile"
+# Mikrofon-Werte, die die Conversation App beim Start setzt, wenn sie auf dem Reachy laeuft (Stand 2e43e80).
+MIKROFON = {
+    "PP_AGCMAXGAIN": [10.0],
+    "PP_MIN_NS": [0.8],
+    "PP_MIN_NN": [0.8],
+    "PP_GAMMA_E": [0.5],
+    "PP_GAMMA_ETAIL": [0.5],
+    "PP_MGSCALE": [4.0, 1.0, 1.0],
+}
+# Diesen Ganzzahl-Wert nimmt die REST-Schnittstelle des Daemons 1.11.0 nicht an; er wird nur geprueft.
+MIKROFON_NUR_PRUEFEN = ("PP_NLATTENONOFF", [0])
 STANDARD = {
     "LOLA_LAUFZEIT": "~/lola-laufzeit",
     "LOLA_SPRACHMODELL": "modelle/Qwen3-8B-Q4_K_M.gguf",
     "LOLA_STIMME": "frau_0.6B-Base_Q8_0",
+    "LOLA_REACHY": "reachy-mini.local",
+    "LOLA_PROFIL": "lola_deutsch",
 }
 
 
@@ -35,8 +51,8 @@ def einstellungen(env_datei: Path = Path(".env")) -> dict[str, str]:
     return werte
 
 
-def befehle(werte: dict[str, str]) -> dict[str, tuple[list[str], str]]:
-    """Baut je Programm die Kommandozeile und die Adresse, an der es sich gesund meldet."""
+def befehle(werte: dict[str, str]) -> dict[str, tuple[list[str], str, dict[str, str]]]:
+    """Baut je Programm Kommandozeile, Gesundheits-Adresse und eigene Umgebungsvariablen."""
     laufzeit = Path(werte["LOLA_LAUFZEIT"]).expanduser()
     stimmen = laufzeit / "stimmen"
     stimme = stimmen / werte["LOLA_STIMME"]
@@ -59,10 +75,69 @@ def befehle(werte: dict[str, str]) -> dict[str, tuple[list[str], str]]:
         *("--qwen3_tts_ref_text", wortlaut.read_text(encoding="utf-8").strip() if wortlaut.exists() else ""),
         *("--qwen3_tts_ref_cache_dir", str(stimmen), "--qwen3_tts_language", "german"),
     ]
-    return {
-        "sprachmodell": (llama, f"http://127.0.0.1:{PORT_SPRACHMODELL}/health"),
-        "sprachkette": (kette, f"http://127.0.0.1:{PORT_SPRACHKETTE}/v1/pool"),
+    kette_umgebung = {
+        "HF_HOME": str(laufzeit / "hf-cache"),
+        "NLTK_DATA": str(laufzeit / "nltk"),
+        "OMP_NUM_THREADS": "6",
+        "HF_HUB_OFFLINE": "1",
     }
+    app_umgebung = {
+        "HF_REALTIME_CONNECTION_MODE": "local",
+        "HF_REALTIME_WS_URL": f"ws://127.0.0.1:{PORT_SPRACHKETTE}/v1/realtime",
+        "REALTIME_TRANSCRIPTION_LANGUAGE": "auto",
+        "REACHY_MINI_EXTERNAL_PROFILES_DIRECTORY": str(PROFILE),
+        "REACHY_MINI_CUSTOM_PROFILE": werte["LOLA_PROFIL"],
+        "REACHY_MINI_MEMORY_ENABLED": "false",
+        "REACHY_MINI_INSTANCE_PATH": str(laufzeit / "app-daten"),
+    }
+    app = [str(laufzeit / "app-venv/bin/reachy-mini-conversation-app"), "--ui"]
+    return {
+        "sprachmodell": (llama, f"http://127.0.0.1:{PORT_SPRACHMODELL}/health", {}),
+        "sprachkette": (kette, f"http://127.0.0.1:{PORT_SPRACHKETTE}/v1/pool", kette_umgebung),
+        "app": (app, f"http://127.0.0.1:{PORT_APP}/", app_umgebung),
+    }
+
+
+def reachy(werte: dict[str, str], pfad: str, daten: dict | None = None, senden: bool = False):
+    """Fragt den Daemon des Reachy (GET) oder schickt ihm etwas (POST). Gibt None zurueck, wenn er nicht antwortet."""
+    rumpf = json.dumps(daten).encode() if daten is not None else (b"" if senden else None)
+    anfrage = urllib.request.Request(f"http://{werte['LOLA_REACHY']}:8000{pfad}", data=rumpf)
+    anfrage.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(anfrage, timeout=10) as antwort:
+            return json.loads(antwort.read() or b"{}")
+    except (OSError, ValueError):
+        return None
+
+
+def reachy_bereit(werte: dict[str, str]) -> bool:
+    """Prueft, ob der Daemon laeuft und keine andere App den Reachy belegt, und setzt die Mikrofon-Werte."""
+    if (reachy(werte, "/api/daemon/status") or {}).get("state") != "running":
+        print(f"Reachy ({werte['LOLA_REACHY']}) antwortet nicht. Ist er eingeschaltet?")
+        return False
+    if reachy(werte, "/api/apps/current-app-status") is not None:
+        print("Auf dem Reachy läuft schon eine App. Bitte dort erst stoppen.")
+        return False
+    paare = [{"name": name, "values": werte_} for name, werte_ in MIKROFON.items()]
+    if not (reachy(werte, "/api/audio/config/apply", {"config": paare}) or {}).get("applied"):
+        print("Hinweis: Die Mikrofon-Werte ließen sich nicht setzen.")
+    name, soll = MIKROFON_NUR_PRUEFEN
+    if (reachy(werte, f"/api/audio/config/parameter/{name}") or {}).get("values") != soll:
+        print(f"Hinweis: Mikrofon-Wert {name} steht nicht auf {soll[0]} und lässt sich von hier nicht setzen.")
+    return True
+
+
+def lege_schlafen(werte: dict[str, str]) -> None:
+    """Legt den Reachy in die Schlafhaltung und schaltet die Motoren aus. Die App tut das beim Stoppen nicht."""
+    if reachy(werte, "/api/move/play/goto_sleep", senden=True) is None:
+        print("Reachy antwortet nicht, er wurde nicht schlafen gelegt.")
+        return
+    for _ in range(20):
+        time.sleep(0.5)
+        if not reachy(werte, "/api/move/running"):
+            break
+    reachy(werte, "/api/motors/set_mode/disabled", senden=True)
+    print("Reachy: schläft, Motoren aus.")
 
 
 def _antwortet(adresse: str) -> bool:
@@ -87,22 +162,23 @@ def _warte(name: str, prozess: subprocess.Popen, adresse: str) -> bool:
 
 
 def starte(werte: dict[str, str]) -> int:
-    """Startet beide Programme nacheinander und meldet die Adresse fuer die App."""
+    """Startet die drei Programme nacheinander; die App erst, wenn der Reachy bereit ist."""
     laufzeit = Path(werte["LOLA_LAUFZEIT"]).expanduser()
     lauf = laufzeit / "lauf"
     lauf.mkdir(parents=True, exist_ok=True)
-    umgebung = os.environ | {
-        "HF_HOME": str(laufzeit / "hf-cache"),
-        "NLTK_DATA": str(laufzeit / "nltk"),
-        "OMP_NUM_THREADS": "6",
-        "HF_HUB_OFFLINE": "1",
-    }
-    for name, (befehl, adresse) in befehle(werte).items():
+    (laufzeit / "app-daten").mkdir(exist_ok=True)
+    for name, (befehl, adresse, eigene) in befehle(werte).items():
         if _antwortet(adresse):
             print(f"{name}: läuft schon.")
             continue
+        if name == "app" and not reachy_bereit(werte):
+            print("Die Sprachkette läuft, die App wurde nicht gestartet.")
+            return 1
         with open(lauf / f"{name}.log", "w", encoding="utf-8") as log:
-            prozess = subprocess.Popen(befehl, stdout=log, stderr=log, env=umgebung, start_new_session=True)
+            prozess = subprocess.Popen(
+                befehl, stdout=log, stderr=log, env=os.environ | eigene, cwd=laufzeit / "app-daten",
+                start_new_session=True,
+            )
         (lauf / f"{name}.pid").write_text(str(prozess.pid), encoding="utf-8")
         print(f"{name}: startet …")
         if not _warte(name, prozess, adresse):
@@ -110,24 +186,20 @@ def starte(werte: dict[str, str]) -> int:
             stoppe(werte)
             return 1
         print(f"{name}: antwortet.")
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-        s.connect(("192.0.2.1", 9))  # sendet nichts, zeigt nur die eigene Adresse im Heimnetz
-        ip = s.getsockname()[0]
-    print(f"\nLoLa läuft. In der App eintragen: Host {socket.gethostname()}.local, Port {PORT_SPRACHKETTE}.")
-    print(f"Geht der Name nicht: Host {ip} (kann sich ändern, dann in der App anpassen).")
+    print(f"\nLoLa läuft und hört zu. Einstellungen der App: http://127.0.0.1:{PORT_APP}/")
     return 0
 
 
 def stoppe(werte: dict[str, str]) -> int:
-    """Beendet die Programme, die `starte` gestartet hat."""
+    """Beendet die Programme, die `starte` gestartet hat, die App zuerst. Danach schlaeft der Reachy."""
     lauf = Path(werte["LOLA_LAUFZEIT"]).expanduser() / "lauf"
-    for datei in sorted(lauf.glob("*.pid"), reverse=True):
+    for datei in sorted(lauf.glob("*.pid")):
         pid = int(datei.read_text(encoding="utf-8"))
         kennung = Path(f"/proc/{pid}/cmdline")
         fremd = kennung.exists() and str(lauf.parent).encode() not in kennung.read_bytes()
         try:
             if not fremd:  # nach einem Neustart des PCs kann die Nummer einem anderen Programm gehoeren
-                os.kill(pid, signal.SIGTERM)
+                os.kill(pid, signal.SIGINT)  # wie Strg+C, damit jedes Programm sauber aufraeumt
                 for _ in range(100):
                     os.kill(pid, 0)
                     time.sleep(0.1)
@@ -136,6 +208,8 @@ def stoppe(werte: dict[str, str]) -> int:
             pass
         datei.unlink()
         print(f"{datei.stem}: gestoppt.")
+        if datei.stem == "app":
+            lege_schlafen(werte)
     return 0
 
 
