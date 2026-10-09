@@ -48,3 +48,7 @@ stehen in KONZEPT unter „bauen wir bewusst nicht“.
 - **Kandidat, erst nach B5:** eine kurze Liste „Interessen“ in der Charakterdatei, wenn die Familie in B5
   sagt, LoLa habe nichts Eigenes zu erzählen. Vorher nicht (oberste Designregel).
 - **Streichen:** alles unter „Ballast“.
+
+## Entscheidung
+**Entscheidung Patrick, 9. Oktober 2026: verkleinern.** Die Charakterdatei reicht. „Interessen“ kommen erst
+hinzu, wenn B5 zeigt, dass sie fehlen.

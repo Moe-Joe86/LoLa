@@ -55,3 +55,6 @@ Bericht nur bei guter Laune nennt.
 Kein Modul, kein Wert. Die erste Idee (das Modell macht den Witz) haben wir schon. Die zweite (Schutz) gehört zu den Schutzregeln
 und zur Deutung, nicht in einen Humor-Baustein.
 Die Entscheidung über ein Humor-Wort fällt nach B5.
+
+## Entscheidung
+**Entscheidung Patrick, 9. Oktober 2026: streichen.** Die vier Prüffragen zum Humor kommen in B5.

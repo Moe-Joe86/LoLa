@@ -7,7 +7,8 @@ Neueste Einträge oben.
   fehlt, Vorschlag). Sigma liegt schreibgeschützt außerhalb des Repos, nichts daraus kopiert.
 - Neu: `tests/test_kein_sigma_code.py` vergleicht unsere `.py`-Dateien mit allen in Sigma (Zeilen ab 40
   Zeichen, ohne Importe). Pfad über `LOLA_SIGMA` in `.env`; ohne Pfad wird der Test übersprungen.
-- Entscheidung je Modul steht aus (Patrick).
+- Entschieden: `companion_dna` verkleinern, `humor_engine` und `tracing` streichen. B5 um die Humor-Fragen
+  ergänzt, Runden-Kennung im BACKLOG.
 
 ## 2026-10-09 – Pausenerkennung vorgemessen, Merkpunkte aus B4
 - Pausenerkennung von speech-to-speech in neun Stufen gemessen (nur Schalter, kein Code). Tabelle in

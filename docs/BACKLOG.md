@@ -37,6 +37,9 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Leere Zusage trotz Profil: Auf „Frau Schneider kommt heute um halb vier“ sagte das Modell „Okay, ich
   notiere das“ (B4), obwohl es nichts notieren kann. Erledigt sich mit dem Kalender in Phase 2; bis dahin
   hier geparkt. Bleibt es danach bei leeren Zusagen: Profil schärfen.
+- Phase 4: gemeinsame Runden-Kennung in Erklär-Log und Anfrage-Log, dazu die Begründung der Auswahl in
+  einem Satz (Idee aus Sigmas `tracing`, Steckbrief in `docs/sigma/tracing.md`). Erst bauen, wenn bei einer
+  echten Fehlersuche die Zuordnung über die Uhrzeit nicht reicht.
 - Anbindung an Hermes Agent für schwierige Aufträge.
 - Home-Assistant-Anbindung.
 - Windows-Unterstützung (zweite Priorität).

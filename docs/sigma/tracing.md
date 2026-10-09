@@ -47,3 +47,7 @@ Zuschalten, sondern eine Schutzregel.
 - **Vormerken für Phase 4** (nicht jetzt bauen): eine gemeinsame Runden-Kennung in Erklär-Log und Anfrage-Log,
   und die Auswahl schreibt ihre Begründung in einem Satz dazu. Erst wenn bei einer echten Fehlersuche
   die Zuordnung über die Uhrzeit nicht reicht.
+
+## Entscheidung
+**Entscheidung Patrick, 9. Oktober 2026: streichen.** Die Runden-Kennung für beide Logs steht im BACKLOG
+für Phase 4.
