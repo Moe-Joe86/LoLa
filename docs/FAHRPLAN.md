@@ -149,6 +149,8 @@ und per Antippen zurück; Reachy grüßt von sich aus mit Obergrenze; eine Woche
 - [x] Kann ein zweiter Prozess Mikrofon und Kamera parallel zur App lesen? Ja (A7, 9. Oktober 2026).
 - [ ] Körpersprache aus der Stimmung: siehe Phase 8.
 - [ ] Grenzwert für die Latenz bestätigen. Vorschlag: 1,5 s.
+- [ ] Pausenerkennung: „Ja.“ bekommt mit den Standardwerten keine Antwort. Vorgemessen am 9. Oktober
+      2026 (`MESSUNGEN.md`), Empfehlung in `ENTSCHEIDUNGEN.md`. Patrick entscheidet in A4 am Roboter.
 - [ ] Ausrufezeichen trotz Sprechanweisung „ohne Ausrufezeichen“: in B4 in 42 von 72 Antworten.
       Prüfen in A5 (Deutsch-Qualität) und B5 (wirkt der Bericht überhaupt auf den Ton?).
 - [ ] „Was siehst du gerade?“ ohne Kamera-Aufruf: in B4 mit Verlauf 3 von 27. Beobachten in A4.

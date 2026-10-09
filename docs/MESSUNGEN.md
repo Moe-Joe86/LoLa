@@ -207,3 +207,50 @@ Tools, Bericht im Grundzustand. Skripte und Protokoll auf Branch `test/b4`.
 
 Sprechpause mitten im Satz (zwei Aufnahmen, 0,7 s Stille dazwischen): erste Anfrage nach 0,47 s abgebrochen,
 zweite 2,7 s später, als `wiederholt` gekennzeichnet. Bei Pausen ab 0,9 s gab es zwei getrennte Runden.
+
+## Pausenerkennung von speech-to-speech, ohne Roboter (9. Oktober 2026)
+Kette wie in B4 (mit Vermittler), nur Schalter von speech-to-speech `8024ccf` geändert, kein Code.
+Eingabe: die 20 Aufnahmen aus A1 (künstliche Stimmen) und 8 davon mit eingefügter Stille an der leisesten
+Stelle nahe der Mitte (0,3 / 0,5 / 0,7 s), eingespielt im Echtzeit-Takt. Je Stufe ein Lauf.
+Skripte und Protokoll auf Branch `test/b4`, Rohdaten lokal in `~/lola-laufzeit/messung/pause/`.
+
+Die Pausenerkennung hat zwei Stufen. Silero beendet ein Stück nach 64 ms Stille und verwirft Stücke mit
+weniger als 384 ms Sprache (`--min_speech_ms`). Smart Turn schätzt, ob der Satz fertig klingt: Dann laufen
+Erkennung und Sprachmodell sofort los, die Antwort wird 800 ms zurückgehalten (`--speculative_reopen_ms`);
+sonst wartet die Kette bis zu 2 s. „Erster Ton“ zählt ab dem Ende der Aufnahme.
+„Abgeschnitten“: Ton einer Antwort vor dem Ende der Aufnahme, oder nur ein Teil des Satzes erkannt.
+
+| Stufe | beantwortet | erster Ton, Median | höchstens | „Ja.“ | abgeschnitten: Pause 0,3 s | 0,5 s | 0,7 s |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Standard (Rückhaltezeit 800 ms) | 19/20 | 1,25 s | 2,06 s | keine Antwort | 0/8 | 0/8 | 1/8 |
+| Standard, Wiederholung | 19/20 | 1,37 s | 2,22 s | keine Antwort | 0/8 | 0/8 | 1/8 |
+| Rückhaltezeit 1.200 ms | 19/20 | 1,36 s | 2,33 s | keine Antwort | 0/8 | 0/8 | 0/8 |
+| Rückhaltezeit 600 ms | 19/20 | 1,34 s | 3,19 s | keine Antwort | 0/8 | 0/8 | 1/8 |
+| Rückhaltezeit 400 ms | 19/20 | 1,51 s | 2,91 s | keine Antwort | 0/8 | 0/8 | 2/8 |
+| Rückhaltezeit 200 ms | 19/20 | 1,49 s | 2,33 s | keine Antwort | 0/8 | 0/8 | 2/8 |
+| ohne Smart Turn (`--no_smart_turn`) | 19/20 | 1,17 s | 2,01 s | keine Antwort | 0/8 | 0/8 | 1/8 |
+| Mindestlänge 256 ms (`--min_speech_ms 256`) | 20/20 | 1,10 s | 2,11 s | Antwort, erkannt „Yeah.“ | 0/8 | 0/8 | 0/8 |
+
+Von den 20 Sätzen ohne Pause wurde in keiner Stufe einer abgeschnitten. Abgeschnitten wurden bei 0,7 s
+„Das Wetter in München … soll morgen schön werden“ und (bei 400 und 200 ms) „Frau Schneider … kommt heute
+um halb vier“. Zwei gleiche Läufe unterscheiden sich im Median um 0,12 s; Unterschiede dieser Größe
+zwischen den Stufen sagen also nichts.
+
+Zeitanteile je Runde (Log von speech-to-speech, Median, Sätze, die als fertig galten): Erkennung 0,77 bis
+0,80 s, Sprachmodell 0,20 bis 0,30 s, Warten auf die Rückhaltezeit 0,00 s. Sätze, die Smart Turn als
+unfertig einschätzte (3 bis 4 von rund 43 je Lauf, z. B. „Guten Morgen, Reachy.“): rund 2,3 s.
+
+Nur die fünf kurzen Sätze, je dreimal (Antworten von 3, zuletzt erkannter Text):
+
+| Stufe | Ja. | Nein, danke. | Okay. | Stopp! | Wie bitte? |
+| --- | --- | --- | --- | --- | --- |
+| Standard | 0 | 3 | 3 | 3 („Ugh.“, „Mm.“, „Uh“) | 3 |
+| Mindestlänge 256 ms | 3 („Yeah.“) | 3 | 3 | 3 („Ugh.“, „Mm.“, „Uh“) | 3 |
+| Mindestlänge 192 ms | 3 („Yeah.“) | 3 | 3 | 3 (wie oben) | 3 |
+| Mindestlänge 128 ms | 3 („Yeah.“) | 3 | 3 | 3 (wie oben) | 3 |
+| Schwelle 0,4 statt 0,6 (`--thresh`) | 0 | 3 | 3 | 3 („Uh“, „S uh“, „Uh“) | 3 |
+| Stücke zusammenfügen (`--short_segment_merge_ms 300`) | 0 | 3 | 3 | 3 („Ugh.“, „Mm.“, „Uh“) | 3 |
+| Stille 200 ms (`--min_silence_ms 200`) | 0 | 3 | 3 | 3 („S uh“, „S uh“, „Stu uh“) | 3 |
+
+„Ja.“ hat in der Aufnahme 288 bis 320 ms Sprache und scheitert an den 384 ms. „Stopp!“ scheitert an der
+Aufnahme, nicht an der Pausenerkennung: Schon in A1 erkannte Parakeet aus der Datei „S uh“.

@@ -2,6 +2,13 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – Pausenerkennung vorgemessen, Merkpunkte aus B4
+- Pausenerkennung von speech-to-speech in neun Stufen gemessen (nur Schalter, kein Code). Tabelle in
+  `MESSUNGEN.md`, Empfehlung in `ENTSCHEIDUNGEN.md`. Entscheidung am Roboter, `lola_start` unverändert.
+- FAHRPLAN: Ausrufezeichen trotz Sprechanweisung (A5, B5) und Kamera-Aufruf (A4) als offene Punkte;
+  Zwischenspeicher-Frage erledigt. BACKLOG: leere Zusage „ich notiere das“ bis zum Kalender geparkt.
+- Ablauf für die Sitzung am Roboter liegt als Checkliste auf Branch `test/a4-pc`.
+
 ## 2026-10-09 – Ablauf für Unit-Sigma-Module, Auftrag B4b
 - CLAUDE.md: Sigma-Module nur über Steckbrief und Neuschreiben übernehmen, nie kopieren.
 - FAHRPLAN: B4b (Steckbriefe `companion_dna`, `humor_engine`, `tracing`) vor B5.
