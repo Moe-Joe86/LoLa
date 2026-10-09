@@ -2,6 +2,10 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – Fahrplan Phase 2 in Aufträge C0 bis C8 aufgeteilt
+- Werkzeug-Brücke, Timer, Kalender (Synology), App-Wechsel mit Ausstiegsgeste, Uhrzeit und Wetter lokal.
+- BACKLOG: SearXNG, Ausstieg per Sprache, Storyteller. Entscheidung in ENTSCHEIDUNGEN.
+
 ## 2026-10-09 – Fahrplan Phase 1 in Aufträge B1 bis B6 aufgeteilt
 - Phase 1 im FAHRPLAN mit sechs Aufträgen wie in Phase 0, Herkunft aus Unit Sigma benannt.
 

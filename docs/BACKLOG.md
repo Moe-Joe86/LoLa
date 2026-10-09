@@ -24,3 +24,8 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Anbindung an Hermes Agent für schwierige Aufträge.
 - Home-Assistant-Anbindung.
 - Windows-Unterstützung (zweite Priorität).
+- Suche über SearXNG (selbst gehostet als Docker-Container auf der Synology, fragt u. a. DuckDuckGo
+  anonym ab) statt des Such-Werkzeugs von Pollen. DuckDuckGo selbst hat keine offizielle Such-Schnittstelle.
+- Ausstieg aus anderen Apps zusätzlich per Sprache („Reachy, stopp“), über das Mikrofon des Reachy auf
+  dem PC. Setzt A7 voraus.
+- Storyteller als eigene App in `apps/` anpassen (nur eigener Code, keine Pollen-Apps kopieren).

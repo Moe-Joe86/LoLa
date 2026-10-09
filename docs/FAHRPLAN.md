@@ -56,12 +56,41 @@ Reihenfolge: B1 bis B3 brauchen weder Roboter noch PC und können laufen, währe
 nachlesbar (B2), der Vermittler kostet unter 20 ms und bricht weder Tools noch Zwischenspeicher (B4).
 
 ## Phase 2 – Haushalt
-- Timer bauen. Kalender lesen und eintragen per CalDAV, mit mündlicher Bestätigung.
-- App-Wechsel zum Radio, dazu der Wächter für den Rückweg.
-- Erste Eigeninitiative: Eine einfache Gesichtserkennung (nur „Gesicht erschienen / verschwunden“,
-  kein Erkennen der Person) lässt Reachy über `conversation.say` grüßen. Mit Obergrenze,
-  nie während jemand spricht, nicht nachts.
-- *Abnahme:* eine Woche fehlerfreier Betrieb.
+
+Ziel: kleine Alltagsfähigkeiten (Timer, Kalender, Wetter), Wechsel zu anderen Apps mit sicherem
+Rückweg, erste Eigeninitiative. Entschieden am 9. Oktober 2026 (Begründung in `ENTSCHEIDUNGEN.md`):
+
+- **Werkzeuge:** externe Werkzeuge der Conversation App (`REACHY_MINI_EXTERNAL_TOOLS_DIRECTORY`).
+  Auf dem Reachy liegen nur dünne Hüllen (`werkzeuge/`), die den PC fragen. Logik und Passwörter
+  liegen im `dienste/werkzeugdienst` auf dem PC. Tool Spaces von Hugging Face (nur `*.hf.space`)
+  sind für Privates tabu.
+- **Hintergrund:** Die App führt jedes Werkzeug im Hintergrund aus und meldet das Ergebnis ans
+  Sprachmodell, sobald es fertig ist (bis zu einem Tag). `task_status` und `task_cancel` gibt es schon.
+- **App-Wechsel:** Start über `POST /api/apps/start-app/{name}`. Der Rückweg ist für alle Apps gleich
+  und verändert keine App: Der Wächter auf dem PC liest den Zustandsstrom
+  `ws://reachy:8000/api/state/ws/full` (IMU) und erkennt eine Ausstiegsgeste (zweimal oben auf den
+  Kopf tippen). Dann stoppt er die laufende App und startet die Conversation App. Antennen sind keine
+  Geste, die Radio-App nutzt sie selbst. Apps von Pollen werden nicht kopiert. Eigene Apps
+  (z. B. der Storyteller) liegen in `apps/` und müssen sich nur sauber beenden können.
+- **Uhrzeit** steht im Zustandsbericht, ohne Werkzeug. **Wetter** über Open-Meteo vom PC aus
+  (ohne Konto, Ort in `.env`).
+
+| # | Auftrag | Roboter nötig | Ergebnis |
+| --- | --- | --- | --- |
+| C0 | Machbarkeitstests (Branch `test/c0`): (a) externer Werkzeug-Ordner auf dem Reachy setzbar (Datei auf dem Roboter, nur mit Ja), (b) eine Hülle ruft einen Dienst auf dem PC, (c) Ergebnis eines Hintergrund-Werkzeugs nach 2 Minuten wird angesagt, auch wenn gerade niemand spricht, (d) Ausstiegsgeste: Ist zweimaliges Antippen im IMU-Strom sicher erkennbar, ohne Fehlauslösung durch Tanz, Emotionen oder Kopfbewegungen? | ja | Ergebnis in `ENTSCHEIDUNGEN.md` |
+| C1 | Werkzeug-Brücke: `dienste/werkzeugdienst` auf dem PC (nur im Heimnetz erreichbar, Schlüssel in `.env`), eine Hülle je Werkzeug auf dem Reachy. Ist der PC aus, antwortet die Hülle freundlich mit einem Fehler. `lola-start` startet den Dienst mit | ja | ein Test-Werkzeug läuft über die Brücke |
+| C2 | Timer als Hintergrund-Werkzeug (stellen, „wie lange noch?“, abbrechen über `task_status`/`task_cancel`). Testen, ob ein Timer einen App-Wechsel überlebt; wenn nicht, wandert er in den Werkzeugdienst und meldet sich über `conversation.say` | ja | Timer im Alltag nutzbar |
+| C3 | Kalender lesen: Synology Calendar über CalDAV, inkl. wiederkehrender Termine. Abhängigkeit (vermutlich `caldav`, `icalendar`) nur nach Rückfrage, nur auf dem PC. Zugangsdaten nur in `.env` | ja | „Was steht morgen an?“ klappt |
+| C4 | Kalender eintragen mit Bestätigung: Das Werkzeug liefert erst einen Vorschlag („Donnerstag 18 Uhr Fußballtraining, eintragen?“), eingetragen wird erst nach einem Ja. Kein Löschen per Sprache | ja | Eintrag mit Bestätigung klappt |
+| C5 | App-Wechsel: Werkzeug `app_starten` (nur Apps aus einer festen Liste in `.env`), `dienste/waechter` mit Ausstiegsgeste aus C0. Der Wächter startet die Conversation App nur neu, wenn er die andere App selbst gestartet hat (nicht nach „geh schlafen“). Ordner `apps/` anlegen (Eintrag in `ENTSCHEIDUNGEN.md`) | ja | Radio hin und per Antippen zurück |
+| C6 | Datum und Uhrzeit in den Zustandsbericht (Pollen-Uhrzeit-Werkzeug abschalten). Wetter-Werkzeug über Open-Meteo im Werkzeugdienst (Pollen-Wetter-Werkzeug abschalten) | ja | Uhrzeit und Wetter ohne Hugging Face |
+| C7 | Erste Eigeninitiative: einfache Gesichtserkennung (nur „Gesicht erschienen / verschwunden“, kein Erkennen der Person) lässt Reachy über `conversation.say` grüßen. Höchstens einmal pro Stunde und Person-unabhängig, nie während jemand spricht, nicht nachts. Setzt A6 und A7 voraus | ja | Reachy grüßt, nervt aber nicht |
+| C8 | Phasenabschluss: eine Woche fehlerfreier Betrieb, dann „Stand sichern“ und Git-Tag `v0.2` | ja | Phase 2 abgeschlossen |
+
+Reihenfolge: C0 zuerst; C1 vor C2 bis C6. C7 braucht A6 und A7 aus Phase 0.
+
+*Abnahme:* Timer, Kalender (lesen und eintragen), Wetter und Uhrzeit funktionieren lokal; Radio hin
+und per Antippen zurück; Reachy grüßt von sich aus mit Obergrenze; eine Woche fehlerfreier Betrieb.
 
 ## Phase 3 – Wer spricht, was weiß ich?
 - Sprechererkennung über die Stimme. Personen nur mit Zustimmung, Kinder nur mit Zustimmung der Eltern.

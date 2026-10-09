@@ -355,3 +355,20 @@ Werden in Phase 0 eingetragen (A1 und A4):
 | Spracherkennung | Parakeet TDT 0.6B v3 (`nvidia/parakeet-tdt-0.6b-v3`) über nano-parakeet 0.2.1, CPU, 6 Threads | 2026-10-08 |
 | Sprachausgabe | Qwen3-TTS 0.6B Base Q8_0 mit Referenzstimme „frau“ (gespeicherte Stimmdaten); faster-qwen3-tts 0.5.4, qwentts-cpp-python 0.5.0, GGUF aus `Serveurperso/Qwen3-TTS-GGUF` | 2026-10-08 |
 | PyTorch | 2.14.1+cu130 | 2026-10-08 |
+
+## 2026-10-09 – Phase 2: Werkzeuge, App-Wechsel, Uhrzeit und Wetter
+Im Code der Conversation App (GitHub `2e43e80`) und des Daemons (`fbdbca3`) gelesen, am Roboter
+noch ungeprüft (C0):
+- **Werkzeuge:** Tool Spaces nehmen nur `*.hf.space` an und taugen damit nicht für Privates.
+  Externe Werkzeuge aus `REACHY_MINI_EXTERNAL_TOOLS_DIRECTORY` schon. Entscheidung: dünne Hüllen auf
+  dem Reachy, Logik und Passwörter im Werkzeugdienst auf dem PC.
+- **Hintergrund-Werkzeuge:** Jedes Werkzeug läuft im Hintergrund, Ergebnis geht ans Modell, sobald es
+  fertig ist (höchstens ein Tag). Daraus wird der Timer.
+- **App-Wechsel:** `POST /api/apps/start-app/{name}` verdrängt die laufende App. Rückweg einheitlich
+  über eine Ausstiegsgeste (zweimal auf den Kopf tippen), die der Wächter im Zustandsstrom
+  `/api/state/ws/full` erkennt. Begründung: Apps von Pollen dürfen wir nicht kopieren oder ändern,
+  ein Ausstieg pro App wäre also nicht möglich. Antennen scheiden aus, die Radio-App nutzt sie.
+- **Uhrzeit** im Zustandsbericht statt als Werkzeug, **Wetter** über Open-Meteo vom PC, beides ohne
+  Hugging Face. **Suche:** vorerst Pollen, später SearXNG (Backlog).
+- **Kalender:** Synology Calendar über CalDAV.
+
