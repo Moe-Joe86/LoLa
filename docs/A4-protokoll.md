@@ -19,6 +19,21 @@ Nur Branch `test/a4`, wird nie gemergt. Rohdaten liegen lokal in `~/lola-laufzei
   `personalities.save`/`.apply`; Werkzeug-Ordner nur per Umgebungsvariable; Leerlauf 180 s, Schlaf nach 24 h.
   Standardprofil bietet zusätzlich drei Internet-Tools (Suche, Zeit, Wetter) und `remember`/`forget`.
 
+## Verbindung und Profil (9. Oktober 2026, 08:27 Uhr)
+- `lola_start` gestartet (Grafikspeicher 635 → 9.295 MiB mit Gespräch). App über `/rpc` auf „local“,
+  Host `pop-os.local`, Port 8765: verbunden. Der Reachy löst den Namen auf.
+- Profil `user_personalities/lola_deutsch` gespeichert, ausgewählt, als Startprofil gesetzt. Die App
+  meldet die 9 Tools des Profils plus `task_status`, `task_cancel`.
+- **Es kommt nicht an:** speech-to-speech lehnt die Sitzungs-Einstellung der App ab
+  („Language 'en' is not supported by the active STT backend“). Damit fehlen Profiltext und Tools
+  (`Tools: []`), Reachy nennt sich „KI-Hilfe“ und antwortet teils englisch.
+- Ursache (Code gelesen): App 1.0.1 schickt als Erkennungssprache immer `REALTIME_TRANSCRIPTION_LANGUAGE`,
+  Standard „en“, einstellbar nur per Umgebungsvariable. speech-to-speech `8024ccf` nimmt mit Parakeet nur
+  „auto“ an (`_stt_session_languages` gibt eine leere Menge zurück) und verwirft bei Fehler die ganze Einstellung.
+- Der neuere App-Stand auf GitHub (`2e43e80`) hat Standard „auto“ und `language.set` über `/rpc`;
+  er ist noch nicht als Space veröffentlicht.
+- Technisch läuft die Kette: Mikrofon des Reachy → Parakeet erkennt Deutsch → Antwort mit der Stimme „frau“.
+
 ## Gemessen und gelesen
 - Reachy: `reachy-mini.local`, 192.168.178.101, Daemon 1.11.0 (PyPI), kein stabiles Update, Vorabversion 1.12.0rc1.
 - Daemon-Log: `ws://<reachy>:8000/logs/ws/daemon` (nicht `/api/logs/...`, das gibt 403).
