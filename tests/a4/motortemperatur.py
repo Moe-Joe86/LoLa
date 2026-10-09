@@ -36,17 +36,21 @@ def nur_lesen(paket: bytes) -> bytes:
     return paket
 
 
-def temperatur(antwort: bytes, motor: int) -> int:
-    """Liest den Wert aus dem Antwortpaket: Kopf, Motor, Laenge, 0x55, Fehler, Wert, CRC."""
+def temperatur(antwort: bytes, motor: int) -> tuple[int, bool]:
+    """Liest Wert und Warn-Bit aus dem Antwortpaket: Kopf, Motor, Laenge, 0x55, Fehler, Wert, CRC.
+
+    Im Fehler-Byte ist Bit 7 die Warnung des Motors (Hardware-Fehlerstatus ungleich 0),
+    die Bits 0 bis 6 nennen einen Fehler bei der Anfrage selbst.
+    """
     start = antwort.find(KOPF + bytes([motor]))
     if start < 0 or len(antwort) < start + 12 or antwort[start + 7] != 0x55:
         raise ValueError(f"Keine gültige Antwort: {antwort.hex(' ')}")
     paket = antwort[start : start + 12]
     if pruefsumme(paket[:-2]) != paket[-2] | paket[-1] << 8:
         raise ValueError(f"Prüfsumme falsch: {paket.hex(' ')}")
-    if paket[8] != 0:
-        raise ValueError(f"Motor meldet Fehler {paket[8]:#04x}")
-    return paket[9]
+    if paket[8] & 0x7F:
+        raise ValueError(f"Motor lehnt die Anfrage ab, Fehler {paket[8] & 0x7F}")
+    return paket[9], bool(paket[8] & 0x80)
 
 
 async def main(motoren: list[int]) -> None:
@@ -57,7 +61,8 @@ async def main(motoren: list[int]) -> None:
             await ws.send(nur_lesen(lesepaket(motor)))
             antwort = await asyncio.wait_for(ws.recv(), 3)
             try:
-                print(f"Motor {motor}: {temperatur(antwort, motor)} °C")
+                grad, warnung = temperatur(antwort, motor)
+                print(f"Motor {motor}: {grad} °C{' (Warn-Bit gesetzt)' if warnung else ''}")
             except ValueError as fehler:
                 print(f"Motor {motor}: {fehler}")
 

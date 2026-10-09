@@ -49,5 +49,18 @@ Nur Branch `test/a4-pc`, wird nie gemergt. Rohdaten lokal in `~/lola-laufzeit/me
   gegen das Beispiel aus dem Robotis-Handbuch geprüft) und `tests/a4/saetze_auswerten.py` (Wortfehler und
   Latenz aus dem Log der App). `testsaetze.txt`: die 20 aus A1 plus „Guten Morgen, LoLa.“
 
+## Zweiter Durchgang ohne Patrick (9. Oktober 2026, gegen 09 Uhr)
+- **Motortemperatur gelesen** (Reachy schlafend, keine App): erst Motor 15, dann 10 bis 18: 25, 28, 26, 26, 26,
+  27, 29, 31, 33 °C. Gesendet z. B. `ff ff fd 00 0f 07 00 02 92 00 01 00 3f d3`, Antwort
+  `ff ff fd 00 0f 05 00 55 80 1b 0c 71`. Fehler-Byte 0x80 = Warn-Bit, bei allen Motoren. Daemon danach ohne Fehler.
+- **Kopfwackeln:** Berichtigung: Die PC-App schaltet es im Daemon selbst ein und aus (Daemon-Log:
+  „Head wobbler enabled (daemon-side)“). Kein eigener Schalter nötig.
+- **Beenden:** Die App schläft bei Stopp absichtlich nicht (`main.py`, Kommentar bei `poll_stop_event`);
+  auf dem Reachy räumt der Daemon auf (`apps/manager.py`), auf dem PC niemand.
+- **Mikrofon:** `POST /api/audio/config/apply` nimmt sechs der sieben Werte; `PP_NLATTENONOFF` scheitert
+  („required argument is not an integer“).
+- **`lola_start` auf `entwicklung`** startet jetzt alle drei Programme und legt den Reachy beim Stoppen
+  schlafen. Am Roboter geprüft: Start 22 s, Stopp 8 s, Motoren danach aus.
+
 ## Offen
-Gespräch mit Patrick, Latenz am Reachy, 21 Testsätze, Bewegungen ansehen, Motortemperatur (braucht Ja).
+Gespräch mit Patrick, Latenz am Reachy, 21 Testsätze, Bewegungen ansehen, Motortemperatur bei laufender App.

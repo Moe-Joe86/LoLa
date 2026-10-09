@@ -35,14 +35,20 @@ def test_sperre_weist_verlaengerte_pakete_ab():
         mt.nur_lesen(mt.lesepaket(15) + b"\x00")
 
 
+def antwort(fehler: int, wert: int) -> bytes:
+    rumpf = mt.KOPF + bytes([15, 5, 0, 0x55, fehler, wert])
+    crc = mt.pruefsumme(rumpf)
+    return rumpf + bytes([crc & 0xFF, crc >> 8])
+
+
 def test_temperatur_aus_antwort():
-    rumpf = mt.KOPF + bytes([15, 5, 0, 0x55, 0, 37])
-    crc = mt.pruefsumme(rumpf)
-    assert mt.temperatur(rumpf + bytes([crc & 0xFF, crc >> 8]), 15) == 37
+    assert mt.temperatur(antwort(0, 37), 15) == (37, False)
 
 
-def test_temperatur_meldet_motorfehler():
-    rumpf = mt.KOPF + bytes([15, 5, 0, 0x55, 0x04, 0])
-    crc = mt.pruefsumme(rumpf)
+def test_echte_antwort_von_motor_15_mit_warn_bit():
+    assert mt.temperatur(bytes.fromhex("fffffd000f050055801b0c71"), 15) == (27, True)
+
+
+def test_temperatur_meldet_abgelehnte_anfrage():
     with pytest.raises(ValueError):
-        mt.temperatur(rumpf + bytes([crc & 0xFF, crc >> 8]), 15)
+        mt.temperatur(antwort(0x04, 0), 15)
