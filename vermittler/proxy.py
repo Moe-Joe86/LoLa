@@ -14,7 +14,7 @@ import sys
 import threading
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -36,7 +36,8 @@ class Einstellung:
     bericht: Callable[[], str]
     log: AnfrageLog
     gesperrte_tools: Callable[[], frozenset[str]] = frozenset
-    letzter_satz: str = ""
+    vorige: Aenderung = field(default_factory=Aenderung)
+    vorige_zeit: float = 0.0
 
 
 class Vermittler(BaseHTTPRequestHandler):
@@ -119,8 +120,9 @@ class Vermittler(BaseHTTPRequestHandler):
 
     def _schreibe_log(self, aenderung: Aenderung, dauer_ms: float, abgebrochen: bool) -> None:
         e = self.einstellung
-        wiederholt = setzt_fort(e.letzter_satz, aenderung.gesagt)
-        e.letzter_satz = aenderung.gesagt
+        jetzt = time.monotonic()
+        wiederholt = setzt_fort(e.vorige, aenderung, jetzt - e.vorige_zeit)
+        e.vorige, e.vorige_zeit = aenderung, jetzt
         a = aenderung
         e.log.schreiben(a.gesagt, a.bericht, a.entfernte_tools, dauer_ms, wiederholt, abgebrochen)
 
@@ -145,7 +147,7 @@ def main() -> None:
     bericht = zustandsbericht(charakter, grundzustand(charakter, ErklaerLog(datei=daten / "erklaer-log.jsonl")))
     log = AnfrageLog(daten, frist=frist_tage())
     server = baue_server(port, Einstellung(("127.0.0.1", ziel_port), lambda: bericht, log))
-    print(f"Vermittler lauscht auf 127.0.0.1:{port} und gibt an 127.0.0.1:{ziel_port} weiter.")
+    print(f"Vermittler lauscht auf 127.0.0.1:{port} und gibt an 127.0.0.1:{ziel_port} weiter.", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

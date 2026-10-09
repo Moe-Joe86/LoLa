@@ -16,6 +16,8 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Kopfbewegung im Sprechrhythmus aus der Stimmung (`emotional_sway`, `speech_tapper`).
 
 ## Technik
+- Die vier Issues für Pollen liegen als Entwürfe in `docs/issues-entwuerfe.md` (Update-Prüfung, `conversation.say`,
+  Ganzzahl-Parameter, Motortemperatur). Einreichen entscheidet Patrick.
 - Vor der Sprechererkennung (Phase 3) prüfen: Im WebRTC-Tonstrom fehlten beim Mitlesen 3 bis 4 % der Werte,
   mit Lücken bis 210 ms (A7). Dem Daemon auf dem Reachy fehlt der Baustein `rtpgccbwe` (keine Anpassung
   der Datenrate). Hängt beides zusammen? Hat die App dieselben Lücken wie ein Mitleser?

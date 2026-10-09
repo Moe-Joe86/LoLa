@@ -103,9 +103,12 @@ def test_gesperrte_tools_fehlen_in_der_anfrage_und_stehen_im_log(tmp_path):
 
 def test_anfrage_log_bekommt_gesagtes_bericht_und_kennzeichen(tmp_path):
     aufbau = Aufbau(tmp_path, LlamaAttrappe(pause=0))
-    for nummer, satz in enumerate(("Wie geht", "Wie geht es dir?", "Tanz bitte."), 1):
-        koerper = anfrage()
-        koerper["input"][-1] = nachricht("user", satz)
+    spaeter = anfrage()  # nächste Runde: Antwort und neuer Satz hängen hinten an
+    spaeter["input"] += [nachricht("assistant", "Gut."), nachricht("user", "Tanz bitte.")]
+    erste, zweite = anfrage(), anfrage()
+    erste["input"][-1] = nachricht("user", "Hi, sir, Patrick.")
+    zweite["input"][-1] = nachricht("user", "Ich heiße Patrick. Wie spät ist es?")
+    for nummer, koerper in enumerate((erste, zweite, spaeter), 1):
         aufbau.sende(roh(koerper)).read()
         assert warte_auf(lambda anzahl=nummer: len(aufbau.log_zeilen()) == anzahl)
     zeilen = aufbau.log_zeilen()
@@ -163,3 +166,17 @@ def test_beim_start_werden_alte_anfrage_logs_weggeraeumt(tmp_path):
         datei.write_text("{}\n", encoding="utf-8")
     Aufbau(tmp_path, LlamaAttrappe())
     assert (alt.exists(), neu.exists()) == (False, True)
+
+
+def test_folgeanfrage_nach_tool_ergebnis_gilt_nicht_als_wiederholt(tmp_path):
+    aufbau = Aufbau(tmp_path, LlamaAttrappe(pause=0))
+    erste = anfrage()
+    folge = anfrage()
+    folge["input"] += [
+        {"type": "function_call", "call_id": "c1", "name": "dance", "arguments": "{}"},
+        {"type": "function_call_output", "call_id": "c1", "output": "{}"},
+    ]
+    for nummer, koerper in enumerate((erste, folge, erste), 1):
+        aufbau.sende(roh(koerper)).read()
+        assert warte_auf(lambda anzahl=nummer: len(aufbau.log_zeilen()) == anzahl)
+    assert [zeile["wiederholt"] for zeile in aufbau.log_zeilen()] == [False, False, False]

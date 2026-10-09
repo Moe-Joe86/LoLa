@@ -2,6 +2,17 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – Entwürfe für Issues bei Pollen
+- Neu: `docs/issues-entwuerfe.md` mit vier Entwürfen (Fundstelle, Schritte, Logs, AI-Angabe). Nicht eingereicht.
+
+## 2026-10-09 – B4: Vermittler in der echten Kette (ohne Roboter)
+- `dienste/lola_start.py` startet den Vermittler mit; speech-to-speech fragt jetzt ihn statt llama.cpp.
+  Neue Aktion `kette`: alles außer der App, der Reachy bleibt unberührt.
+- `wiederholt` im Anfrage-Log: gleiche Stelle im Gespräch und höchstens 5 s Abstand; die Folgeanfrage nach
+  einem Tool-Ergebnis zählt nicht. Beides nach Messung an der echten Kette geändert.
+- Gemessen: Zusatzzeit 0,7 ms, Zwischenspeicher hält, Tools 27 von 27 und 24 von 27, Abbruch nach rund 20 ms.
+  Werte in `MESSUNGEN.md`, Ergebnis in `ENTSCHEIDUNGEN.md`. Probe am Roboter steht aus.
+
 ## 2026-10-09 – B3: Vermittler
 - Neu: `vermittler/anfrage.py` (Bericht einsetzen, Tools entfernen) und `vermittler/proxy.py` (HTTP-Proxy
   mit Streaming und Abbruch, nur Standardbibliothek). Neu: Attrappe `tests/attrappen/llama.py`.

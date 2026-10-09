@@ -494,6 +494,35 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
   es annimmt (gleicher oder verlängerter Satz), und dass der Zwischenspeicher von llama.cpp an dieser
   Position hält. Beides misst B4 an der echten Kette.
 
+## 2026-10-09 – B4: Vermittler in der echten Kette (ohne Roboter)
+- **Aufbau:** speech-to-speech → Vermittler (127.0.0.1:8091) → llama.cpp (127.0.0.1:8090). `lola_start`
+  startet den Vermittler als zweites von vier Programmen; die neue Aktion `kette` startet alles außer der
+  App und fasst den Reachy nicht an. Gemessen wurde mit einem Programm, das die Rolle der App an der
+  Realtime-Schnittstelle spielt: Profil `lola_deutsch`, die neun Tools, Sätze als Text oder als Ton
+  (die Aufnahmen aus A1).
+- **Zusatzzeit:** im Median 0,7 ms bis zum ersten Textstück (Ziel unter 20 ms), höchstens 11 ms.
+- **Zwischenspeicher hält.** Je Anfrage rechnet llama.cpp mit Vermittler 71 bis 152 von rund 1.900 bis
+  2.200 Token neu, ohne Vermittler 27 bis 81. Der Unterschied sind der Bericht und die vorige Runde,
+  die hinter die alte Stelle des Berichts rutscht. Die Vermutung aus A3 ist damit gemessen.
+- **Tool-Aufrufe:** neues Gespräch 27 von 27, mit Verlauf 24 von 27, nie ein Tool ohne Anlass, nie Text und
+  Tool zugleich. Die drei Fehler: „Was siehst du gerade?“ nach zwei Runden Verlauf, das Modell beschrieb
+  etwas, ohne die Kamera zu fragen. In A3 waren es mit Verlauf 27 von 27; Verlauf und Bericht sind hier anders.
+- **Abbruch:** llama.cpp hört über den Vermittler 17 bis 29 ms nach dem Schließen auf (direkt 11 bis 18 ms),
+  mitten im Strom und vor der ersten Antwortzeile. Die volle Antwort hätte 12 s gedauert.
+- **Vorgreifende Anfragen:** In 20 gesprochenen Sätzen kam keine einzige beim Vermittler an;
+  speech-to-speech verwirft Zwischenstände meist schon bei der Erkennung. Mit einer Sprechpause von 0,7 s
+  mitten im Satz ließ sich eine auslösen: erste Anfrage abgebrochen, zweite 2,7 s später mit neu erkanntem,
+  anderem Text. Deshalb gilt für `wiederholt` jetzt: gleiche Stelle im Gespräch und höchstens 5 s nach der
+  vorigen Anfrage, nicht mehr der Vergleich der Satzanfänge. Die Folgeanfrage nach einem Tool-Ergebnis zählt
+  nicht. Belegt ist die Regel mit genau diesem einen echten Fall.
+- **Ganze Kette mit Ton:** vom Ende der Aufnahme bis zum ersten Ton 1,46 s im Mittel mit Vermittler, 1,41 s
+  ohne (je 18 Sätze, Unterschied im Rauschen). Darin steckt die Pausenerkennung, die A1 nicht mitgemessen hat.
+- **Nebenbefunde für A4 Teil 2:** „Ja.“ allein wird von der Pausenerkennung verworfen (zu kurz); „Stopp!“
+  wurde als „Oh“ erkannt, „Reachy“ als „Richie“; ein früh abgeschnittenes „Ich heiße Patrick.“ als „Hi, sir,
+  Patrick.“ Auf „Frau Schneider kommt um halb vier“ sagte das Modell „Okay, ich notiere das“ (leere Zusage
+  trotz Profil). In 42 von 72 Textantworten stand ein Ausrufezeichen, obwohl der Bericht das Gegenteil sagt.
+- **Offen:** die Probe am Roboter (mit A4 Teil 2). `ARCHITEKTUR.md` bleibt bis dahin unverändert.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
