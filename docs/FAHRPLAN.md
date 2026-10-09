@@ -137,8 +137,8 @@ und per Antippen zurück; Reachy grüßt von sich aus mit Obergrenze; eine Woche
 - [x] Sind die Tool-Aufrufe von Qwen3-8B verlässlich, und stört der Zustandsbericht sie? A3: Am Ende
       der Anfrage stört er, vor dem letzten Nutzersatz nicht (27 von 27).
 - [x] Wo steht der Bericht? Entschieden: als eigener Eintrag vor dem letzten Nutzersatz (A3).
-- [ ] Hält der Zwischenspeicher von llama.cpp an dieser Position? Vermutet, nicht gemessen.
-      Messen, wenn der Vermittler gebaut wird (Phase 1).
+- [x] Hält der Zwischenspeicher von llama.cpp an dieser Position? Ja (B4, 9. Oktober 2026):
+      71 bis 152 neu gerechnete Token je Anfrage bei rund 2.000 Token Kontext.
 - [x] Soll der Vermittler den englischen Mustersatz im Rahmen von speech-to-speech ersetzen?
       Entschieden: vorerst nein. Option mit Messwert (21 → 27 von 27) in `ENTSCHEIDUNGEN.md`.
 - [ ] Antworten enthalten Emojis, erfundene Erinnerungen und leere Zusagen (A3). Das deutsche
@@ -149,6 +149,9 @@ und per Antippen zurück; Reachy grüßt von sich aus mit Obergrenze; eine Woche
 - [x] Kann ein zweiter Prozess Mikrofon und Kamera parallel zur App lesen? Ja (A7, 9. Oktober 2026).
 - [ ] Körpersprache aus der Stimmung: siehe Phase 8.
 - [ ] Grenzwert für die Latenz bestätigen. Vorschlag: 1,5 s.
+- [ ] Ausrufezeichen trotz Sprechanweisung „ohne Ausrufezeichen“: in B4 in 42 von 72 Antworten.
+      Prüfen in A5 (Deutsch-Qualität) und B5 (wirkt der Bericht überhaupt auf den Ton?).
+- [ ] „Was siehst du gerade?“ ohne Kamera-Aufruf: in B4 mit Verlauf 3 von 27. Beobachten in A4.
 
 - **Risiko PC aus:** Ohne den PC kann Reachy nicht sprechen. Notlösung: per `.env` auf ein
   Cloud-Backend umschalten, standardmäßig aus.

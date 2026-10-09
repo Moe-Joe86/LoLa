@@ -34,6 +34,9 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
   und 144 schon in `read_hardware_errors`. Dringend, falls der Raw-Endpunkt in A4 scheitert.
 - Qwen3-TTS: Der Zwischenspeicher von 896 MB Grafikspeicher (`max_seq_len 4096`) ist in qwentts.cpp
   fest eingebaut. Hebel für A5: beim Projekt nachfragen oder einen Schalter vorschlagen (kein Fork).
+- Leere Zusage trotz Profil: Auf „Frau Schneider kommt heute um halb vier“ sagte das Modell „Okay, ich
+  notiere das“ (B4), obwohl es nichts notieren kann. Erledigt sich mit dem Kalender in Phase 2; bis dahin
+  hier geparkt. Bleibt es danach bei leeren Zusagen: Profil schärfen.
 - Anbindung an Hermes Agent für schwierige Aufträge.
 - Home-Assistant-Anbindung.
 - Windows-Unterstützung (zweite Priorität).
