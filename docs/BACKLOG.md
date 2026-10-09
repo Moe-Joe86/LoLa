@@ -40,6 +40,13 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Phase 4: gemeinsame Runden-Kennung in Erklär-Log und Anfrage-Log, dazu die Begründung der Auswahl in
   einem Satz (Idee aus Sigmas `tracing`, Steckbrief in `docs/sigma/tracing.md`). Erst bauen, wenn bei einer
   echten Fehlersuche die Zuordnung über die Uhrzeit nicht reicht.
+- Kamera: Das Tool `camera` ist seit dem 9. Oktober 2026 aus dem Profil. Qwen3-8B über llama.cpp kann keine
+  Bilder; die App hängt das Bild ins Gespräch, danach scheitert jede Antwort mit Fehler 500 bis zum Neustart.
+  Kamera braucht ein bildfähiges Modell oder bleibt aus bis Phase 2 (Entscheidung später).
+- Wann soll LoLa zuhören? Am 9. Oktober 2026 hat sie auf ein Gespräch im Raum reagiert, das nicht ihr galt.
+  Später klären (Anrede, Blickrichtung, Sprechererkennung in Phase 3).
+- Zwei Issue-Entwürfe für speech-to-speech in `docs/issues-entwuerfe.md` (e: Silero-Zustand wird nie
+  zurückgesetzt, f: Silero setzt torch auf einen Thread). Einreichen entscheidet Patrick.
 - Anbindung an Hermes Agent für schwierige Aufträge.
 - Home-Assistant-Anbindung.
 - Windows-Unterstützung (zweite Priorität).

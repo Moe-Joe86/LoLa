@@ -275,3 +275,84 @@ Workaround as above. A read-only field per motor in `/api/state/full` (or a smal
 remove the need for raw packets. No urgency.
 
 **AI assistance:** An agent filed this report, no human has reproduced it. — Zusatzsatz wie bei a).
+
+---
+
+# Entwürfe für Issues bei speech-to-speech (nicht eingereicht)
+
+Stand 9. Oktober 2026, Repo `huggingface/speech-to-speech`, geprüft am Stand `8024ccf`. Gefunden und am
+Mitschnitt nachgestellt von einem KI-Agenten (Claude); Patrick hat die Folgen am Roboter erlebt (überhörte
+Sätze), die Messungen aber nicht selbst wiederholt. Vor dem Einreichen prüfen, ob es die Issues schon gibt
+und ob das Projekt eine eigene Regel zu KI-Angaben hat. Die Mitschnitte aus der Wohnung bleiben lokal und
+werden nicht angehängt; zum Nachstellen reicht eine eigene Aufnahme.
+
+## e) Silero-Zustand wird innerhalb einer Sitzung nie zurückgesetzt: Sprache wird nach Lärm überhört
+
+**Title:** Silero VAD state is only reset at session end; speech after long non-speech noise is missed
+
+**Description**
+
+`VADHandler` feeds every 512-sample chunk into one Silero model instance and never resets its recurrent
+state while a Realtime session is open. `self.iterator.reset_states()` is only called in `on_session_end`
+(`VAD/vad_handler.py`, line 915 at `8024ccf`); `VADIterator.__call__` (`VAD/vad_iterator.py`) does not reset
+after an utterance either. In a long-lived session (a robot that listens for hours) the state drifts: after a
+stretch of loud non-speech audio, clearly audible short utterances get a speech probability near zero, and
+longer utterances are detected late, so their first words are cut off.
+
+**Steps to reproduce**
+
+1. Record 16 kHz mono microphone audio that contains about three minutes of loud broadband noise
+   (RMS around 0.05 of full scale, here motor and room noise through a robot microphone with AGC),
+   followed by short utterances ("Okay.", "Stop!", "Wie bitte?").
+2. Feed the whole recording in 512-sample chunks into one `silero_vad` instance (as `VADHandler` does) and
+   note the maximum probability per utterance.
+3. Feed each utterance again into a freshly reset instance (`model.reset_states()`), with one second of
+   lead-in.
+
+**Observed** (two recordings, 40 utterances that a fresh instance detects with p ≥ 0.6)
+
+| | missed completely | onset later than 200 ms |
+| --- | --- | --- |
+| continuous state (current behaviour) | 6 of 40 | 14 |
+| state reset after 0.5 s of silence | 1 of 40 | 0 |
+
+Example: "Okay." 1.00 fresh, 0.24 continuous; "Stop!" 0.99 vs 0.06; "Wie bitte?" 1.00 vs 0.04.
+Lowering `turn_detection.threshold` to 0.4 did not recover them. In the live session these utterances
+produced no `Speech started` and no `discarding segment` log line at all; Parakeet transcribes the same
+audio correctly.
+
+**Expected**
+
+Speech probability should not depend on how long the session has been open. Suggestion: reset the Silero
+state after an utterance ends or after a configurable stretch of silence, or expose a switch for it.
+
+**Environment:** Linux, `speech-to-speech serve`, `--stt parakeet-tdt`, default `--vad silero`, torch CPU.
+
+## f) Laden von Silero setzt die Thread-Zahl von torch für das ganze Programm auf 1
+
+**Title:** Loading Silero VAD sets torch to one thread process-wide; CPU STT runs 2-3x slower
+
+**Description**
+
+`VADHandler.setup` loads Silero through `torch.hub.load("snakers4/silero-vad:master", ...)`
+(`VAD/vad_handler.py`, line 154 at `8024ccf`). The module `silero_vad/model.py` calls
+`torch.set_num_threads(1)` at import time. This is process-wide, so every other torch model on CPU in the
+same process runs single-threaded afterwards, whatever `OMP_NUM_THREADS` says.
+
+**Steps to reproduce**
+
+1. `OMP_NUM_THREADS=6`, load `nvidia/parakeet-tdt-0.6b-v3` with `nano_parakeet` on CPU, transcribe 3 s of
+   speech: about 0.28 s, `torch.get_num_threads()` is 6.
+2. In the same process call `torch.hub.load("snakers4/silero-vad:master", "silero_vad")`:
+   `torch.get_num_threads()` is now 1 and the same transcription takes about 0.74 s.
+
+**Observed in the pipeline:** final Parakeet STT takes 0.45 to 0.9 s per utterance with `--vad silero` and
+0.17 to 0.39 s with `--vad firered` (Silero never imported), same audio, same machine (16 logical cores).
+
+**Expected**
+
+Selecting a VAD backend should not change the thread count of the STT backend. Suggestion: restore the
+previous value after loading Silero (`n = torch.get_num_threads()` before, `torch.set_num_threads(n)` after),
+or run Silero through ONNX Runtime with its own thread setting.
+
+**Environment:** as in e).
