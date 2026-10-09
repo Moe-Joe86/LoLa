@@ -32,3 +32,7 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Ausstieg aus anderen Apps zusätzlich per Sprache („Reachy, stopp“), über das Mikrofon des Reachy auf
   dem PC. Setzt A7 voraus.
 - Storyteller als eigene App in `apps/` anpassen (nur eigener Code, keine Pollen-Apps kopieren).
+- Start vom Reachy aus: Beim Einschalten des Reachy (oder per Geste, z. B. Antenne) startet der PC
+  per Wake-on-LAN bzw. startet LoLa auf dem schon laufenden PC. Ausdrücklich kein Autostart beim
+  Hochfahren des PCs (Patrick, 9. Oktober 2026). Vermutet, ungeprüft: Wake-on-LAN geht mit dem
+  Z390-Board; auf dem Reachy bräuchte es dafür eine eigene kleine App in `apps/`.
