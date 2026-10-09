@@ -19,7 +19,7 @@ from reachy_mini.media.webrtc_client_gstreamer import GstWebRTCClient
 from reachy_mini.media.webrtc_utils import find_producer_peer_id_by_name
 
 REACHY = "reachy-mini.local"
-TON_SEKUNDEN = 15
+TON_SEKUNDEN = int(sys.argv[3]) if len(sys.argv) > 3 else 15
 
 
 def schreibe_png(datei: Path, bild: np.ndarray) -> None:
