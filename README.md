@@ -27,8 +27,8 @@ Charakter, Grundzustand, Zustandsbericht und Erklär-Log.
 
 ## So starte ich LoLa
 
-Zwischenstand vom 9. Oktober 2026: Die Conversation App läuft auf dem PC, der Reachy ist nur Körper.
-Der Test mit Patrick am Roboter steht noch aus.
+Stand 9. Oktober 2026: Die Conversation App läuft auf dem PC, der Reachy ist nur Körper. Am Roboter
+geprüft. Beim Start stellt `lola_start` Lautstärke (100) und Mikrofon des Reachy ein.
 
 Voraussetzung: Im Ordner `~/lola-laufzeit/` liegen llama.cpp, speech-to-speech, die Conversation App,
 das Sprachmodell und die Stimmdaten (Versionen in `docs/ENTSCHEIDUNGEN.md`). Abweichende Pfade stehen

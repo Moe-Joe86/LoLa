@@ -254,3 +254,75 @@ Nur die fünf kurzen Sätze, je dreimal (Antworten von 3, zuletzt erkannter Text
 
 „Ja.“ hat in der Aufnahme 288 bis 320 ms Sprache und scheitert an den 384 ms. „Stopp!“ scheitert an der
 Aufnahme, nicht an der Pausenerkennung: Schon in A1 erkannte Parakeet aus der Datei „S uh“.
+
+## A4 Teil 2 und A5 am Roboter, App auf dem PC (9. Oktober 2026, 15:02 bis 17:30 Uhr)
+Patrick spricht aus 1 bis 2 m, Lautstärke 100, Kette mit Vermittler, Profil `lola_deutsch` ohne Kamera.
+Rohdaten, Logs und Mitschnitte des Mikrofons liegen nur lokal in `~/lola-laufzeit/messung/a4-pc/sitzung/`.
+
+**21 Testsätze** (Silero wie ausgeliefert, Mindestlänge 384 ms, Höchstverstärkung 10):
+
+| Ergebnis | Anzahl | Sätze |
+| --- | --- | --- |
+| richtig erkannt und beantwortet | 11 | darunter „Guten Morgen, LoLa.“ (als „Lola“) |
+| keine Reaktion | 4 | Okay. / Stopp! / Wie bitte? / Guten Morgen, Reachy. |
+| Anfang fehlt | 4 | „Trag“, „Erzähl mir“, „Wir fahren am Wochenende zu“, „Das Wetter in“ |
+| Ende fehlt | 1 | „… nicht so gut“ |
+| falsches Wort | 1 | „Ja.“ als „Yeah.“ (einzige Sprachverwechslung; LoLa antwortet trotzdem deutsch) |
+
+Echte Hörfehler von Parakeet: zwei („Yeah.“, „Scheußpferd“). Alles andere sind Stücke, die die Sprech-Erkennung
+nicht durchgelassen hat. Aus dem Mitschnitt erkennt Parakeet die vier überhörten Sätze richtig.
+
+**Profil in 10 Runden** (nach der Profiländerung): Deutsch gehalten, 0 Emojis, Wecker und Licht ehrlich abgelehnt,
+keine erfundene Erinnerung, Erklärung auf Nachfrage, Ausrufezeichen in 2 von 8 Antworten (im freien Gespräch
+davor 9 von 12), `dance` und `move_head` sofort. Verstöße: „Ich sehe dich!“ ohne Kamera; „von einer Familie
+gebaut“ (erfunden). Halbe Zusage bei Terminen: „Ich mach' mich bereit“.
+
+**Motoren bei laufender App** (15:29 Uhr, nur Lese-Pakete): 25, 30, 29, 27, 27, 29, 31, 32, 33 °C (Motor 10 bis 18).
+Fehlerstatus (Register 70) bei allen 0x01: nur Bit 0, Eingangsspannung. Antworten nach 17 bis 44 ms, einmal
+238 ms. Kein Zucken (Patrick), keine Fehlerzeile im Daemon-Log, Regeltakt 45,8 Hz, IMU 45,25 °C.
+
+**Sprech-Erkennung am Mitschnitt** (40 Stellen, die ein frisches Silero als Sprache erkennt; gefüttert wie in
+speech-to-speech, Schwelle 0,6):
+
+| Variante | überhört | Einsatz über 200 ms zu spät | löst bei Lärm oder Echo aus (65 Stellen) |
+| --- | --- | --- | --- |
+| Silero, Zustand läuft durch (wie ausgeliefert) | 6 | 14 | 1 |
+| Silero, Zustand nach 0,5 s Stille zurückgesetzt (nur im Versuch) | 1 | 0 | 2 |
+| FireRed | 1 | 0 | 7 |
+
+FireRed am Roboter: in 45 Minuten ohne Gespräch 22 Antworten auf Geräusche („Oh“, „Uh“, „Whoa“).
+
+**Mikrofon:** Verstärkung steigt in der Stille in 20 s von 2,3 auf 6,9. Grundpegel in Sprechpausen 0,001 bis
+0,007 (Stimme 0,2 bis 0,6). Von 15:12 bis 15:15 Uhr Grundpegel 0,035 bis 0,07, stärkste Frequenz 105 bis
+166 Hz, Ende mit der ersten Leerlauf-Bewegung des Kopfes: Motorbrummen. Mit Höchstverstärkung 3 in drei
+Minuten Stille 0,003 bis 0,005 (ob der Motor dabei brummte, ist nicht belegt); leise Sprache vollständig erkannt.
+
+**Erkennungszeit von Parakeet je Satz:**
+
+| Messung | Zeit |
+| --- | --- |
+| allein, 6 Threads / 2 Threads / 1 Thread | 0,28 s / 0,50 s / 0,74 s |
+| in der Kette wie ausgeliefert (Silero stellt torch auf 1 Thread) | Median 0,68 bis 0,82 s |
+| in der Kette mit unserem Startprogramm (Thread-Zahl zurückgestellt) | 0,18 bis 0,43 s |
+| in der Kette auf der Grafikkarte (nur gemessen, nicht gewählt; kostet 1,5 GB) | 0,03 bis 0,05 s |
+
+**A5, Ende des Sprechens bis erster Ton am PC** (Median der Runden, die als fertiger Satz galten; ohne Funkstrecke):
+
+| Stand | Runden | bis Ton | Erkennung | Sprachmodell | Stimme |
+| --- | --- | --- | --- | --- | --- |
+| freies Gespräch, wie ausgeliefert | 12 | 1,43 s | 0,77 s | 0,37 s | 0,18 s |
+| Teil A, Teilerkennung aus | 25 | 1,26 s | 0,68 s | 0,32 s | 0,15 s |
+| gewählte Einstellung (zwei kurze Läufe) | 7 | 1,10 bis 1,16 s | 0,18 bis 0,40 s | 0,40 bis 0,61 s | 0,08 bis 0,10 s |
+
+Hält Smart Turn den Satz für unfertig (7 von 60 Runden), sind es rund 2,3 bis 2,4 s. Mit schneller Erkennung
+wartet die Antwort jetzt auf die Rückhaltezeit von 800 ms (im Log 0,4 bis 0,5 s Wartezeit): Sie ist die neue Untergrenze.
+
+**Grafikspeicher mit allem** (17:27 Uhr): llama-server 6.020 MiB, speech-to-speech 2.628 MiB, App 262 MiB,
+Oberfläche rund 630 MiB, zusammen 9.544 von 12.288 MiB. Frei rund 2,7 GB.
+
+**Sprachausgabe:** zwei überlange Ausgaben in rund 110 Antworten: „Okay, verstehe.“ 6,96 s und „Ich kann den
+Timer nicht einstellen.“ 19,52 s (erwartet rund 2,5 s). Im Mitschnitt in dieser Zeit fast nur Stille.
+
+**Letzte Stufe** (Silero mit Startprogramm, Mindestlänge 192 ms, Höchstverstärkung 3): „Ja.“ dreimal
+beantwortet (erkannt „Yeah.“), „Stopp!“ ohne Reaktion, normaler Satz richtig, keine Reaktion auf Klappern
+und auf Familien- und Babygeräusche im Hintergrund.

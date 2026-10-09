@@ -2,6 +2,17 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – A4 Teil 2 und A5 am Roboter: Einstellungen fest im Startskript
+- `dienste/lola_start.py`: speech-to-speech startet über das neue `dienste/sprachkette_start.py` (stellt die
+  Thread-Zahl nach dem Laden von Silero zurück), mit Mindestlänge 192 ms, Teilerkennung aus und Sprachausgabe
+  höchstens rund 15 s je Satz. Höchstverstärkung des Mikrofons 3 statt 10. Lautstärke aus `LOLA_LAUTSTAERKE`
+  (Standard 100) bei jedem Start.
+- Profil `lola_deutsch`: ohne Kamera (das Sprachmodell kann keine Bilder); LoLa darf erklären und beendet
+  kein Gespräch von sich aus.
+- Zwei Issue-Entwürfe für speech-to-speech (Silero-Zustand, Thread-Zahl). Am fremden Code nichts geändert.
+- Messwerte in `MESSUNGEN.md`, Entscheidungen in `ENTSCHEIDUNGEN.md`, FAHRPLAN A4, A5, B4 nachgezogen.
+  A6 verschoben. ARCHITEKTUR folgt nach Patricks Freigabe.
+
 ## 2026-10-09 – B4b: Steckbriefe aus Unit Sigma
 - Neu: `docs/sigma/companion_dna.md`, `humor_engine.md`, `tracing.md` (Verhalten, gute Idee, Ballast, was
   fehlt, Vorschlag). Sigma liegt schreibgeschützt außerhalb des Repos, nichts daraus kopiert.

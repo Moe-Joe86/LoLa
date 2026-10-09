@@ -581,3 +581,57 @@ Grundlage: Steckbriefe in `docs/sigma/` (Code nur gelesen, nichts kopiert). Ents
   nervt es? Bleibt der Scherz aus, wenn jemand Trauriges erzählt?
 - **`tracing`: streichen.** Wir haben Erklär-Log und Anfrage-Log. Vorgemerkt für Phase 4: eine gemeinsame
   Runden-Kennung in beiden (BACKLOG).
+
+## 2026-10-09 – A4 Teil 2 und A5 am Roboter: Einstellungen, Befunde, Weg 2
+Sitzung mit Patrick am Roboter, 15:02 bis 17:30 Uhr. Messwerte in `MESSUNGEN.md`. A6 ist verschoben.
+
+**Entschieden (Patrick), alles steht in `dienste/lola_start.py` und `.env.example`:**
+- **Lautstärke 100.** Darunter ist LoLa zu leise. `lola_start` setzt sie bei jedem Start (`LOLA_LAUTSTAERKE`).
+- **Sprech-Erkennung bleibt Silero.** FireRed war am Roboter zu nervös (22 Antworten auf Geräusche in
+  45 Minuten ohne Gespräch) und ist wieder aus der Laufzeit-Umgebung entfernt.
+- **Mindestlänge 192 ms** statt 384: „Ja.“ hatte bei Patrick 128 bis 288 ms Sprache und wurde verschluckt.
+  Rückhaltezeit 800 ms und Smart Turn bleiben Standard; die Denkpause im Satz hat damit immer gehalten.
+- **Höchstverstärkung des Mikrofons 3** statt 10 (Vorgabe der App). Mit 10 wird Motorbrummen in der Stille
+  hochgeregelt. Leise Sprache wird mit 3 weiter verstanden.
+- **Teilerkennung aus** (`--no_enable_live_transcription`): Sie dient nur der Live-Anzeige und ließ die
+  Enderkennung 0,24 s warten.
+- **Sprachausgabe je Satz höchstens rund 15 s** (`--qwen3_tts_max_new_tokens 190`). Begrenzt den Schaden
+  der stillen Überlängen, verhindert sie nicht.
+- **Startprogramm `dienste/sprachkette_start.py`:** lädt Silero vor speech-to-speech und stellt danach die
+  Thread-Zahl von torch zurück. Am Code von speech-to-speech ändert es nichts; es wird wieder entfernt,
+  sobald speech-to-speech den Fehler behebt.
+- **Kamera aus dem Profil.** Qwen3-8B kann keine Bilder; die App hängt das Bild ins Gespräch, danach
+  scheitert jede Antwort mit Fehler 500 bis zum Neustart. Kamera braucht ein bildfähiges Modell oder
+  bleibt aus bis Phase 2 (Entscheidung später, BACKLOG).
+- **Profil:** LoLa darf erklären und Wissen teilen (auf Nachfrage drei bis vier Sätze) und beendet kein
+  Gespräch von sich aus. Anlass: „Bis später!“ nach jeder Antwort, keine Erklärung zu Quantenphysik.
+- **Erkennung auf der Grafikkarte: nicht gewählt.** Sie wäre schneller, kostet aber 1,5 GB, die für
+  Phase 4 gebraucht werden könnten.
+
+**Gefunden, Ursache im Code von speech-to-speech `8024ccf` (nichts geändert, Issue-Entwürfe e und f):**
+- Silero wird innerhalb einer Sitzung nie zurückgesetzt. Nach langem Lärm überhört es kurze Sätze und
+  Satzanfänge. Das Zurücksetzen gibt es nicht als Einstellung.
+- Das Laden von Silero setzt torch für das ganze Programm auf einen Thread; Parakeet braucht dann
+  0,7 s statt 0,3 s. Dafür gibt es unser Startprogramm.
+- Eine frühere Vermutung war falsch: Silero wird nicht „mit der Zeit“ taub, sondern nach einer lauten
+  Strecke ohne Sprache.
+
+**Geklärt:**
+- Motortemperatur und Fehlerstatus lassen sich bei laufender App lesen, ohne Zucken und ohne Fehler.
+  Das Warn-Bit aller Motoren ist Bit 0 im Fehlerstatus: Eingangsspannung außerhalb des eingestellten
+  Bereichs, keine Überhitzung, keine Überlast.
+- Kopfwackeln geht auch mit Ton vom PC: Der Daemon bewegt den Kopf zum ankommenden Ton. Die Warnung der
+  Bibliothek betrifft nur den zweiten Weg am PC.
+- Die Rückhaltezeit von 800 ms ist jetzt die Untergrenze der Latenz (rund 1,1 s bis zum ersten Ton).
+
+**Offen:**
+- „Stopp!“ kam in keinem Lauf an. Fehlende Satzanfänge nach Lärm bleiben möglich, bis speech-to-speech
+  den Silero-Zustand zurücksetzt.
+- Stille Überlängen der Sprachausgabe (7 s, 19,5 s): Ursache unbekannt, Versuch mit „x-vector only“ im BACKLOG.
+- „Ich sehe dich!“ ohne Kamera und „von einer Familie gebaut“: Das Modell erfindet trotz Profil.
+- LoLa hat auf ein Gespräch im Raum reagiert, das nicht ihr galt (BACKLOG).
+- Latenz-Grenzwert 1,5 s: mit rund 1,1 s eingehalten, außer wenn Smart Turn den Satz für unfertig hält
+  (rund 2,3 s). Bestätigung des Grenzwerts durch Patrick steht aus.
+
+**Weg 2 (App auf dem PC) hat sich bewährt:** Gespräch, Tools, Kopfwackeln, Körperdaten und Start/Stopp
+laufen. ARCHITEKTUR wird nach Patricks Freigabe der Änderungen umgestellt.

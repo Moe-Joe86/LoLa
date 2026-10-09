@@ -134,11 +134,27 @@ def test_app_spricht_lokal_mit_sprache_auto_und_unserem_profil(tmp_path):
 
 def test_reachy_bereit_setzt_die_mikrofon_werte(daemon):
     assert lola_start.reachy_bereit(daemon) is True
-    methode, pfad, rumpf = Daemon.aufrufe[-2]
+    methode, pfad, rumpf = Daemon.aufrufe[-3]
     assert (methode, pfad) == ("POST", "/api/audio/config/apply")
-    assert {"name": "PP_AGCMAXGAIN", "values": [10.0]} in rumpf["config"]
+    assert {"name": "PP_AGCMAXGAIN", "values": [3.0]} in rumpf["config"]
     assert len(rumpf["config"]) == 6
     assert all(isinstance(zahl, float) for paar in rumpf["config"] for zahl in paar["values"])
+
+
+def test_reachy_bereit_setzt_die_lautstaerke_aus_den_einstellungen(daemon):
+    assert lola_start.reachy_bereit(daemon | {"LOLA_LAUTSTAERKE": "80"}) is True
+    assert ("POST", "/api/volume/set", {"volume": 80}) in Daemon.aufrufe
+
+
+def test_sprachkette_startet_ueber_unser_startprogramm_mit_den_entschiedenen_schaltern(tmp_path):
+    kette = lola_start.befehle(werte(tmp_path))["sprachkette"][0]
+    assert kette[0].endswith("s2s-venv/bin/python")
+    assert Path(kette[1]) == lola_start.REPO / "dienste" / "sprachkette_start.py" and Path(kette[1]).exists()
+    assert kette[2] == "serve"
+    assert "--no_enable_live_transcription" in kette
+    assert kette[kette.index("--min_speech_ms") + 1] == "192"
+    assert kette[kette.index("--qwen3_tts_max_new_tokens") + 1] == "190"
+    assert "--vad" not in kette and "--speculative_reopen_ms" not in kette  # Silero und 800 ms: Standard
 
 
 def test_reachy_bereit_warnt_wenn_der_ganzzahl_wert_abweicht(daemon, capsys):
