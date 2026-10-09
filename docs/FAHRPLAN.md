@@ -46,8 +46,12 @@ Zustandsbericht, Erklär-Log im Speicher, Tests.
 | B2 | Protokolle in Dateien: Erklär-Log (Zustandsänderungen) und Anfrage-Log (je Anfrage: Zeit, eingefügter Bericht, entfernte Tools, Dauer). Eine Zeile JSON je Eintrag, Ordner `daten/` (nicht im Repo). Das Anfrage-Log enthält Gesagtes der Familie: nur lokal, nach 7 Tagen automatisch gelöscht, Frist in `.env` | nein (Cloud geht) | erledigt am 9. Oktober 2026: beide Logs als Dateien, Löschfrist mit Uhr-Attrappe getestet. Angeschlossen wird das Anfrage-Log in B3, die Frist aus `.env` reicht `lola_start` in B4 durch |
 | B3 | Vermittler bauen (`vermittler/`): HTTP-Proxy für `/v1/responses` mit Streaming und Abbruch, setzt den Bericht vor den letzten Nutzersatz, reicht sonst alles unverändert durch, schreibt das Anfrage-Log. Grundlage ist das Ergebnis aus A2, nicht dessen Code. Neue Abhängigkeit (HTTP-Bibliothek) nur nach Rückfrage. Tests gegen eine Attrappe von llama.cpp | nein (Cloud geht) | erledigt am 9. Oktober 2026: läuft gegen die Attrappe, nur Standardbibliothek, 31 Tests. Gegen das echte llama.cpp und speech-to-speech erst in B4 |
 | B4 | Vermittler in die echte Kette: speech-to-speech zeigt auf den Vermittler, `lola-start` startet ihn mit. Messen: Zwischenspeicher an der neuen Position (offene Frage), Zusatzzeit durch den Vermittler (Ziel unter 20 ms), Tool-Aufrufe wie in A3 | ja (nach A4) | ohne Roboter erledigt am 9. Oktober 2026: Kette läuft mit Vermittler, `lola_start` startet ihn mit, Zusatzzeit unter 1 ms, Zwischenspeicher hält, Tools 27 von 27 und 24 von 27, Abbruch nach rund 20 ms. Probe am Roboter folgt mit A4 Teil 2. Messwerte in `MESSUNGEN.md` |
+| B4b | Steckbriefe aus Unit Sigma für `companion_dna`, `humor_engine` und `tracing` (Ablauf siehe `CLAUDE.md`, Verboten). Sigma-Code nur außerhalb des Repos lesen. Klären: Braucht LoLa einen Humor-Wert? Woran war Persönlichkeit bei Sigma erkennbar, und was davon soll B5 prüfen? Ein Test schlägt Alarm, wenn unser Code längere Zeilen aus Sigma enthält | nein | Steckbriefe in `docs/sigma/`, Entscheidung von Patrick |
 | B5 | Persönlichkeitstest: zwei Charakterdateien mit deutlichem Unterschied (z. B. gesellig/neugierig gegen zurückhaltend/vorsichtig), je 15 Minuten Gespräch, ohne zu sagen, welche läuft. Erkennt die Familie den Unterschied? Wenn nicht: Bericht schärfen oder Werte streichen. Fehlt erkennbar Humor: erst dann einen Humor-Wert ergänzen | ja | Ergebnis in `ENTSCHEIDUNGEN.md`, endgültige Charakterwerte |
 | B6 | Phasenabschluss: eine Woche Familienalltag mit Vermittler und Profil. Auffälligkeiten aus dem Anfrage-Log auswerten. Danach „Stand sichern“: `entwicklung` nach `main`, Git-Tag `v0.1` | ja | Phase 1 abgeschlossen |
+
+Die übrigen Sigma-Module bekommen ihren Steckbrief jeweils zu Beginn ihrer Phase (z. B.
+`voice_recognition` und `episodic_memory` vor Phase 3).
 
 Reihenfolge: B1 bis B3 brauchen weder Roboter noch PC und können laufen, während Phase 0
 (A4 bis A7) am Roboter weitergeht. B4 setzt A4 voraus. B5 und B6 brauchen die ganze Kette.
@@ -133,8 +137,8 @@ und per Antippen zurück; Reachy grüßt von sich aus mit Obergrenze; eine Woche
 - [x] Sind die Tool-Aufrufe von Qwen3-8B verlässlich, und stört der Zustandsbericht sie? A3: Am Ende
       der Anfrage stört er, vor dem letzten Nutzersatz nicht (27 von 27).
 - [x] Wo steht der Bericht? Entschieden: als eigener Eintrag vor dem letzten Nutzersatz (A3).
-- [ ] Hält der Zwischenspeicher von llama.cpp an dieser Position? Vermutet, nicht gemessen.
-      Messen, wenn der Vermittler gebaut wird (Phase 1).
+- [x] Hält der Zwischenspeicher von llama.cpp an dieser Position? Ja (B4, 9. Oktober 2026):
+      71 bis 152 neu gerechnete Token je Anfrage bei rund 2.000 Token Kontext.
 - [x] Soll der Vermittler den englischen Mustersatz im Rahmen von speech-to-speech ersetzen?
       Entschieden: vorerst nein. Option mit Messwert (21 → 27 von 27) in `ENTSCHEIDUNGEN.md`.
 - [ ] Antworten enthalten Emojis, erfundene Erinnerungen und leere Zusagen (A3). Das deutsche
@@ -145,6 +149,11 @@ und per Antippen zurück; Reachy grüßt von sich aus mit Obergrenze; eine Woche
 - [x] Kann ein zweiter Prozess Mikrofon und Kamera parallel zur App lesen? Ja (A7, 9. Oktober 2026).
 - [ ] Körpersprache aus der Stimmung: siehe Phase 8.
 - [ ] Grenzwert für die Latenz bestätigen. Vorschlag: 1,5 s.
+- [ ] Pausenerkennung: „Ja.“ bekommt mit den Standardwerten keine Antwort. Vorgemessen am 9. Oktober
+      2026 (`MESSUNGEN.md`), Empfehlung in `ENTSCHEIDUNGEN.md`. Patrick entscheidet in A4 am Roboter.
+- [ ] Ausrufezeichen trotz Sprechanweisung „ohne Ausrufezeichen“: in B4 in 42 von 72 Antworten.
+      Prüfen in A5 (Deutsch-Qualität) und B5 (wirkt der Bericht überhaupt auf den Ton?).
+- [ ] „Was siehst du gerade?“ ohne Kamera-Aufruf: in B4 mit Verlauf 3 von 27. Beobachten in A4.
 
 - **Risiko PC aus:** Ohne den PC kann Reachy nicht sprechen. Notlösung: per `.env` auf ein
   Cloud-Backend umschalten, standardmäßig aus.

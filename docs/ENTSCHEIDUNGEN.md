@@ -555,3 +555,19 @@ noch ungeprüft (C0):
   Hugging Face. **Suche:** vorerst Pollen, später SearXNG (Backlog).
 - **Kalender:** Synology Calendar über CalDAV.
 
+
+## 2026-10-09 – Pausenerkennung vorgemessen: Empfehlung, Entscheidung offen
+Ohne Roboter, mit künstlichen Stimmen, nur über Schalter von speech-to-speech. Tabelle in `MESSUNGEN.md`.
+- **Gemessen:** Die Rückhaltezeit (800 ms) zu senken macht die Antwort nicht schneller. Erkennung und
+  Sprachmodell brauchen bei normalen Sätzen zusammen länger als die Frist, die Antwort wartet gar nicht
+  auf sie. Kürzere Fristen schneiden bei 0,7 s Denkpause öfter ab (2 statt 1 von 8), 1.200 ms gar nicht.
+- **Gemessen:** „Ja.“ bekommt erst mit `--min_speech_ms 256` eine Antwort (Standard 384). Erkannt wird
+  „Yeah.“; das ist die Spracherkennung, nicht die Pausenerkennung.
+- **Gemessen:** Der größte Posten ist die Erkennung mit rund 0,8 s je Satz, nicht die Pause.
+- **Nicht gemessen:** ob 256 ms im Wohnzimmer auf Geräusche anspringt (die Aufnahmen sind sauber), echte
+  Stimmen, echtes „ähm“. Smart Turn brachte hier keinen messbaren Nutzen und kostet bei manchen Sätzen
+  1 s; für echte Sprechpausen ist es aber gebaut, das zeigt erst die echte Stimme.
+- **Empfehlung:** `--min_speech_ms 256`, Rückhaltezeit bei 800 ms lassen oder auf 1.200 ms heben, nicht
+  senken. Smart Turn vorerst an lassen.
+- **Entscheidung:** trifft Patrick am Roboter (Ablauf Block 6 in `docs/A4-teil2-ablauf.md`, Branch
+  `test/a4-pc`). `lola_start` ist unverändert und startet mit den Standardwerten.
