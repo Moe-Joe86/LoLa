@@ -15,3 +15,20 @@ Festlegungen, die ich dabei treffe (zum Nachlesen und Ändern):
 - „Deine Art: …“ (Worte aus dem Charakter) bleibt als zweiter Satz erhalten, weil es heute schon getestet ist.
 - Gemessen ist aus A3 nur „Sprich … ruhig und knapp, ohne Ausrufezeichen“. Die übrigen Bausteine der Tabelle
   sind mein Vorschlag und werden erst in B5/B6 am Modell geprüft.
+
+**B1 erledigt** (Commit `59926c3` auf `entwicklung`). Satzform am Ende: „Sprich <Ton> und dabei <Tempo>.“
+
+## B2 – Plan in drei Sätzen (vor Beginn geschrieben)
+1. **Was ich tue:** Das Erklär-Log schreibt jeden Eintrag zusätzlich als eine Zeile JSON in eine Datei, und
+   ein neues Anfrage-Log schreibt je Anfrage eine Zeile in eine Tagesdatei und löscht Tagesdateien, die
+   älter als die Frist sind.
+2. **Welche Dateien:** `seele/erklaer_log.py`, neu `vermittler/anfrage_log.py` (dort wird es in B3 gebraucht),
+   Tests in `tests/seele/` und `tests/vermittler/`, `.env.example` (Frist), CHANGELOG, FAHRPLAN, ENTSCHEIDUNGEN.
+3. **Wie viel:** rund 90 Zeilen Code und 110 Zeilen Tests, nur Standardbibliothek, kein Roboter.
+
+Festlegungen:
+- Ordner `daten/` (steht schon in `.gitignore`). Erklär-Log: `daten/erklaer-log.jsonl`, wird nicht gelöscht
+  (enthält Zustandswerte und Auslöser, nichts Gesagtes). Anfrage-Log: `daten/anfragen-JJJJ-MM-TT.jsonl`.
+- Löschen heißt: ganze Tagesdateien entfernen, deren Tag mehr als die Frist zurückliegt. Geprüft wird bei
+  jedem Schreiben. Frist: `LOLA_ANFRAGE_LOG_TAGE`, Standard 7.
+- Felder je Anfrage: Zeit, Gesagtes (letzter Nutzersatz), eingefügter Bericht, entfernte Tools, Dauer in ms.
