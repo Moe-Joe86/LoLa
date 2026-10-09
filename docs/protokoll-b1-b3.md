@@ -78,3 +78,12 @@ eine vorgreifende Anfrage ab, bevor das erste Wort kommt, darf llama.cpp nicht w
   A2). Woran der Vermittler sie erkennt, muss ich am Code von speech-to-speech nachlesen.
 - Vorgreifende Anfragen: Derselbe Satz kann mehrfach kommen. Für B3 heißt das nur: Jede Anfrage bekommt ihre
   Zeile im Anfrage-Log. Soll das Log solche Wiederholungen kennzeichnen?
+
+## Verlorene `conversation.say`-Sätze – Plan in drei Sätzen (vor der Messung geschrieben)
+1. **Was ich tue:** Im Code gelesen: `/rpc` läuft im Faden „ui-server“, die Verbindung zur Sprachkette im
+   Hauptfaden; `conversation.say` sendet direkt aus dem fremden Faden, während dort laufend Mikrofonton
+   gesendet wird. Ich messe das am Roboter mit zwei Reihen zu je 30 Sätzen: normal, und mit Mikrofon stumm
+   (`conversation.mic`) für den Moment des Sendens.
+2. **Welche Dateien:** `tests/a7/say_reihe.py` auf diesem Branch; Ergebnis in ENTSCHEIDUNGEN auf `entwicklung`.
+3. **Am Reachy:** nur wecken und wieder schlafen legen (`lola_start`), nichts speichern; an Pollens Code und
+   an speech-to-speech wird nichts geändert.
