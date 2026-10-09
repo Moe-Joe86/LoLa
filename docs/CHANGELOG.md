@@ -2,6 +2,9 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – Fahrplan Phase 1 in Aufträge B1 bis B6 aufgeteilt
+- Phase 1 im FAHRPLAN mit sechs Aufträgen wie in Phase 0, Herkunft aus Unit Sigma benannt.
+
 ## 2026-10-08 – Sprachausgabe gewählt
 - Qwen3-TTS 0.6B Base Q8_0 mit Referenzstimme „frau“, als gespeicherte Stimmdaten. Ersetzt „aiden“.
 - Gemessen: 2.624 bis 2.722 MiB Grafikspeicher für den Prozess, Grenze 3 GB hält.

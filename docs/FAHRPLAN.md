@@ -28,13 +28,32 @@ Nur das Ergebnis wird in `docs/ENTSCHEIDUNGEN.md` festgehalten.
 alle Machbarkeitstests bestanden.
 
 ## Phase 1 – Seelen-Skelett
-- Der Vermittler reicht alles durch und fügt einen festen Zustandsbericht aus der
-  Charakterdatei hinzu, als eigenen Eintrag vor dem letzten Nutzersatz. Dazu kommt das Erklär-Log.
-- Beim Bau des Vermittlers messen, ob der Zwischenspeicher von llama.cpp an dieser Position hält.
-- Der Bericht bekommt die Form aus A3: Zustand plus Sprechanweisung aus derselben Stufentabelle.
-- Vorgezogen am 8. Oktober 2026 (ohne Hardware): Charakterdatei mit Lader, Grundzustand,
-  Zustandsbericht, Erklär-Log im Speicher, Tests. Offen: Vermittler, Log in eine Datei.
-- *Abnahme:* Reachy hat eine erkennbare Persönlichkeit, jede Anfrage ans Modell ist im Log nachlesbar.
+
+Ziel: Reachy spricht mit einer festen, erkennbaren Persönlichkeit. Der Vermittler steht zwischen
+speech-to-speech und llama.cpp und legt in jede Anfrage den Zustandsbericht. Noch ohne Gefühl
+und Bewertung (Phase 4): Der Zustand ändert sich in Phase 1 nicht, er kommt aus der Charakterdatei.
+
+Aus Unit Sigma (nur Ideen, kein Code): `companion_dna` und `humor_engine` werden zur
+Charakterdatei, `tracing` wird zum Erklär-Log. Ein Humor-Wert kommt nur hinzu, wenn B5 zeigt,
+dass er fehlt (oberste Designregel).
+
+Vorgezogen am 8. Oktober 2026 (ohne Hardware): Charakterdatei mit Lader, Grundzustand,
+Zustandsbericht, Erklär-Log im Speicher, Tests.
+
+| # | Auftrag | Roboter nötig | Ergebnis |
+| --- | --- | --- | --- |
+| B1 | Zustandsbericht in die Form aus A3 bringen: eigener Eintrag mit Kennung `[Zustand]`, „Du, Reachy, bist …“, dazu eine Sprechanweisung je Stufe (z. B. „Sprich ruhig und knapp, ohne Ausrufezeichen“). Eine feste Tabelle in `seele/zustandsbericht.py`, keine freien Texte, keine Beispielsätze. Beispiel in `KONZEPT.md` nachziehen | nein (Cloud geht) | Bericht wie in A3 gemessen, Tests grün |
+| B2 | Protokolle in Dateien: Erklär-Log (Zustandsänderungen) und Anfrage-Log (je Anfrage: Zeit, eingefügter Bericht, entfernte Tools, Dauer). Eine Zeile JSON je Eintrag, Ordner `daten/` (nicht im Repo). Das Anfrage-Log enthält Gesagtes der Familie: nur lokal, nach 7 Tagen automatisch gelöscht, Frist in `.env` | nein (Cloud geht) | Logs nachlesbar, Löschfrist getestet |
+| B3 | Vermittler bauen (`vermittler/`): HTTP-Proxy für `/v1/responses` mit Streaming und Abbruch, setzt den Bericht vor den letzten Nutzersatz, reicht sonst alles unverändert durch, schreibt das Anfrage-Log. Grundlage ist das Ergebnis aus A2, nicht dessen Code. Neue Abhängigkeit (HTTP-Bibliothek) nur nach Rückfrage. Tests gegen eine Attrappe von llama.cpp | nein (Cloud geht) | Vermittler läuft gegen die Attrappe, Tests grün |
+| B4 | Vermittler in die echte Kette: speech-to-speech zeigt auf den Vermittler, `lola-start` startet ihn mit. Messen: Zwischenspeicher an der neuen Position (offene Frage), Zusatzzeit durch den Vermittler (Ziel unter 20 ms), Tool-Aufrufe wie in A3 | ja (nach A4) | Messwerte in `MESSUNGEN.md`, Kette läuft mit Vermittler |
+| B5 | Persönlichkeitstest: zwei Charakterdateien mit deutlichem Unterschied (z. B. gesellig/neugierig gegen zurückhaltend/vorsichtig), je 15 Minuten Gespräch, ohne zu sagen, welche läuft. Erkennt die Familie den Unterschied? Wenn nicht: Bericht schärfen oder Werte streichen. Fehlt erkennbar Humor: erst dann einen Humor-Wert ergänzen | ja | Ergebnis in `ENTSCHEIDUNGEN.md`, endgültige Charakterwerte |
+| B6 | Phasenabschluss: eine Woche Familienalltag mit Vermittler und Profil. Auffälligkeiten aus dem Anfrage-Log auswerten. Danach „Stand sichern“: `entwicklung` nach `main`, Git-Tag `v0.1` | ja | Phase 1 abgeschlossen |
+
+Reihenfolge: B1 bis B3 brauchen weder Roboter noch PC und können laufen, während Phase 0
+(A4 bis A7) am Roboter weitergeht. B4 setzt A4 voraus. B5 und B6 brauchen die ganze Kette.
+
+*Abnahme:* Reachy hat eine erkennbare Persönlichkeit (B5), jede Anfrage ans Modell ist im Log
+nachlesbar (B2), der Vermittler kostet unter 20 ms und bricht weder Tools noch Zwischenspeicher (B4).
 
 ## Phase 2 – Haushalt
 - Timer bauen. Kalender lesen und eintragen per CalDAV, mit mündlicher Bestätigung.
