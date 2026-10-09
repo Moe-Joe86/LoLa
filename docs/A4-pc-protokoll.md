@@ -73,3 +73,16 @@ Gespräch mit Patrick, Latenz am Reachy, 21 Testsätze, Bewegungen ansehen, Moto
 - `entwicklung` in diesen Branch geholt, damit `lola_start` mit Vermittler hier vorhanden ist.
 - Ausprobiert: `sitzung_auswerten.py` an einem Log der Vormessung. Nicht ausprobiert, weil sie die App und
   den Reachy brauchen: `starte_stufe.py`, `say_schritt.py`.
+
+## Sitzung am Roboter (9. Oktober 2026, 15:02 bis 17:30 Uhr, mit Patrick)
+Ergebnisse stehen auf `entwicklung` in `MESSUNGEN.md` und `ENTSCHEIDUNGEN.md`. Hier nur, was im Testbranch blieb:
+- `tests/a4/motorstatus.py`: liest Temperatur und Fehlerstatus (Register 146 und 70), nur Lese-Pakete.
+- `tests/a4/starte_stufe.py` mit `+kerne`; `tests/a4/sprachkette_start.py` ist nach `dienste/` übernommen.
+- Mitschnitte des Mikrofons mit `tests/a7/mitlesen.py` (Branch `test/a7`, Dauer jetzt wählbar); sie liegen
+  nur lokal in `~/lola-laufzeit/messung/a4-pc/sitzung/`.
+- Ablauf: Kamera-Fehler 500 beim ersten Start, Profil zweimal geändert, vier Stufen der Sprech-Erkennung
+  (Silero, FireRed, Silero mit Höchstverstärkung 3, Silero mit 192 ms). FireRed danach wieder entfernt.
+- Nicht gemacht: Block 8 (A6, `conversation.say`), Block 9 (Mitleser hörbar?), Deutsch-Noten, Stimme 1.7B.
+- Meine Fehler: „Silero wird mit der Zeit taub“ (richtig: nach lauter Strecke ohne Sprache); die Teilerkennung
+  als Ursache der langsamen Erkennung (richtig: Thread-Zahl); zwei Fehlalarme „überlange Ausgabe“ der Auswertung,
+  weil das Log lange Sätze umbricht.
