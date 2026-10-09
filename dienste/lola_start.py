@@ -22,8 +22,10 @@ WARTEZEIT_S = 180
 REPO = Path(__file__).resolve().parent.parent
 PROFILE = REPO / "charakter" / "profile"
 # Mikrofon-Werte, die die Conversation App beim Start setzt, wenn sie auf dem Reachy laeuft (Stand 2e43e80).
+# Mikrofon des Reachy: Werte wie in der Conversation App, nur die Höchstverstärkung ist 3 statt 10.
+# Mit 10 regelt das Mikrofon in der Stille Motorbrummen hoch (ENTSCHEIDUNGEN, 9. Oktober 2026).
 MIKROFON = {
-    "PP_AGCMAXGAIN": [10.0],
+    "PP_AGCMAXGAIN": [3.0],
     "PP_MIN_NS": [0.8],
     "PP_MIN_NN": [0.8],
     "PP_GAMMA_E": [0.5],
@@ -39,7 +41,15 @@ STANDARD = {
     "LOLA_REACHY": "reachy-mini.local",
     "LOLA_PROFIL": "lola_deutsch",
     "LOLA_ANFRAGE_LOG_TAGE": "7",
+    "LOLA_LAUTSTAERKE": "100",
 }
+# Schalter für speech-to-speech, entschieden am Roboter (ENTSCHEIDUNGEN, 9. Oktober 2026).
+# Rückhaltezeit (800 ms) und Smart Turn bleiben auf den Standardwerten von speech-to-speech.
+SPRACHKETTE_SCHALTER = [
+    "--no_enable_live_transcription",  # Teilerkennung beim Sprechen aus: nur für die Live-Anzeige nötig
+    *("--min_speech_ms", "192"),  # Mindestlänge für Sprache; mit dem Standard 384 wird „Ja.“ verschluckt
+    *("--qwen3_tts_max_new_tokens", "190"),  # Sprachausgabe je Satz höchstens rund 15 s
+]
 
 
 def einstellungen(env_datei: Path = Path(".env")) -> dict[str, str]:
@@ -65,8 +75,8 @@ def befehle(werte: dict[str, str]) -> dict[str, tuple[list[str], str, dict[str, 
         *("-m", str(laufzeit / werte["LOLA_SPRACHMODELL"]), "-ngl", "999", "-c", "8192", "--parallel", "1"),
         *("--host", "127.0.0.1", "--port", str(PORT_SPRACHMODELL), "--jinja", "--no-webui", "--slots"),
     ]
-    kette = [
-        str(laufzeit / "s2s-venv/bin/speech-to-speech"),
+    kette = [  # über unser Startprogramm, damit Parakeet nach dem Laden von Silero alle Kerne behält
+        *(str(laufzeit / "s2s-venv/bin/python"), str(REPO / "dienste/sprachkette_start.py")),
         *("serve", "--host", "0.0.0.0", "--port", str(PORT_SPRACHKETTE)),
         *("--stt", "parakeet-tdt", "--parakeet_tdt_device", "cpu"),
         *("--llm_backend", "responses-api", "--model_name", "qwen3", "--responses_api_api_key", ""),
@@ -77,6 +87,7 @@ def befehle(werte: dict[str, str]) -> dict[str, tuple[list[str], str, dict[str, 
         *("--qwen3_tts_ref_spk", f"{stimme}.spk", "--qwen3_tts_ref_rvq", f"{stimme}.rvq"),
         *("--qwen3_tts_ref_text", wortlaut.read_text(encoding="utf-8").strip() if wortlaut.exists() else ""),
         *("--qwen3_tts_ref_cache_dir", str(stimmen), "--qwen3_tts_language", "german"),
+        *SPRACHKETTE_SCHALTER,
     ]
     kette_umgebung = {
         "HF_HOME": str(laufzeit / "hf-cache"),
@@ -117,7 +128,7 @@ def reachy(werte: dict[str, str], pfad: str, daten: dict | None = None, senden: 
 
 
 def reachy_bereit(werte: dict[str, str]) -> bool:
-    """Prueft, ob der Daemon laeuft und keine andere App den Reachy belegt, und setzt die Mikrofon-Werte."""
+    """Prueft, ob der Daemon laeuft und keine andere App den Reachy belegt, setzt Mikrofon und Lautstaerke."""
     if (reachy(werte, "/api/daemon/status") or {}).get("state") != "running":
         print(f"Reachy ({werte['LOLA_REACHY']}) antwortet nicht. Ist er eingeschaltet?")
         return False
@@ -127,6 +138,7 @@ def reachy_bereit(werte: dict[str, str]) -> bool:
     paare = [{"name": name, "values": werte_} for name, werte_ in MIKROFON.items()]
     if not (reachy(werte, "/api/audio/config/apply", {"config": paare}) or {}).get("applied"):
         print("Hinweis: Die Mikrofon-Werte ließen sich nicht setzen.")
+    reachy(werte, "/api/volume/set", {"volume": int(werte["LOLA_LAUTSTAERKE"])})
     name, soll = MIKROFON_NUR_PRUEFEN
     if (reachy(werte, f"/api/audio/config/parameter/{name}") or {}).get("values") != soll:
         print(f"Hinweis: Mikrofon-Wert {name} steht nicht auf {soll[0]} und lässt sich von hier nicht setzen.")
