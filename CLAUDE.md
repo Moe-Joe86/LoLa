@@ -87,7 +87,9 @@ Neue Ordner auf oberster Ebene nur nach Eintrag in `docs/ENTSCHEIDUNGEN.md`.
 
 ## Verboten
 - Pollen-Code ändern, forken oder kopieren.
-- Code aus Unit Sigma kopieren. Sigma liefert Ideen, keine Dateien.
+- Code aus Unit Sigma kopieren. Sigma liefert Ideen, keine Dateien. Ablauf je Modul: Sigma-Code nur
+  außerhalb des Repos lesen → Steckbrief `docs/sigma/<modul>.md` (Verhalten, gute Idee, Ballast,
+  was ohne fehlt) → Patricks Entscheidung → neu schreiben gegen KONZEPT, ohne Sigma-Namen.
 - Neue Abhängigkeiten ohne Rückfrage.
 - Toter Code, auskommentierter Code, Platzhalter, „TODO später“.
 - Cloud als Standard. Cloud nur als Notlösung per `.env`, standardmäßig aus.

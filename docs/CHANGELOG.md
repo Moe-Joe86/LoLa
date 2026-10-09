@@ -2,6 +2,10 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – Ablauf für Unit-Sigma-Module, Auftrag B4b
+- CLAUDE.md: Sigma-Module nur über Steckbrief und Neuschreiben übernehmen, nie kopieren.
+- FAHRPLAN: B4b (Steckbriefe `companion_dna`, `humor_engine`, `tracing`) vor B5.
+
 ## 2026-10-09 – Entwürfe für Issues bei Pollen
 - Neu: `docs/issues-entwuerfe.md` mit vier Entwürfen (Fundstelle, Schritte, Logs, AI-Angabe). Nicht eingereicht.
 
