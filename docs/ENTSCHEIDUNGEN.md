@@ -571,3 +571,13 @@ Ohne Roboter, mit künstlichen Stimmen, nur über Schalter von speech-to-speech.
   senken. Smart Turn vorerst an lassen.
 - **Entscheidung:** trifft Patrick am Roboter (Ablauf Block 6 in `docs/A4-teil2-ablauf.md`, Branch
   `test/a4-pc`). `lola_start` ist unverändert und startet mit den Standardwerten.
+
+## 2026-10-09 – B4b: Was aus drei Sigma-Modulen wird
+Grundlage: Steckbriefe in `docs/sigma/` (Code nur gelesen, nichts kopiert). Entschieden von Patrick:
+- **`companion_dna`: verkleinern.** Die Charakterdatei mit sieben Werten reicht. Eine Liste „Interessen“
+  kommt erst hinzu, wenn B5 zeigt, dass LoLa nichts Eigenes zu erzählen hat.
+- **`humor_engine`: streichen.** Kein Humor-Wert. Sigma selbst hat am Ende nur ein Wort ans Modell gegeben.
+  B5 prüft vier Fragen: Scherzt LoLa ohne Angabe? Vermisst es jemand? Falls ja: Wirkt ein Wort im Bericht,
+  nervt es? Bleibt der Scherz aus, wenn jemand Trauriges erzählt?
+- **`tracing`: streichen.** Wir haben Erklär-Log und Anfrage-Log. Vorgemerkt für Phase 4: eine gemeinsame
+  Runden-Kennung in beiden (BACKLOG).
