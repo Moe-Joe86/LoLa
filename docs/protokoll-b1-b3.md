@@ -95,3 +95,7 @@ stehen in ENTSCHEIDUNGEN auf `entwicklung`. Reachy danach schlafen gelegt.
 ## B3 – Ja von Patrick liegt vor (Standardbibliothek, vorgreifende Anfragen kennzeichnen, Aufräumen beim Start)
 Plan wie oben. Zuerst lese ich in speech-to-speech nach, woran Aufwärm-, Zusammenfassungs- und vorgreifende
 Anfragen zu erkennen sind.
+
+**B3 erledigt** (auf `entwicklung`): `vermittler/anfrage.py` 68 Zeilen, `vermittler/proxy.py` 156 Zeilen,
+31 neue Tests, sechsmal hintereinander grün. Erkennung: Bericht nur bei `stream: true`. Abbruch über einen
+Wächter-Faden, auch vor dem ersten Wort. Nicht gegen das echte llama.cpp geprüft (B4).
