@@ -87,3 +87,11 @@ eine vorgreifende Anfrage ab, bevor das erste Wort kommt, darf llama.cpp nicht w
 2. **Welche Dateien:** `tests/a7/say_reihe.py` auf diesem Branch; Ergebnis in ENTSCHEIDUNGEN auf `entwicklung`.
 3. **Am Reachy:** nur wecken und wieder schlafen legen (`lola_start`), nichts speichern; an Pollens Code und
    an speech-to-speech wird nichts geändert.
+
+**Ergebnis say (10:05 bis 10:14 Uhr):** Abstand 4 s: 0 von 30. Abstand 20 s: 0 von 12. Abstand 0,5 s: 3 Abbrüche
+in 100 (10:11:55, 10:12:05, 10:12:55). Mit stummem Mikrofon beim Senden: 0 in 100. Ursache und Vorschlag
+stehen in ENTSCHEIDUNGEN auf `entwicklung`. Reachy danach schlafen gelegt.
+
+## B3 – Ja von Patrick liegt vor (Standardbibliothek, vorgreifende Anfragen kennzeichnen, Aufräumen beim Start)
+Plan wie oben. Zuerst lese ich in speech-to-speech nach, woran Aufwärm-, Zusammenfassungs- und vorgreifende
+Anfragen zu erkennen sind.
