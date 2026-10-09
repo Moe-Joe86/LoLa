@@ -16,6 +16,9 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Kopfbewegung im Sprechrhythmus aus der Stimmung (`emotional_sway`, `speech_tapper`).
 
 ## Technik
+- Issue bei Pollen (Repo `pollen-robotics/reachy_mini`, nach A4, mit Protokollauszug): Die Update-Prüfung
+  verwechselt Apps mit gleichem Namensanfang (`app_update_checker.py`, Suche `{name}*.dist-info`).
+  Sie meldet „aktuell“ und installiert beim Update die falsche App. Siehe `ENTSCHEIDUNGEN.md`, 9. Oktober.
 - Issue bei Pollen (Repo `pollen-robotics/reachy_mini`, erst nach A4): Motortemperatur (Register 146),
   Hardware-Fehlerstatus und Eingangsspannung über `/api/state` freigeben. Der Daemon liest Register 70
   und 144 schon in `read_hardware_errors`. Dringend, falls der Raw-Endpunkt in A4 scheitert.

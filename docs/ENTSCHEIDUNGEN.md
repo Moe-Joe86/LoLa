@@ -92,7 +92,7 @@ Quelle: im SDK-Code geprüft (pollen-robotics/reachy_mini, Commit `fbdbca3`: `da
 Der Akkustand ist nicht lesbar (Pollen: „known limitation of the design“, nur LED). Deshalb fallen
 alle Akku-Bezüge weg. Müdigkeit kommt später aus der Tageszeit, „Kannst du mich laden?“ wird zu
 „Hilfst du mir kurz?“. Motorschutz: Der Daemon prüft jede Sekunde das Fehlerregister der Motoren
-(Überhitzung, Überlast) und schreibt Fehler nur ins Log (`ws://<reachy>:8000/api/logs/ws/daemon`).
+(Überhitzung, Überlast) und schreibt Fehler nur ins Log (`ws://<reachy>:8000/logs/ws/daemon`).
 Ab Phase 4 liest `sinne/koerper.py` dieses Log und meldet eine Wahrnehmung; die harte Grenze ist
 genau dieser Fehler. Die Motortemperatur liest der Daemon nicht, selbst auslesen hieße ihn zu
 ändern, also verboten. Lesbar ist zusätzlich die IMU-Temperatur über `/api/state`.
@@ -248,9 +248,9 @@ Tabellen in `MESSUNGEN.md`.
   (mit ihr wurde die Gesamtkette gemessen). Patrick hat den Klang noch nicht beurteilt. Die endgültige
   Stimme wählt die eigene Aufgabe „Sprachausgabe-Vergleich“ hinter A5 (`FAHRPLAN.md`).
 - **Bündelung: 1 Satz statt 3.** speech-to-speech spricht, sobald der erste Satz des Sprachmodells
-  fertig ist. Einstellung beim Start: `--responses_api_stream_batch_sentences 1` (Feld
-  `stream_batch_sentences`, Standard 3). Im Handler gemessen; der Schalter auf der Kommandozeile ist
-  aus dem Namensschema der anderen Schalter abgeleitet und wird in A4 beim ersten echten Start geprüft.
+  fertig ist. Einstellung beim Start: `--stream_batch_sentences 1` (Standard 3). Im Handler
+  gemessen; der Schalter ist in A4 an `--help` und beim Start geprüft (die frühere Annahme
+  `--responses_api_stream_batch_sentences` war falsch).
 - Weitere Einstellungen der Sprachausgabe: `--qwen3_tts_ggml_quantization Q8_0`,
   `--qwen3_tts_speaker aiden`, Sprache Deutsch. Sie kommen in `.env.example`, sobald ein Startskript
   sie liest (A4); in A1 entsteht kein Code.
@@ -342,13 +342,37 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
   Eingabe schreibt die Bibliothek gar keine Stimmdaten, der Ordner greift nur, falls doch einmal
   eine Aufnahme übergeben wird. Geprüft wird der Schalter beim ersten Start in A4.
 
+## 2026-10-09 – A4: Stände am Reachy festgenagelt, Fehler in der Update-Prüfung des Daemons
+- **Festgenagelt:** Daemon 1.11.0, Conversation App 1.0.1 (`ddc3096`), Reachy Control 0.9.35 auf dem PC.
+- **Geprüft an der laufenden App:** alle 30 Dateien der Einstellungsseite haben dieselbe Prüfsumme wie
+  im Stand `ddc3096`; `/rpc` antwortet auf `conversation.status`. Die Reachy-Bibliothek in der
+  gemeinsamen App-Umgebung erfüllt `>=1.10.0rc5` (die Installation hat sie nicht getauscht); fünf
+  Zeilennummern im Log passen zum Code von 1.11.0. Die genaue Version ist damit abgeleitet, nicht abgelesen.
+- **Fehler im Daemon 1.11.0:** Alle Apps teilen sich eine Umgebung (`/venvs/apps_venv`).
+  `apps/sources/app_update_checker.py` sucht die Paketdaten mit `{name}*.dist-info`. Für
+  `reachy_mini_conversation_app` trifft das auch `reachy_mini_conversation_app_local` (fremde App).
+  Folgen, beide am Roboter gesehen: Die Update-Prüfung meldet „aktuell“, obwohl 0.9.0 statt 1.0.1
+  installiert war. Das Update entfernte Pollens App und installierte die fremde neu; dabei fiel die
+  Reachy-Bibliothek in der Umgebung von 1.11.0 auf 1.8.0.
+- **Behebung:** fremde App über die REST-API entfernt, Pollens App neu installiert. Die Bibliothek war
+  danach wieder passend. Gelesen: Der Daemon gleicht sie beim Start an seine eigene Version an
+  (`check_and_sync_apps_venv_sdk`); der Reachy war über Nacht aus. Gesehen haben wir diesen Schritt nicht.
+- **Regel:** Auf dem Reachy sind nur die Apps installiert, die wir wirklich nutzen. Jede weitere App
+  kann Pakete der gemeinsamen Umgebung tauschen.
+- **Einstellungen überleben das Entfernen:** Die `.env` der App liegt im Paketordner und blieb liegen.
+- **Daemon-Log:** `ws://<reachy>:8000/logs/ws/daemon` (nicht `/api/logs/...`, das gibt 403).
+- **Reachy Control auf dem PC:** Das deb-Paket aktualisiert sich nicht selbst (der eingebaute Updater
+  ersetzt es nicht). Neue Version von der Release-Seite von Pollen laden, Prüfsumme vergleichen, mit `apt` installieren.
+- Belege liegen lokal in `~/lola-laufzeit/messung/a4/`. Issue bei Pollen: siehe `BACKLOG.md`.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
 | Komponente | Version | Datum |
 | --- | --- | --- |
-| Reachy-Daemon / SDK | offen | |
-| Conversation App | offen; in A3 gelesen: Commit `2e43e80` | |
+| Reachy-Daemon / SDK | 1.11.0 (PyPI) | 2026-10-09 |
+| Conversation App | 1.0.1, Hugging-Face-Stand `ddc3096` (in A3 gelesen: GitHub `2e43e80`) | 2026-10-09 |
+| Reachy Control (PC) | 0.9.35 (deb) | 2026-10-08 |
 | speech-to-speech | Commit `8024ccf` (in A2 geprüft, in A1 installiert) | 2026-10-08 |
 | llama.cpp | Commit `d81235049384534c167caea52b85a694f6103d14` (0.6.0), CUDA 12.0, gcc 12 | 2026-10-08 |
 | Sprachmodell | Qwen3-8B Q4_K_M, `Qwen/Qwen3-8B-GGUF` Stand `7c41481`, SHA-256 `d98cdcbd…5745785` (nur für A1, Wahl in A5) | 2026-10-08 |

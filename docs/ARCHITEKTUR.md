@@ -73,14 +73,23 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
    Sprachkette und bekommt so auch den Zustandsbericht.
 3. **Haltung** (ab Phase 8): eine dauerhafte Körperhaltung aus der Stimmung, siehe Fahrplan.
 
-## Geprüfte Fakten zur Conversation App (Code-Stand 7. Oktober 2026)
+## Geprüfte Fakten zur Conversation App (Stand 1.0.1, `ddc3096`, gelesen am 9. Oktober 2026)
 
 - Bewegung: Ein einziger Steuerpunkt (`MovementManager`). Darauf laufen nacheinander
   Emotionen, Tänze, Zielposen und ein „Atmen“ mit festen Werten (5 mm, 0,1 Hz, Antennen 15°).
 - Leerlauf: Nach 180 s Stille würfelt die App lokal eine Aktion, ohne das Sprachmodell
   (60 % nichts tun, 16 % Tanz, 16 % Emotion, 8 % Kopfbewegung). Bleibt als Grundrauschen.
-- `/rpc` bietet: `conversation.say`, `conversation.interrupt`, `conversation.mic`,
-  `conversation.status`, `backend.config`. Erreichbar über die Web-Oberfläche auf Port 7860.
+- `/rpc` (WebSocket auf Port 7860, JSON-RPC) bietet: `conversation.say`, `conversation.interrupt`,
+  `conversation.mic`, `conversation.status`, `backend.config`, dazu `personalities.*`,
+  `profile_tools.*`, `voices.*`, `tool_spaces.*`. An der laufenden App geprüft: `conversation.status`.
+  Achtung: `backend.config` **schreibt** immer (speichert die Verbindung, baut sie neu auf), auch ohne Angaben.
+- `conversation.say` legt den Text als Nutzer-Nachricht ins Gespräch und lässt das Sprachmodell
+  antworten; läuft gerade eine Ausgabe, wird sie abgebrochen. Kein wörtliches Vorlesen.
+- Profil: eine Datei `profile.md` (Kopf mit `schema_version = 1` und `default_tools`, darunter der
+  Text). Anlegen und Auswählen geht über die Einstellungsseite (`personalities.save`, `.apply`).
+- Eigene Werkzeuge: nur über die Umgebungsvariable `REACHY_MINI_EXTERNAL_TOOLS_DIRECTORY`, nicht über
+  die Einstellungsseite.
+- Nach 24 Stunden ohne Aktivität legt sich die App schlafen (`REACHY_MINI_APP_TIMEOUT_MINUTES`, Standard 1440).
 - Werkzeuge (Tools) bekommen Zugriff auf `reachy_mini` und `movement_manager`.
 - Lokales Backend: `HF_REALTIME_CONNECTION_MODE=local`,
   `HF_REALTIME_WS_URL=ws://<PC-IP>:8765/v1/realtime`. Das Backend muss auf der
@@ -95,7 +104,7 @@ Quelle: im SDK-Code geprüft (pollen-robotics/reachy_mini, Commit `fbdbca3`: `da
   the design“; nur eine LED zeigt ihn. Müdigkeit kommt deshalb aus der Tageszeit.
 - **Motorschutz:** Der Daemon prüft jede Sekunde das Fehlerregister der Motoren (Überhitzung,
   Überlast) und schreibt Fehler nur ins Log. Das Log ist lesbar über
-  `ws://<reachy>:8000/api/logs/ws/daemon`. Ab Phase 4 liest `sinne/koerper.py` es und meldet eine
+  `ws://<reachy>:8000/logs/ws/daemon`. Ab Phase 4 liest `sinne/koerper.py` es und meldet eine
   Wahrnehmung. Die harte Grenze ist genau dieser Fehler.
 - **Motortemperatur:** Der Daemon liest den Wert nicht von sich aus. Die Motoren (XL330) melden ihn
   aber in Register 146 (in Pollens Treiber rustypot als `present_temperature` geführt). Möglicher Weg:

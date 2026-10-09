@@ -2,6 +2,13 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – A4: Stände am Reachy festgenagelt
+- Daemon 1.11.0, Conversation App 1.0.1 (`ddc3096`), Reachy Control 0.9.35. An der laufenden App geprüft.
+- Fehler in der Update-Prüfung des Daemons gefunden und in `ENTSCHEIDUNGEN.md` beschrieben; Issue im Backlog.
+- Regel: auf dem Reachy nur Apps, die wir nutzen.
+- Korrigiert: Adresse des Daemon-Logs (`/logs/ws/daemon`) und Schalter `--stream_batch_sentences`.
+- `ARCHITEKTUR.md`: Fakten zur App auf Stand 1.0.1 gebracht. Kein Code geändert.
+
 ## 2026-10-09 – Fahrplan Phase 2 in Aufträge C0 bis C8 aufgeteilt
 - Werkzeug-Brücke, Timer, Kalender (Synology), App-Wechsel mit Ausstiegsgeste, Uhrzeit und Wetter lokal.
 - BACKLOG: SearXNG, Ausstieg per Sprache, Storyteller. Entscheidung in ENTSCHEIDUNGEN.
