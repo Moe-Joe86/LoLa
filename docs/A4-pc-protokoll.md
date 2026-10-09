@@ -29,5 +29,25 @@ Nur Branch `test/a4-pc`, wird nie gemergt. Rohdaten lokal in `~/lola-laufzeit/me
 - Berichtigung zum Protokoll von test/a4: `Tools: []` im Log von speech-to-speech zeigt die Tool-Aufrufe
   der Antwort, nicht die angebotenen Tools. Der Befund dort (Einstellung abgelehnt) stimmt trotzdem.
 
+## Nachgelesen, ohne Patrick (9. Oktober 2026, vormittags)
+- **Beenden:** Nach `Strg+C` an der PC-App bleiben die Motoren eingeschaltet, der Reachy steht wach.
+  Von Hand über die REST-API in Schlafhaltung gelegt und Motoren ausgeschaltet (`/api/move/play/goto_sleep`,
+  `/api/motors/set_mode/disabled`). Ein späteres Stopp-Skript muss das tun.
+- **`2e43e80` gegen 1.0.1:** `say` (Nutzer-Nachricht), Profilformat, Leerlauf (180 s, 60/16/16/8) und Atmen
+  unverändert. Neu über `/rpc`: `language.*`, `memory.*`, `vision.*`; neue Tools `robot_status`, `volume_control`.
+- **Kopfwackeln:** Der Daemon hat dafür einen eigenen Schalter (`POST /api/media/wobbling/enable`), der auch
+  für Ton gilt, der per WebRTC ankommt. Gelesen, nicht ausprobiert.
+- **Mikrofon-Einstellungen:** Die Werte, die die App sonst setzt (`PP_AGCMAXGAIN=10`, `PP_MIN_NS=0.8` …),
+  stehen am Reachy gerade so (zwei gelesen, wohl vom Lauf heute früh). Setzbar über `POST /api/audio/config/apply`.
+  Ob sie einen Neustart des Reachy überleben: ungeprüft.
+- **Router-Anfragen (Port 49000):** Im Code von Pollen steht nichts zu UPnP. Vermutung: die WebRTC-Bibliothek
+  libnice fragt den Router von sich aus.
+- **Körperdaten, nur gelesen:** IMU-Temperatur 44,25 °C (gestern im Ruhezustand 28,5 °C). In 8.692 Zeilen
+  Daemon-Log von gestern und heute keine Fehlerzeile zu Motoren (Überhitzung, Überlast).
+  Der Daemon meldet, dass ihm `rtpgccbwe` fehlt: keine Anpassung der Datenrate bei schlechtem Funk.
+- **Vorbereitet, nicht benutzt:** `tests/a4/motortemperatur.py` (nur Lese-Pakete, Sperre und Tests; Prüfsumme
+  gegen das Beispiel aus dem Robotis-Handbuch geprüft) und `tests/a4/saetze_auswerten.py` (Wortfehler und
+  Latenz aus dem Log der App). `testsaetze.txt`: die 20 aus A1 plus „Guten Morgen, LoLa.“
+
 ## Offen
-Gespräch mit Patrick, Latenz am Reachy, 20 Testsätze, Bewegungen ansehen.
+Gespräch mit Patrick, Latenz am Reachy, 21 Testsätze, Bewegungen ansehen, Motortemperatur (braucht Ja).
