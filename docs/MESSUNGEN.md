@@ -158,3 +158,15 @@ App auf dem PC (`2e43e80`), Mitleser per WebRTC, 75 und 100 s. Sätze über `con
 | Bild | 1280×720, 28,8 und 29,3 je Sekunde; Abstand im Mittel 35 ms, 99 % unter 143 ms, längste Lücke 452 ms |
 | Ton | 16 kHz, 2 Kanäle; 15.549 und 15.344 Werte je Sekunde; je Lauf 4 Lücken über 100 ms, längste 210 ms |
 | Kopfbewegung im Log bis Bildänderung | 0,44 / 0,49 / 0,54 / 0,62 / 0,77 s |
+
+## `conversation.say`: Abbrüche der Sitzung (9. Oktober 2026)
+App auf dem PC (`2e43e80`), speech-to-speech `8024ccf`. Ein Abbruch ist ein `JSONDecodeError` in
+speech-to-speech mit Neuverbindung der App.
+
+| Reihe | Sätze | Abbrüche |
+| --- | --- | --- |
+| A7, Abstand 9 und 20 s, je Satz eine neue `/rpc`-Verbindung | 14 | 2 |
+| Abstand 4 s, eine `/rpc`-Verbindung | 30 | 0 |
+| Abstand 20 s | 12 | 0 |
+| Abstand 0,5 s | 100 | 3 (dazu 15-mal „no active session“) |
+| Abstand 0,4 s, Mikrofon beim Senden stumm | 100 | 0 |

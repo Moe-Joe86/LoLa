@@ -16,6 +16,12 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
 - Kopfbewegung im Sprechrhythmus aus der Stimmung (`emotional_sway`, `speech_tapper`).
 
 ## Technik
+- Vor der Sprechererkennung (Phase 3) prüfen: Im WebRTC-Tonstrom fehlten beim Mitlesen 3 bis 4 % der Werte,
+  mit Lücken bis 210 ms (A7). Dem Daemon auf dem Reachy fehlt der Baustein `rtpgccbwe` (keine Anpassung
+  der Datenrate). Hängt beides zusammen? Hat die App dieselben Lücken wie ein Mitleser?
+- Issue bei Pollen (Repo `pollen-robotics/reachy_mini_conversation_app`): `conversation.say` sendet aus dem
+  Faden des `/rpc`-Servers statt im Hauptfaden (`console.py`, `_rpc_say` ruft `handler.say` direkt). Folge:
+  gelegentlich unlesbare Nachricht, Sitzungsabbruch. Belege in `ENTSCHEIDUNGEN.md`, 9. Oktober.
 - Issue bei Pollen (Repo `pollen-robotics/reachy_mini`): `POST /api/audio/config/apply` wandelt alle Werte
   in Kommazahlen um; Ganzzahl-Parameter wie `PP_NLATTENONOFF` scheitern („required argument is not an integer“).
 - Issue bei Pollen (Repo `pollen-robotics/reachy_mini`, nach A4, mit Protokollauszug): Die Update-Prüfung

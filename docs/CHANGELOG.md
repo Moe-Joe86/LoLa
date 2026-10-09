@@ -2,6 +2,11 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – Ursache der verlorenen `conversation.say`-Sätze
+- Gefunden und nachgestellt: `say` sendet aus einem fremden Faden; mit stummem Mikrofon beim Senden kein
+  Abbruch mehr. Ergebnis und Vorschlag in `ENTSCHEIDUNGEN.md`, Reihen in `MESSUNGEN.md`.
+- BACKLOG: Issue für Pollen; Tonlücken und fehlendes `rtpgccbwe` vor Phase 3 prüfen. Kein Code geändert.
+
 ## 2026-10-09 – B2: Protokolle als Dateien
 - `seele/erklaer_log.py` schreibt jeden Eintrag zusätzlich als Zeile JSON, wenn eine Datei angegeben ist.
 - Neu: `vermittler/anfrage_log.py` mit Tagesdateien und Löschfrist (`LOLA_ANFRAGE_LOG_TAGE`, Standard 7).

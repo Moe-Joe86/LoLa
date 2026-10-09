@@ -453,6 +453,25 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
   zusätzlich bei jedem Start auf.
 - Noch nicht angeschlossen: Das Anfrage-Log schreibt erst, wenn der Vermittler es benutzt (B3).
 
+## 2026-10-09 – Verlorene Sätze bei `conversation.say`: Ursache und Vorschlag
+- **Ursache (Code gelesen, am Roboter nachgestellt):** In der Conversation App läuft `/rpc` in einem eigenen
+  Faden („ui-server“), die Verbindung zur Sprachkette im Hauptfaden. `conversation.say` sendet direkt aus
+  dem fremden Faden auf diese Verbindung, während der Hauptfaden dort laufend den Mikrofonton sendet. Andere
+  Methoden der App (Profil, Stimme) wechseln dafür sauber in den Hauptfaden, `say` nicht. Treffen zwei
+  Sendungen zusammen, kommt bei speech-to-speech eine unlesbare Nachricht an (`JSONDecodeError`), es
+  beendet die Sitzung, und die App verbindet sich nach rund 1,4 s neu. Der Satz ist verloren, das
+  bisherige Gespräch der Sitzung auch. Gleiche Stelle in 1.0.1 (`ddc3096`) und `2e43e80`.
+- **Gemessen:** mit Abstand von 4 bis 20 s: 2 Abbrüche in 56 Sätzen. Im Halbsekundentakt: 3 Abbrüche in
+  100 Sätzen, dazu 15 Ablehnungen („no active session“) während der Neuverbindung. Mit stummem Mikrofon
+  im Moment des Sendens (`conversation.mic`): 0 Abbrüche in 100 Sätzen.
+- **Normales Gespräch:** nicht betroffen, soweit gelesen und gesehen. Dort sendet nur der Hauptfaden
+  (Ton, Tool-Ergebnisse). Im Log des Gesprächs von heute früh steht kein solcher Fehler.
+- **Vorschlag:** Wer `conversation.say` aufruft (später die Seele), schaltet davor das Mikrofon über
+  `conversation.mic` stumm, wartet 0,1 s, sendet den Satz und schaltet das Mikrofon wieder ein. Kosten:
+  LoLa ist dabei etwa eine Viertelsekunde taub. Zusätzlich danach `conversation.status` prüfen und bei
+  einem Abbruch einmal wiederholen. An Pollens Code und an speech-to-speech ändern wir nichts.
+- Der Fehler gehört an Pollen gemeldet (`BACKLOG.md`). A6 baut auf diesem Befund auf.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 
