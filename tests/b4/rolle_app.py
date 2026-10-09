@@ -166,7 +166,7 @@ class Sitzung:
                 break
         try:
             antwort = await asyncio.wait_for(leser, 20)
-        except (TimeoutError, asyncio.TimeoutError):  # keine Antwort, z. B. weil das Stück zu kurz war
+        except TimeoutError:  # keine Antwort, z. B. weil das Stück zu kurz war
             antwort = {"text": "", "tools": [], "aufrufe": [], "erster_ton_s": None}
         neu = self.ereignisse[start:]
         ton = [zeit for zeit, e in neu if e["type"] == "response.output_audio.delta"]

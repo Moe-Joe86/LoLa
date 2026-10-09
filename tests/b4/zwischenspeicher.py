@@ -1,6 +1,7 @@
 """B4: Wie viele Eingabe-Token rechnet llama.cpp je Anfrage neu? Ein Gespräch über acht Runden.
 
-Liest dazu das Log von llama.cpp (`prompt eval time … / N tokens` und `n_tokens = …`). Aufruf: python zwischenspeicher.py
+Liest dazu das Log von llama.cpp (`prompt eval time … / N tokens` und `n_tokens = …`).
+Aufruf: python zwischenspeicher.py
 """
 
 import asyncio
