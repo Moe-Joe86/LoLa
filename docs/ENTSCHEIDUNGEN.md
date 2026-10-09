@@ -410,6 +410,25 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
 - `dienste/lola_start.py` hat jetzt 225 Zeilen (Ziel war eher 120): dazu kamen App, Reachy-Prüfung,
   Mikrofon-Werte und Schlafenlegen.
 
+## 2026-10-09 – A7: Ein zweites Programm kann Ton und Bild mitlesen
+- **Ergebnis:** Ja. Der Daemon bedient mehrere WebRTC-Abnehmer zugleich. Ein zweites Programm auf dem PC
+  (der WebRTC-Client aus der Reachy-Bibliothek, ohne Steuerverbindung) bekam Bild und Ton, während die
+  Conversation App lief. Die App zeigte dabei keine zusätzlichen Fehler, ihre CPU-Last blieb gleich.
+- **Kosten:** rund ein halber CPU-Kern am PC für das Mitlesen in voller Auflösung. Auf dem Reachy sinkt der
+  Regeltakt des Daemons von 49 auf 46 Hz, der längste Abstand steigt von 24 auf bis zu 39 ms, ohne Fehler.
+  Für die Sinne heißt das: höchstens ein Mitleser, und klären, ob eine kleinere Auflösung reicht.
+- **Qualität:** Bild 1280×720 mit 29 Bildern je Sekunde, sichtbar zusammengedrückt; für „Gesicht da oder
+  nicht“ in der Nähe vermutlich genug, für Einzelheiten in der Ferne nicht. Ton 16 kHz in 2 Kanälen, 3 bis
+  4 % der Werte fehlten, vereinzelt Lücken bis 210 ms. Verzögerung im Bild: 0,4 bis 0,8 s bis zur
+  sichtbaren Kopfbewegung, Motoranlauf eingerechnet.
+- **Offen, mit Patrick:** ob LoLa hörbar weiterspricht, solange der Mitleser verbunden ist (jeder Client
+  sendet einen stillen Tonstrom zum Reachy); Tonqualität bei echter Sprache; Verzögerung im Ton.
+- **Nebenbefund für A6:** 2 von 14 Sätzen über `conversation.say` gingen verloren, unabhängig vom Mitleser.
+  speech-to-speech meldet einen Lesefehler (`JSONDecodeError`), beendet die Sitzung, die App verbindet
+  sich nach 1,4 s neu. Ursache offen.
+- Messwerte in `MESSUNGEN.md`, Skripte und Protokoll auf Branch `test/a7`. Aufnahmen aus der Wohnung
+  liegen nur lokal in `~/lola-laufzeit/messung/a7/`.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 

@@ -2,6 +2,11 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – A7: Machbarkeitstest Sinne
+- Ein zweites Programm auf dem PC kann Ton und Bild des Reachy per WebRTC mitlesen, während die App läuft.
+  Ergebnis in `ENTSCHEIDUNGEN.md`, Messwerte in `MESSUNGEN.md`, Fahrplan nachgezogen.
+- Nebenbefund für A6: 2 von 14 eingeschleusten Sätzen gingen verloren. Kein Code auf `entwicklung` geändert.
+
 ## 2026-10-09 – Zwischenstand: Conversation App auf dem PC
 - `dienste/lola_start.py` startet jetzt auch die Conversation App auf dem PC, prüft vorher den Reachy,
   setzt die Mikrofon-Werte und legt den Reachy beim Stoppen schlafen (Motoren aus). 14 Tests.

@@ -140,3 +140,21 @@ Bei allen Antworten ist das Warn-Bit gesetzt. IMU-Temperatur zur selben Zeit: 44
 ## A4 – Start und Grafikspeicher mit der App auf dem PC (9. Oktober 2026)
 `lola_start start`: 22 s bis alle drei Programme antworten. Grafikspeicher vorher 635 MiB, mit Gespräch
 9.544 bis 9.556 MiB. `lola_start stop`: 8 s, danach wieder 635 MiB, Reachy schläft, Motoren aus.
+
+## A7 – Zweites Programm liest Ton und Bild mit (9. Oktober 2026)
+App auf dem PC (`2e43e80`), Mitleser per WebRTC, 75 und 100 s. Sätze über `conversation.say`.
+
+| Größe | ohne Mitleser | mit Mitleser |
+| --- | --- | --- |
+| CPU App (Prozent eines Kerns von 16) | 51 | 48 bis 54 |
+| CPU speech-to-speech | 10 | 9 |
+| CPU Mitleser | - | 52 |
+| Regeltakt des Daemons, Mittel | 48,9 bis 49,4 Hz | 45,7 bis 46,7 Hz |
+| längster Abstand im Regeltakt | 21 bis 24 ms | 35 bis 39 ms |
+| eingeschleuste Sätze ausgeführt | 6 von 7 | 6 von 7 |
+
+| Strom beim Mitleser | Wert |
+| --- | --- |
+| Bild | 1280×720, 28,8 und 29,3 je Sekunde; Abstand im Mittel 35 ms, 99 % unter 143 ms, längste Lücke 452 ms |
+| Ton | 16 kHz, 2 Kanäle; 15.549 und 15.344 Werte je Sekunde; je Lauf 4 Lücken über 100 ms, längste 210 ms |
+| Kopfbewegung im Log bis Bildänderung | 0,44 / 0,49 / 0,54 / 0,62 / 0,77 s |
