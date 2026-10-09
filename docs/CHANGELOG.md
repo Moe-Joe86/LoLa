@@ -2,6 +2,11 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – B1: Zustandsbericht in der Form aus A3
+- `seele/zustandsbericht.py`: eine Zeile mit Kennung `[Zustand]`, „Du, LoLa, bist …“, Sprechanweisung je
+  Stufe aus derselben festen Tabelle. Kopfzeile und „Halte dich kurz“ entfallen.
+- Tests: alle 20 Kombinationen der Stufen, keine Zahlen, keine Beispielsätze. Beispiel in `KONZEPT.md`.
+
 ## 2026-10-09 – A7: Machbarkeitstest Sinne
 - Ein zweites Programm auf dem PC kann Ton und Bild des Reachy per WebRTC mitlesen, während die App läuft.
   Ergebnis in `ENTSCHEIDUNGEN.md`, Messwerte in `MESSUNGEN.md`, Fahrplan nachgezogen.

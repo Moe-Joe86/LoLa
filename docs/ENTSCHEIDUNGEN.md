@@ -429,6 +429,17 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
 - Messwerte in `MESSUNGEN.md`, Skripte und Protokoll auf Branch `test/a7`. Aufnahmen aus der Wohnung
   liegen nur lokal in `~/lola-laufzeit/messung/a7/`.
 
+## 2026-10-09 – B1: Form des Zustandsberichts
+- Eine Zeile: `[Zustand] Du, LoLa, bist <Laune> und <Erregung>. Deine Art: <Worte aus dem Charakter>.
+  Sprich <Ton> und dabei <Tempo>.` Jede Stufe von Laune und Erregung hat in `seele/zustandsbericht.py`
+  genau zwei feste Bausteine: einen für den Zustand, einen für die Sprechanweisung.
+- Kopfzeile und „Halte dich kurz“ sind entfallen: Die Kürze regelt das Profil, die in A3 gemessene Form
+  hatte beides nicht. „Deine Art“ bleibt, lässt sich aber streichen, falls B5 keinen Nutzen zeigt.
+- Der Name steht als Vorgabe „LoLa“ im Code und lässt sich beim Aufruf setzen.
+- **Gemessen** ist aus A3 nur der Baustein „ruhig und knapp, ohne Ausrufezeichen“ (mit Qwen3-8B). Die
+  anderen Bausteine (ernst, zurückhaltend, sachlich, freundlich, herzlich; langsam, lebhaft, schnell)
+  sind ein Vorschlag und werden in B5 am Modell geprüft.
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 

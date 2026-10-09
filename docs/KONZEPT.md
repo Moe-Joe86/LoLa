@@ -147,16 +147,15 @@ hoher Relevanz, großem Erwartungsfehler *und* ungeklärtem Ausgang.
 ## Schnittstelle zum Sprachmodell
 
 Das Modell bekommt keine Zahlen, sondern einen kurzen Zustandsbericht in Worten, gebaut aus Stufen
-mit festen Satzbausteinen. Beispiel:
+mit festen Satzbausteinen. Er ist eine einzige Zeile mit der Kennung `[Zustand]`. So gebaut seit
+B1 (9. Oktober 2026), mit dem Charakter aus `charakter/reachy.toml` im Grundzustand:
 
 ```text
-Innerer Zustand (nicht vorlesen, nur danach handeln):
-- Du bist gut gelaunt und ruhig. Es ist spät am Abend, du bist etwas müde.
-- Du sprichst mit Anna. Ihr seid vertraut, sie meldet sich meist zuverlässig.
-- Offen: Anna wollte dir gestern vom Ausflug erzählen.
-- Deine Neigung: zuwenden, nachfragen.
-- Halte dich kurz, höchstens zwei Sätze.
+[Zustand] Du, LoLa, bist gut gelaunt und ruhig. Deine Art: gesellig und neugierig. Sprich freundlich und dabei ruhig und knapp, ohne Ausrufezeichen.
 ```
+
+Später kommen weitere feste Bausteine dazu, zum Beispiel Tageszeit, Gegenüber und Offenes
+(„Du sprichst mit Anna. Ihr seid vertraut.“). Jeder davon erst, wenn die Größe dahinter existiert.
 
 **Sprechanweisung (entschieden nach A3, 8. Oktober 2026):** Der Bericht darf sagen, wie Reachy
 sprechen soll, etwa „Sprich ruhig und knapp“. Ohne das folgt der Ton dem Zustand nur schwach
