@@ -365,6 +365,17 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
   ersetzt es nicht). Neue Version von der Release-Seite von Pollen laden, Prüfsumme vergleichen, mit `apt` installieren.
 - Belege liegen lokal in `~/lola-laufzeit/messung/a4/`. Issue bei Pollen: siehe `BACKLOG.md`.
 
+## 2026-10-09 – A4: Startskript `dienste/lola_start.py`
+- Python statt Shell, nur Standardbibliothek, damit es später auch unter Windows geht.
+  Aufruf: `uv run python -m dienste.lola_start start` und `stop`. Der kurze Name `uv run lola-start`
+  ginge nur, wenn das Projekt als Paket gebaut wird (Eintrag `[build-system]` in `pyproject.toml`); offen.
+- Das Sprachmodell lauscht nur auf dem PC selbst (`127.0.0.1:8090`), die Sprachkette im Heimnetz
+  (`0.0.0.0:8765`). Sie startet mit `HF_HUB_OFFLINE=1`: im Log keine Anfrage an huggingface.co (geprüft).
+- Laufdaten (Prozessnummern, Logs) liegen in `~/lola-laufzeit/lauf/`, nicht im Repo.
+- Der Speicher-Wächter aus A1 gehört nicht dazu; er bleibt ein Messwerkzeug.
+- Gemessen am PC: Start 21 s; Grafikspeicher vorher 635 MiB, danach 9.265 MiB (llama-server 6.012 MiB,
+  speech-to-speech 2.604 MiB nach dem Laden, noch ohne Gespräch).
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 

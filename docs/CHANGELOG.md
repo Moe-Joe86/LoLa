@@ -2,6 +2,13 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – A4: Startskript für die Sprachkette
+- Neu: `dienste/lola_start.py` startet und stoppt llama.cpp und speech-to-speech, prüft, ob beide
+  antworten, und nennt die Adresse für die App. Nur Standardbibliothek, 151 Zeilen, 6 Tests.
+- Neu: `.env.example` mit drei Einstellungen. README: Abschnitt „So starte ich LoLa“.
+- Am PC geprüft: Start in 21 s, Grafikspeicher 635 → 9.265 MiB, Stopp gibt alles frei.
+- Mit dem Reachy noch nicht geprüft.
+
 ## 2026-10-09 – A4: Stände am Reachy festgenagelt
 - Daemon 1.11.0, Conversation App 1.0.1 (`ddc3096`), Reachy Control 0.9.35. An der laufenden App geprüft.
 - Fehler in der Update-Prüfung des Daemons gefunden und in `ENTSCHEIDUNGEN.md` beschrieben; Issue im Backlog.
