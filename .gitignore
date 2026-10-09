@@ -16,6 +16,8 @@ build/
 daten/
 logs/
 *.sqlite
+*.spk
+*.rvq
 *.sqlite3
 *.db
 

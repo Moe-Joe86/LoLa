@@ -56,30 +56,40 @@ Die Seele hängt nicht an Pollen. Ändert Pollen seine App, passen wir nur den V
 | Wahrnehmung | sieht das erkannte Gesprochene. Alles andere melden die Sinne direkt an die Seele. |
 | schnelle Bewertung | prüft Sprecher, Name und Wortliste, bevor die Anfrage weitergeht (Millisekunden) |
 | Deutung | schickt das Gesagte parallel zur Antwort als eigenen kurzen Aufruf an dasselbe Sprachmodell |
-| Verhalten | setzt den Zustandsbericht ans Ende der Anfrage, damit llama.cpp den unveränderten Anfang aus dem Zwischenspeicher nutzen kann |
+| Verhalten | setzt den Zustandsbericht als eigenen Systemeintrag direkt vor den letzten Nutzersatz. Nur dort klappen alle Tool-Aufrufe (A3, gemessen). Vermutet, noch nicht gemessen: llama.cpp nutzt den unveränderten Anfang weiter aus dem Zwischenspeicher |
 | harte Grenzen | entfernt Bewegungs-Tools aus der Anfrage, solange eine Grenze greift |
 | Folge | sieht die Antwort und in der nächsten Anfrage die Ergebnisse der Tool-Aufrufe |
 | Eigeninitiative | läuft nicht über den Vermittler, sondern über `conversation.say` der App |
 
-**Tools pro Anfrage entfernen:** gegen eine Attrappe geprüft (A2), Nachprüfung in A1.
+**Tools pro Anfrage entfernen:** gegen eine Attrappe (A2) und gegen das echte llama.cpp (A1) geprüft.
 
 ## Die drei Ausgänge der Seele
 
-1. **Kontext:** Der Vermittler legt den Zustandsbericht in jede Anfrage ans Sprachmodell.
+1. **Kontext:** Der Vermittler legt den Zustandsbericht in jede Anfrage ans Sprachmodell,
+   vor den letzten Nutzersatz. Den übrigen Systemtext reicht er unverändert durch.
 2. **Sprechen:** Eigeninitiative läuft über die offizielle Steuerschnittstelle der App
    (`/rpc`, Methode `conversation.say`, im Code geprüft). Die Seele entscheidet, dass sie
    Kontakt aufnimmt, das Sprachmodell formuliert den Satz. Die Äußerung läuft durch die
    Sprachkette und bekommt so auch den Zustandsbericht.
 3. **Haltung** (ab Phase 8): eine dauerhafte Körperhaltung aus der Stimmung, siehe Fahrplan.
 
-## Geprüfte Fakten zur Conversation App (Code-Stand 7. Oktober 2026)
+## Geprüfte Fakten zur Conversation App (Stand 1.0.1, `ddc3096`, gelesen am 9. Oktober 2026)
 
 - Bewegung: Ein einziger Steuerpunkt (`MovementManager`). Darauf laufen nacheinander
   Emotionen, Tänze, Zielposen und ein „Atmen“ mit festen Werten (5 mm, 0,1 Hz, Antennen 15°).
 - Leerlauf: Nach 180 s Stille würfelt die App lokal eine Aktion, ohne das Sprachmodell
   (60 % nichts tun, 16 % Tanz, 16 % Emotion, 8 % Kopfbewegung). Bleibt als Grundrauschen.
-- `/rpc` bietet: `conversation.say`, `conversation.interrupt`, `conversation.mic`,
-  `conversation.status`, `backend.config`. Erreichbar über die Web-Oberfläche auf Port 7860.
+- `/rpc` (WebSocket auf Port 7860, JSON-RPC) bietet: `conversation.say`, `conversation.interrupt`,
+  `conversation.mic`, `conversation.status`, `backend.config`, dazu `personalities.*`,
+  `profile_tools.*`, `voices.*`, `tool_spaces.*`. An der laufenden App geprüft: `conversation.status`.
+  Achtung: `backend.config` **schreibt** immer (speichert die Verbindung, baut sie neu auf), auch ohne Angaben.
+- `conversation.say` legt den Text als Nutzer-Nachricht ins Gespräch und lässt das Sprachmodell
+  antworten; läuft gerade eine Ausgabe, wird sie abgebrochen. Kein wörtliches Vorlesen.
+- Profil: eine Datei `profile.md` (Kopf mit `schema_version = 1` und `default_tools`, darunter der
+  Text). Anlegen und Auswählen geht über die Einstellungsseite (`personalities.save`, `.apply`).
+- Eigene Werkzeuge: nur über die Umgebungsvariable `REACHY_MINI_EXTERNAL_TOOLS_DIRECTORY`, nicht über
+  die Einstellungsseite.
+- Nach 24 Stunden ohne Aktivität legt sich die App schlafen (`REACHY_MINI_APP_TIMEOUT_MINUTES`, Standard 1440).
 - Werkzeuge (Tools) bekommen Zugriff auf `reachy_mini` und `movement_manager`.
 - Lokales Backend: `HF_REALTIME_CONNECTION_MODE=local`,
   `HF_REALTIME_WS_URL=ws://<PC-IP>:8765/v1/realtime`. Das Backend muss auf der
@@ -94,10 +104,16 @@ Quelle: im SDK-Code geprüft (pollen-robotics/reachy_mini, Commit `fbdbca3`: `da
   the design“; nur eine LED zeigt ihn. Müdigkeit kommt deshalb aus der Tageszeit.
 - **Motorschutz:** Der Daemon prüft jede Sekunde das Fehlerregister der Motoren (Überhitzung,
   Überlast) und schreibt Fehler nur ins Log. Das Log ist lesbar über
-  `ws://<reachy>:8000/api/logs/ws/daemon`. Ab Phase 4 liest `sinne/koerper.py` es und meldet eine
+  `ws://<reachy>:8000/logs/ws/daemon`. Ab Phase 4 liest `sinne/koerper.py` es und meldet eine
   Wahrnehmung. Die harte Grenze ist genau dieser Fehler.
-- **Keine Motortemperatur:** Der Daemon liest den Wert nicht. Ihn selbst aus den Motoren zu lesen,
-  hieße den Daemon zu ändern, also verboten. Lesbar ist die Temperatur der IMU über `/api/state`.
+- **Motortemperatur:** Der Daemon liest den Wert nicht von sich aus. Die Motoren (XL330) melden ihn
+  aber in Register 146 (in Pollens Treiber rustypot als `present_temperature` geführt). Möglicher Weg:
+  der offizielle Endpunkt `ws://<reachy>:8000/api/move/ws/raw/write`. Er gibt ein rohes Dynamixel-Paket
+  über die Leitung des Daemons an den Motor und liefert die Antwort zurück. So ginge es ohne Fork und
+  ohne zweiten Zugriff auf die Leitung. Ungeprüft: ob das bei laufender App sauber funktioniert (A4).
+  Über diesen Weg ließen sich auch Register schreiben. Unser Code baut deshalb nur Lese-Pakete,
+  ein Test sichert das ab. Rustypot selbst nutzen wir nicht: Die Leitung gehört dem Daemon.
+- **IMU-Temperatur:** lesbar über `/api/state`.
 
 ## Was aus Unit Sigma übernommen wird
 
