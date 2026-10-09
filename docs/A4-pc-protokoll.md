@@ -64,3 +64,12 @@ Nur Branch `test/a4-pc`, wird nie gemergt. Rohdaten lokal in `~/lola-laufzeit/me
 
 ## Offen
 Gespräch mit Patrick, Latenz am Reachy, 21 Testsätze, Bewegungen ansehen, Motortemperatur bei laufender App.
+
+## Vorbereitung der Sitzung am Roboter (9. Oktober 2026, nachmittags, ohne Patrick)
+- Ablauf als Checkliste: `docs/A4-teil2-ablauf.md` (A4 Teil 2, Probe B4, A5, A6, Rest aus A7).
+- Neu in `tests/a4/`: `sitzung_auswerten.py` (Runden, Latenz, Ausrufezeichen, Emojis, überlange Ausgaben aus
+  dem Log von speech-to-speech, mit Tests), `starte_stufe.py` (Start mit zusätzlichen Schaltern für die
+  Pausenerkennung), `say_schritt.py` und `say_saetze.txt` (A6, Mikrofon beim Senden stumm).
+- `entwicklung` in diesen Branch geholt, damit `lola_start` mit Vermittler hier vorhanden ist.
+- Ausprobiert: `sitzung_auswerten.py` an einem Log der Vormessung. Nicht ausprobiert, weil sie die App und
+  den Reachy brauchen: `starte_stufe.py`, `say_schritt.py`.

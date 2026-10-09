@@ -1,0 +1,6 @@
+Sag Patrick, dass in zehn Minuten Frau Schneider kommt.
+[Hinweis, nicht von Patrick gesprochen] Es ist seit einer Weile still im Raum. Sag von dir aus einen kurzen Satz.
+[Hinweis, nicht von Patrick gesprochen] Der Timer ist abgelaufen. Sag Bescheid.
+[Hinweis, nicht von Patrick gesprochen] Johanna ist gerade nach Hause gekommen. Begrüße sie kurz.
+Sprich genau diesen Satz und sonst nichts: Das Essen ist fertig.
+[Hinweis, nicht von Patrick gesprochen] Du bist müde. Sag das in einem Satz und frag, ob du schlafen darfst.
