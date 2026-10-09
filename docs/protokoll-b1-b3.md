@@ -32,3 +32,49 @@ Festlegungen:
 - Löschen heißt: ganze Tagesdateien entfernen, deren Tag mehr als die Frist zurückliegt. Geprüft wird bei
   jedem Schreiben. Frist: `LOLA_ANFRAGE_LOG_TAGE`, Standard 7.
 - Felder je Anfrage: Zeit, Gesagtes (letzter Nutzersatz), eingefügter Bericht, entfernte Tools, Dauer in ms.
+
+**B2 erledigt** (Commit `4c2dca1` auf `entwicklung`): Erklär-Log als Datei, Anfrage-Log mit Tagesdateien
+und Löschfrist, 13 Tests.
+
+## B3 – Plan in drei Sätzen (NICHT gebaut, wartet auf Patricks Ja)
+1. **Was ich tun würde:** Einen kleinen HTTP-Proxy `vermittler/proxy.py` bauen, der `POST /v1/responses` von
+   speech-to-speech annimmt, den Zustandsbericht als eigenen Systemeintrag direkt vor den letzten Nutzersatz
+   setzt, die Anfrage an llama.cpp weitergibt, die Antwort Stück für Stück zurückreicht und je Anfrage eine
+   Zeile ins Anfrage-Log schreibt; alles andere geht unverändert durch.
+2. **Welche Dateien:** `vermittler/proxy.py` (Server und Weitergabe), `vermittler/anfrage.py` (reine
+   Funktionen: Bericht einsetzen, Tools entfernen, letzten Nutzersatz finden), eine Attrappe von llama.cpp
+   in `tests/attrappen/`, Tests in `tests/vermittler/`, dazu CHANGELOG, FAHRPLAN, ENTSCHEIDUNGEN.
+3. **Wie viel:** rund 220 Zeilen Code und 250 Zeilen Tests, kein Roboter; angeschlossen an die echte Kette
+   wird erst in B4.
+
+### Vorschlag zur HTTP-Bibliothek: keine. Nur die Standardbibliothek.
+`http.server.ThreadingHTTPServer` für den Eingang, `http.client` für den Ausgang. So war auch der
+Testproxy aus A2 gebaut (dort gegen die Attrappe und den echten Handler von speech-to-speech geprüft:
+byte-genaues Durchreichen, Streaming im Takt, Abbruch mitten im Strom).
+
+| Kriterium | Standardbibliothek (Vorschlag) | aiohttp | httpx + starlette + uvicorn |
+| --- | --- | --- | --- |
+| Größe | 0 neue Pakete | 1 Paket, zieht rund 7 weitere nach | 3 Pakete, ziehen rund 8 weitere nach |
+| Wartung | kommt mit Python, ändert sich kaum | aktiv gepflegt, eigene Versionssprünge | drei Projekte, die zusammenpassen müssen |
+| Streaming | von Hand: Zeilen lesen und sofort weiterschreiben; in A2 gezeigt | eingebaut, Server und Client aus einer Hand | eingebaut, über zwei Bibliotheken verteilt |
+| Abbruch | von Hand: Schreibfehler zum Client erkennen, dann die Verbindung zu llama.cpp schließen | eingebaut (abgebrochene Anfrage beendet die Aufgabe) | eingebaut, aber je nach Server unterschiedlich zuverlässig |
+| Gleichzeitigkeit | ein Faden je Anfrage; reicht, weil llama.cpp nur eine Anfrage zugleich rechnet | sehr viele gleichzeitig | sehr viele gleichzeitig |
+| Risiko | Abbruch wird erst beim nächsten Schreiben bemerkt; Sonderfälle von HTTP sind Handarbeit | neue Abhängigkeit, asynchroner Stil im ganzen Vermittler | größte Abhängigkeit, am meisten bewegliche Teile |
+
+Begründung: Der Vermittler bedient genau einen Client und einen Server im selben Rechner, mit wenigen
+Anfragen zugleich. Dafür braucht es keine Bibliothek, und die Regel „keine neue Abhängigkeit“ bleibt
+unberührt. Die Schwäche (Abbruch erst beim nächsten Schreiben) wird in B4 gemessen: Bricht speech-to-speech
+eine vorgreifende Anfrage ab, bevor das erste Wort kommt, darf llama.cpp nicht weiterrechnen.
+**Rückfallweg:** aiohttp, falls B4 zeigt, dass der Abbruch zu spät greift oder der Vermittler mehr als
+20 ms kostet. Die reinen Funktionen in `vermittler/anfrage.py` blieben dabei gleich.
+
+### Was B3 bewusst nicht enthält
+- Die Deutung (zweiter Aufruf ans Sprachmodell) und das Melden von Gesagtem an die Seele: spätere Phase.
+- Echte harte Grenzen: Die Funktion „Tools entfernen“ wird gebaut und getestet, aber noch von nichts ausgelöst.
+- Der Zustand ändert sich in Phase 1 noch nicht; der Bericht kommt aus Charakter und Grundzustand.
+
+### Offene Punkte, die ich vor dem Bau klären möchte
+- Aufwärm- und Zusammenfassungs-Anfragen von speech-to-speech sollen keinen Bericht bekommen (Hinweis aus
+  A2). Woran der Vermittler sie erkennt, muss ich am Code von speech-to-speech nachlesen.
+- Vorgreifende Anfragen: Derselbe Satz kann mehrfach kommen. Für B3 heißt das nur: Jede Anfrage bekommt ihre
+  Zeile im Anfrage-Log. Soll das Log solche Wiederholungen kennzeichnen?
