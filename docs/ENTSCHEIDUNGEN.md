@@ -440,6 +440,19 @@ Ersetzt die vorläufige Wahl („aiden“) aus dem Abschluss von A1.
   anderen Bausteine (ernst, zurückhaltend, sachlich, freundlich, herzlich; langsam, lebhaft, schnell)
   sind ein Vorschlag und werden in B5 am Modell geprüft.
 
+## 2026-10-09 – B2: Erklär-Log und Anfrage-Log als Dateien
+- Beide liegen im Ordner `daten/` (nicht im Repo), eine Zeile JSON je Eintrag, nur Standardbibliothek.
+- **Erklär-Log** (`daten/erklaer-log.jsonl`, in `seele/erklaer_log.py`): Zeit, Auslöser, Größe, alter und
+  neuer Wert. Es wird nicht gelöscht, weil es nichts Gesagtes enthält. Sobald Auslöser Namen oder Gesagtes
+  enthalten könnten (Deutung, Phase 3), braucht es dieselbe Frist.
+- **Anfrage-Log** (`daten/anfragen-JJJJ-MM-TT.jsonl`, in `vermittler/anfrage_log.py`): Zeit, Gesagtes,
+  eingefügter Bericht, entfernte Tools, Dauer. Es enthält Gesagtes der Familie und bleibt lokal.
+- **Löschfrist:** `LOLA_ANFRAGE_LOG_TAGE`, Standard 7. Gelöscht werden ganze Tagesdateien, deren Tag mehr
+  als die Frist zurückliegt; geprüft wird bei jedem Schreiben. Ein Tag, der genau sieben Tage alt ist,
+  bleibt noch. Folge: Schreibt niemand, wird auch nichts gelöscht. Der Vermittler (B3) räumt deshalb
+  zusätzlich bei jedem Start auf.
+- Noch nicht angeschlossen: Das Anfrage-Log schreibt erst, wenn der Vermittler es benutzt (B3).
+
 ## Versionen (festgenagelt)
 Werden in Phase 0 eingetragen (A1 und A4):
 

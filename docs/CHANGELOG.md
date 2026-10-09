@@ -2,6 +2,11 @@
 
 Neueste Einträge oben.
 
+## 2026-10-09 – B2: Protokolle als Dateien
+- `seele/erklaer_log.py` schreibt jeden Eintrag zusätzlich als Zeile JSON, wenn eine Datei angegeben ist.
+- Neu: `vermittler/anfrage_log.py` mit Tagesdateien und Löschfrist (`LOLA_ANFRAGE_LOG_TAGE`, Standard 7).
+- 13 neue Tests, die Löschfrist mit der Uhr-Attrappe. Noch nirgends angeschlossen (kommt mit B3).
+
 ## 2026-10-09 – B1: Zustandsbericht in der Form aus A3
 - `seele/zustandsbericht.py`: eine Zeile mit Kennung `[Zustand]`, „Du, LoLa, bist …“, Sprechanweisung je
   Stufe aus derselben festen Tabelle. Kopfzeile und „Halte dich kurz“ entfallen.
