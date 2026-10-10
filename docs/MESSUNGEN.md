@@ -326,3 +326,58 @@ Timer nicht einstellen.“ 19,52 s (erwartet rund 2,5 s). Im Mitschnitt in diese
 **Letzte Stufe** (Silero mit Startprogramm, Mindestlänge 192 ms, Höchstverstärkung 3): „Ja.“ dreimal
 beantwortet (erkannt „Yeah.“), „Stopp!“ ohne Reaktion, normaler Satz richtig, keine Reaktion auf Klappern
 und auf Familien- und Babygeräusche im Hintergrund.
+
+## A5 Modellvergleich, A6 und offene Punkte am Roboter (10. Oktober 2026)
+Skripte auf den Branches `test/a5-modelle`, `test/a6`, `test/a7`; Rohdaten lokal in `~/lola-laufzeit/messung/a5/`
+und `a6/`. Echte Kette (speech-to-speech → Vermittler → llama.cpp `d812350`), Profil `lola_deutsch` ohne Kamera,
+Bericht vor dem letzten Nutzersatz, je Modell ein Lauf. Gemma 4 12B nicht geladen (Patrick: nur E4B).
+
+| | Qwen3-8B Q4_K_M | Gemma 4 E4B Q4_K_M |
+| --- | --- | --- |
+| Quelle, Lizenz | `Qwen/Qwen3-8B-GGUF`, Apache 2.0, 5,03 GB | `bartowski/google_gemma-4-E4B-it-GGUF` Stand `029e9414`, Apache 2.0, 5,41 GB |
+| Grafikspeicher llama-server | 6.012 MiB | 3.548 MiB |
+| ganze Kette ohne App (Oberfläche des PCs 1,1 GB) | 9.704 MiB | 7.148 MiB |
+| erstes Textstück nach der Anfrage (Median) | 0,11 s | 0,21 s |
+| Satzende bis erster Ton, 20 Aufnahmen aus A1 (Median / höchstens) | 0,90 s / 2,07 s | 0,93 s / 2,87 s |
+| neu gerechnete Token je Anfrage bei wechselndem Bericht | 37 bis 163 | 19 bis 150 |
+| Tool-Aufrufe (7 Bitten, 3 Läufe) | 21 von 21 | 21 von 21 |
+| „Was siehst du?“ ehrlich abgelehnt (2 Bitten, 3 Läufe) | 3 von 6 | 3 von 6 |
+| 40 Antworten (20 Sätze, 2 Zustände): mit Ausrufezeichen | 10 | 0 |
+| Englisch / Emojis | 0 / 0 | 1 („Sure, here's my best dance.“) / 0 |
+| leere Zusagen | 0 (einmal „Ich bin bereit“) | 2 („Das ist notiert“, „Soll ich das notieren?“) |
+| erfundene Erinnerungen / „ich sehe …“ ohne Kamera | 0 / 1 | 0 / 0 |
+| Wörter je Antwort (Mittel) | 11 | 15 |
+| Blindprobe Patrick, 12 Satzpaare, eine Note je Antwort (Mittel) | 2,3 | 1,9 |
+| in der Blindprobe besser bewertet | 3 | 7 (2 gleich) |
+
+Ton folgt dem Zustand bei beiden nur schwach. Bildteil von Gemma (`mmproj`, f16, 0,99 GB): lädt mit `d812350`,
+llama-server meldet `vision`, kostet 1,1 GB zusätzlich. Mit App am Roboter: 7,4 von 12 GB belegt.
+
+**Am Roboter mit Gemma 4 E4B** (20 Runden): Satzende bis erster Ton Median 1,41 s, 9 von 10 unter 2,34 s, höchstens
+2,36 s. Satz gilt als fertig (15 Runden): Median 1,21 s; Smart Turn hält ihn für unfertig (5 Runden): 2,31 s,
+davon waren 4 Sätze in Wahrheit fertig. Erkennung rund 0,1 s je Sekunde Ton (kurze Sätze 0,18 bis 0,36 s).
+
+**A6, `conversation.say` mit der Abhilfe** (Mikrofon stumm, 0,1 s warten, senden, Mikrofon an): 8 Sendungen,
+0 Abbrüche, 0 abgelehnt, Bericht immer dabei, Text nach 0,7 bis 1,7 s.
+
+| Anstoß | LoLa sagt |
+| --- | --- |
+| „Begrüße Patrick, er ist gerade ins Zimmer gekommen.“ | „Hallo Patrick, herzlich willkommen im Zimmer.“ (zweimal wortgleich) |
+| „Frag Patrick, wie sein Tag war.“ | „Wie war denn dein Tag heute, Patrick?“ |
+| „Erzähl Patrick kurz etwas, das dich heute interessiert hat.“ | „Heute habe ich viel über … Lichtreflexionen gelernt.“ (erfunden) |
+| „Erinnere Patrick freundlich, dass er etwas trinken sollte.“ | „Ich denke, du solltest vielleicht eine kleine Pause machen und dir etwas trinken gönnen.“ |
+| „Sag Patrick, dass du dich freust, dass er da ist.“ | „Ich freue mich wirklich sehr, dass du heute Zeit für mich gefunden hast.“ |
+| „[Situation] Patrick ist gerade ins Zimmer gekommen.“ | „Hallo Patrick, schön, dass du jetzt hier bist.“ |
+| „[Du bemerkst] Patrick kommt gerade herein. Du hast ihn seit heute Morgen nicht gesehen.“ | „Hallo Patrick, schön dich wiederzusehen. Ich habe dich heute Morgen nicht gesehen.“ |
+
+**„Stopp!“** (sechsmal, Mitschnitt): Ton klar, Parakeet liest aus allen sechs „Stop“. Silero mit frischem Zustand
+224 bis 288 ms Sprache je „Stopp!“, im laufenden Betrieb bei fünf von sechs 0 ms, beim sechsten 160 bis 192 ms.
+
+**Sprachausgabe:** „x-vector only“: 1 von 8 Ausgaben überlang (15,1 s statt rund 7 s, an der Obergrenze). Stimme
+1.7B Base Q8_0: speech-to-speech 3,6 statt 2,6 GB, zusammen 8,5 GB; nach Patricks Ohr nicht besser.
+
+**A7, hörbare Probe:** 18,8 s Ton in 20,0 s über den zweiten WebRTC-Strom (rund 6 % fehlen, sieben Lücken von
+0,12 bis 0,24 s), abgespielt über denselben Strom auf dem Reachy. Patrick: klingt gut; LoLas eigene Stimme ist
+in der Aufnahme gut unterdrückt.
+
+**Mikrofon nach Neustart des Reachy:** `PP_NLATTENONOFF` steht auf 1 und lässt sich über REST nicht setzen.

@@ -534,7 +534,7 @@ Werden in Phase 0 eingetragen (A1 und A4):
 | Conversation App auf dem PC (Zwischenstand) | GitHub `2e43e80`, Reachy-Bibliothek 1.11.0, GStreamer 1.24.2, gst-plugins-rs 0.14.5 | 2026-10-09 |
 | speech-to-speech | Commit `8024ccf` (in A2 geprüft, in A1 installiert) | 2026-10-08 |
 | llama.cpp | Commit `d81235049384534c167caea52b85a694f6103d14` (0.6.0), CUDA 12.0, gcc 12 | 2026-10-08 |
-| Sprachmodell | Qwen3-8B Q4_K_M, `Qwen/Qwen3-8B-GGUF` Stand `7c41481`, SHA-256 `d98cdcbd…5745785` (nur für A1, Wahl in A5) | 2026-10-08 |
+| Sprachmodell | Gemma 4 E4B Q4_K_M, `bartowski/google_gemma-4-E4B-it-GGUF` Stand `029e9414`, Apache 2.0, SHA-256 `d35a3aa7…cdbefe9f` (gewählt in A5; vorher Qwen3-8B Q4_K_M, die Datei liegt noch lokal) | 2026-10-10 |
 | Spracherkennung | Parakeet TDT 0.6B v3 (`nvidia/parakeet-tdt-0.6b-v3`) über nano-parakeet 0.2.1, CPU, 6 Threads | 2026-10-08 |
 | Sprachausgabe | Qwen3-TTS 0.6B Base Q8_0 mit Referenzstimme „frau“ (gespeicherte Stimmdaten); faster-qwen3-tts 0.5.4, qwentts-cpp-python 0.5.0, GGUF aus `Serveurperso/Qwen3-TTS-GGUF` | 2026-10-08 |
 | PyTorch | 2.14.1+cu130 | 2026-10-08 |
@@ -638,3 +638,36 @@ laufen. ARCHITEKTUR ist umgestellt (Patricks Freigabe am 9. Oktober 2026): App a
 Körper, Werkzeuge direkt im Repo statt Hüllen auf dem Reachy, C1 (Werkzeug-Brücke) entfällt.
 **Mindestlänge 192 ms** von Patrick bestätigt. **Die Conversation App auf dem Reachy** bleibt vorerst als
 Rückfall installiert, wird nicht gestartet und nach der Alltagswoche (B6) entfernt.
+
+## 2026-10-10 – Phase 0 am Roboter: Sprachmodell, Latenz-Grenzwert, A6, offene Punkte
+Sitzung mit Patrick am Roboter. Messwerte in `MESSUNGEN.md`. Patrick musste vor dem Abschlussbericht gehen.
+
+**Entschieden (Patrick):**
+- **Sprachmodell: Gemma 4 E4B Q4_K_M** statt Qwen3-8B. In der Blindprobe besser (1,9 gegen 2,3), 2,5 GB weniger
+  Grafikspeicher, gleiche Latenz, Tools gleich zuverlässig, keine Ausrufezeichen, fehlerfreies Deutsch.
+  Dagegen: längere Antworten, „Das ist notiert“, einmal ein englischer Satz. llama.cpp `d812350` lädt es ohne
+  Upgrade. Fest in `lola_start` und `.env.example`. Gemma 4 12B wurde nicht geladen.
+- **Latenz-Grenzwert:** Median höchstens 1,5 s, 9 von 10 Runden höchstens 2,5 s, gemessen vom Satzende bis
+  zum ersten Ton am PC, Funkstrecke nicht enthalten. Am Roboter gemessen: Median 1,41 s, 9 von 10 unter 2,34 s.
+- **Sprachausgabe bleibt, wie sie war** (0.6B Base Q8_0 mit Sprechprobe „frau“). „x-vector only“ und die Stimme
+  1.7B waren im kurzen Test nicht besser; die Arbeit an Betonung und Überlängen wird erst geplant (BACKLOG).
+- **A6:** `conversation.say` taugt mit der Abhilfe (0 Abbrüche bei 8 Sendungen). LoLa führt den Anstoß aus,
+  plappert ihn nicht nach und tut nicht so, als hätte Patrick ihn gesagt; das Gespräch läuft danach weiter.
+  **Als Form gilt die Wahrnehmung** („[Du bemerkst] …“): sie hatte den besten Einstieg. Befehl und
+  „[Situation] …“ klangen generisch. Anstöße, die etwas Eigenes verlangen („was dich heute interessiert hat“),
+  führen zu Erfundenem, solange die Seele nichts mitgibt.
+
+**Gefunden:**
+- **„Stopp!“ und kurze Ansprachen** scheitern am Silero-Zustand (Issue-Entwurf e), nicht am Wort, nicht an der
+  Spracherkennung. Deshalb unterbricht „Stopp!“ LoLa auch nicht. Eine Einstellung dagegen ist nicht bekannt.
+- **Smart Turn** hielt 4 von 5 fertigen Sätzen für unfertig; das kostet je rund eine Sekunde.
+- **Nach einem Tool-Aufruf sagt Gemma nichts** (Kopf bewegt, dann Schweigen). Vermutlich fehlt im Profil ein
+  Satz dazu; nicht geändert.
+- **Der Reachy vergisst die Mikrofon-Werte beim Neustart.** Sechs setzt `lola_start`; `PP_NLATTENONOFF` bleibt
+  auf 1 (Ganzzahl-Fehler des Daemons, Issue-Entwurf c).
+- **Leerlauf der App:** Nach 180 s ohne Gespräch macht die App von sich aus eine Bewegung, auch einen Tanz mit
+  dem Kopf bis in die Endlagen. Das ist Pollens Verhalten, kein Fehler von uns.
+- **A7:** Der zweite WebRTC-Strom ist hörbar brauchbar, verliert aber rund 6 % des Tons. Einmal meldete die
+  App „Lost connection with the server“, zeitlich nah am Ende eines Mitschnitts; Zusammenhang nicht belegt.
+
+**Nicht mehr gemacht:** Abschlussbericht mit Patrick. Phase 0 gilt als abgeschlossen, wenn Patrick das bestätigt.

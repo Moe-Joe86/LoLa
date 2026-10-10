@@ -2,6 +2,12 @@
 
 Neueste Einträge oben.
 
+## 2026-10-10 – Phase 0 am Roboter: Gemma 4 E4B, Latenz-Grenzwert, A6
+- `dienste/lola_start.py` und `.env.example`: Sprachmodell ist Gemma 4 E4B Q4_K_M (Wahl nach Blindprobe).
+- A5 nachgeholt, A6 erledigt, „Stopp!“, Stimme und hörbare A7-Probe geprüft. Messwerte in `MESSUNGEN.md`,
+  Entscheidungen in `ENTSCHEIDUNGEN.md`, FAHRPLAN (A5, A6, A7, Abnahme, offene Fragen) und Versions-Tabelle
+  nachgezogen, offene Punkte im BACKLOG. Messskripte auf `test/a5-modelle`, `test/a6`, `test/a7`.
+
 ## 2026-10-09 – ARCHITEKTUR auf Weg 2 umgestellt
 - ARCHITEKTUR: Die Conversation App läuft auf dem PC, der Reachy ist nur Körper; Werkzeuge und Wächter auf
   dem PC. FAHRPLAN Phase 2: C1 (Werkzeug-Brücke) entfällt, C0, C2, C5 und C6 angepasst.

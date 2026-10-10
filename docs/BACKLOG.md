@@ -54,6 +54,21 @@ Jede Idee muss die oberste Designregel bestehen (siehe `CLAUDE.md`).
   Kommt der Ton an, schlägt Silero an, was erkennt Parakeet?
 - `dienste/sprachkette_start.py` wieder entfernen, sobald speech-to-speech die Thread-Zahl nach dem Laden
   von Silero nicht mehr auf 1 lässt (Issue-Entwurf f).
+- **Sprachausgabe, erst planen, dann probieren** (Patrick, 10. Oktober 2026): Betonung schwankt, bei Fragen und
+  oft im ersten Satz einer Antwort falsch; stille Überlängen auch mit „x-vector only“ (damit erledigt: der
+  Versuch von gestern); Stimme 1.7B im kurzen Test nicht besser; Gemma beendet Fragen oft mit Punkt statt
+  Fragezeichen (Einfluss auf die Satzmelodie ungeprüft).
+- Profil: Nach einem Tool-Aufruf schweigt Gemma (10. Oktober 2026). Einen Satz ergänzen („sag danach kurz, was
+  du getan hast“) und mit Patrick prüfen. Dazu: Floskeln statt Antworten und Erfundenes über sich selbst
+  („meine Aufgaben im Haus“, „Lernprogramme“) gehören zu B5.
+- Smart Turn hielt 4 von 5 fertigen Sätzen für unfertig (je rund 1 s Verzug). Schwelle eigens messen, bevor
+  sie verstellt wird.
+- `PP_NLATTENONOFF` steht nach jedem Neustart des Reachy auf 1 und lässt sich über REST nicht setzen
+  (Issue-Entwurf c). Wirkung auf das Gespräch ungeprüft.
+- Leerlauf der App: Nach 180 s tanzt LoLa manchmal von sich aus mit dem Kopf bis in die Endlagen. Prüfen, ob
+  das im Alltag stört und ob es sich über das Profil oder die Einstellungen der App zähmen lässt.
+- Anstöße über `conversation.say` können mitten in einen Satz der Person fallen; die Seele soll nur anstoßen,
+  wenn niemand spricht (C7).
 - Anbindung an Hermes Agent für schwierige Aufträge.
 - Home-Assistant-Anbindung.
 - Windows-Unterstützung (zweite Priorität).
