@@ -36,7 +36,7 @@ MIKROFON = {
 MIKROFON_NUR_PRUEFEN = ("PP_NLATTENONOFF", [0])
 STANDARD = {
     "LOLA_LAUFZEIT": "~/lola-laufzeit",
-    "LOLA_SPRACHMODELL": "modelle/Qwen3-8B-Q4_K_M.gguf",
+    "LOLA_SPRACHMODELL": "modelle/google_gemma-4-E4B-it-Q4_K_M.gguf",
     "LOLA_STIMME": "frau_0.6B-Base_Q8_0",
     "LOLA_REACHY": "reachy-mini.local",
     "LOLA_PROFIL": "lola_deutsch",
